@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clone2GHL</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-wrap">
+
+    <!-- Header -->
+    <div class="popup-header">
+      <div class="brand">
+        <span class="brand-icon">⚡</span>
+        <span class="brand-name">Clone<span class="brand-accent">2</span>GHL</span>
+      </div>
+      <div class="plan-badge" id="plan-badge">FREE</div>
+    </div>
+
+    <!-- Current Page Card -->
+    <div class="page-card">
+      <div class="page-card-label">Current page</div>
+      <div class="page-title" id="page-title">Loading…</div>
+      <div class="page-url" id="page-url">—</div>
+    </div>
+
+    <!-- Niche Selector -->
+    <div class="field-group">
+      <label class="field-label">Niche / Industry</label>
+      <select class="field-select" id="niche-select">
+        <option value="general">Auto-detect</option>
+        <option value="plumber">Plumber</option>
+        <option value="electrician">Electrician</option>
+        <option value="hvac">HVAC / AC Repair</option>
+        <option value="roofing">Roofing</option>
+        <option value="cleaning">Cleaning Service</option>
+        <option value="landscaping">Landscaping</option>
+        <option value="solar">Solar Energy</option>
+        <option value="real_estate">Real Estate</option>
+        <option value="gym">Gym / Fitness</option>
+        <option value="dental">Dental</option>
+        <option value="coaching">Coaching</option>
+        <option value="insurance">Insurance</option>
+        <option value="legal">Legal / Attorney</option>
+        <option value="marketing_agency">Marketing Agency</option>
+        <option value="weight_loss">Weight Loss</option>
+      </select>
+    </div>
+
+    <!-- Options -->
+    <div class="options-row">
+      <div class="option-toggle">
+        <div class="option-info">
+          <div class="option-label">AI Optimize</div>
+          <div class="option-sub">Rewrite copy with GPT-4o</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="ai-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-box" id="status-box" style="display:none;"></div>
+
+    <!-- Main CTA -->
+    <button class="btn-clone" id="btn-clone">
+      ⚡ Clone This Page
+    </button>
+
+    <!-- Credits -->
+    <div class="credits-bar" id="credits-bar"></div>
+
+    <!-- Nav Links -->
+    <div class="nav-links">
+      <button class="nav-link" id="btn-dashboard">
+        📊 Dashboard
+      </button>
+      <button class="nav-link" id="btn-library">
+        📚 Library
+      </button>
+      <button class="nav-link" id="btn-settings">
+        ⚙️ Settings
+      </button>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Clone2GHL Icon Generator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0a0a14; color: white; padding: 32px; text-align: center; }
+    h1 { margin-bottom: 8px; }
+    p { color: #9ca3af; margin-bottom: 24px; }
+    .canvas-row { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+    .canvas-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    canvas { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; }
+    label { font-size: 12px; color: #6b7280; }
+    .btn { background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; border: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 4px; }
+    .btn:hover { opacity: 0.9; }
+    .note { background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); border-radius: 8px; padding: 16px; color: #c4b5fd; font-size: 13px; max-width: 480px; margin: 16px auto 0; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>⚡ Clone2GHL Icon Generator</h1>
+  <p>Click "Generate & Download All Icons" to create the required PNG icons for the Chrome extension.</p>
+
+  <div class="canvas-row">
+    <div class="canvas-wrap">
+      <canvas id="c16" width="16" height="16"></canvas>
+      <label>icon16.png</label>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="c48" width="48" height="48"></canvas>
+      <label>icon48.png</label>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="c128" width="128" height="128"></canvas>
+      <label>icon128.png</label>
+    </div>
+  </div>
+
+  <button class="btn" onclick="generateAll()">⚡ Generate & Download All Icons</button>
+
+  <div class="note">
+    <strong>Instructions:</strong><br>
+    1. Click the button above — 3 PNG files will download automatically.<br>
+    2. Move all downloaded files into <code>extension/icons/</code> folder.<br>
+    3. Rename them: <code>icon16.png</code>, <code>icon48.png</code>, <code>icon128.png</code>.<br>
+    4. Your extension is now ready to load in Chrome.
+  </div>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const r = size;
+
+      // Background: purple gradient
+      const grad = ctx.createLinearGradient(0, 0, r, r);
+      grad.addColorStop(0, '#7C3AED');
+      grad.addColorStop(1, '#5B21B6');
+      ctx.fillStyle = grad;
+
+      // Rounded rectangle
+      const radius = r * 0.22;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(r - radius, 0);
+      ctx.quadraticCurveTo(r, 0, r, radius);
+      ctx.lineTo(r, r - radius);
+      ctx.quadraticCurveTo(r, r, r - radius, r);
+      ctx.lineTo(radius, r);
+      ctx.quadraticCurveTo(0, r, 0, r - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // Lightning bolt ⚡
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${Math.floor(r * 0.65)}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Adjust position slightly up for visual centering
+      ctx.fillText('⚡', r / 2, r / 2 + r * 0.02);
+
+      // Orange dot (G for GHL) - small accent at bottom right
+      if (size >= 48) {
+        const dotR = r * 0.14;
+        const dotX = r - dotR - r * 0.06;
+        const dotY = r - dotR - r * 0.06;
+        ctx.fillStyle = '#F97316';
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = `bold ${Math.floor(dotR * 1.4)}px Arial`;
+        ctx.fillText('G', dotX, dotY + 0.5);
+      }
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    function generateAll() {
+      const sizes = [16, 48, 128];
+      let index = 0;
+
+      function downloadNext() {
+        if (index >= sizes.length) return;
+        const size = sizes[index++];
+        const canvas = document.getElementById(`c${size}`);
+        drawIcon(canvas, size);
+        canvas.toBlob(blob => {
+          downloadBlob(blob, `icon${size}.png`);
+          // Wait 600ms between each download so the browser doesn't block them
+          setTimeout(downloadNext, 600);
+        }, 'image/png');
+      }
+
+      downloadNext();
+    }
+
+    // Preview on load
+    window.addEventListener('load', () => {
+      [16, 48, 128].forEach(size => {
+        const canvas = document.getElementById(`c${size}`);
+        drawIcon(canvas, size);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clone2GHL Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+  <!-- ─── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">Clone<span class="brand-accent">2</span>GHL</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="funnels">
+        <span class="nav-icon">📁</span>
+        <span>My Funnels</span>
+      </button>
+      <button class="nav-item" data-tab="library">
+        <span class="nav-icon">📚</span>
+        <span>Funnel Library</span>
+      </button>
+      <button class="nav-item" data-tab="ai-tools">
+        <span class="nav-icon">🤖</span>
+        <span>AI Tools</span>
+      </button>
+      <button class="nav-item" data-tab="ad-intel">
+        <span class="nav-icon">🔍</span>
+        <span>Ad Intelligence</span>
+      </button>
+      <button class="nav-item" data-tab="logo-gen">
+        <span class="nav-icon">🎨</span>
+        <span>Logo Generator</span>
+      </button>
+      <button class="nav-item" data-tab="settings">
+        <span class="nav-icon">⚙️</span>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="plan-info" id="sidebar-plan-info">
+        <div class="plan-name">Free Plan</div>
+        <div class="plan-credits" id="sidebar-credits">2 clones remaining</div>
+        <button class="btn-upgrade" id="btn-upgrade-sidebar">Upgrade →</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ──────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ═══ My Funnels Tab ═══════════════════════════════════════════════════ -->
+    <div class="tab-content active" id="tab-funnels">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">My Funnels</h1>
+          <h2 class="page-sub">Your saved and exported funnels</h2>
+          <h3 class="page-sub">Please use the Plagerism Analyzer to check for duplicate content.</h3>
+
+        </div>
+        <button class="btn-primary" id="btn-clone-new">
+          ⚡ Clone New Page
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="funnels-empty">
+        <div class="empty-icon">📁</div>
+        <h3>No funnels yet</h3>
+        <p>Clone your first page using the Chrome extension button on any website, or paste a URL below.</p>
+        <div class="url-clone-row">
+          <input type="url" class="url-input" id="url-input" placeholder="https://example.com/landing-page">
+          <button class="btn-primary" id="btn-url-clone">Clone URL</button>
+        </div>
+      </div>
+
+      <!-- Funnels grid -->
+      <div class="funnels-grid" id="funnels-grid" style="display:none;"></div>
+    </div>
+
+    <!-- ═══ Funnel Library Tab ════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-library">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Funnel Library</h1>
+          <p class="page-sub">15+ high-converting templates across niches</p>
+        </div>
+      </div>
+
+      <div class="filters-row">
+        <select class="filter-select" id="library-niche-filter">
+          <option value="">All Niches</option>
+          <option value="plumber">Plumber</option>
+          <option value="electrician">Electrician</option>
+          <option value="hvac">HVAC</option>
+          <option value="roofing">Roofing</option>
+          <option value="cleaning">Cleaning</option>
+          <option value="landscaping">Landscaping</option>
+          <option value="solar">Solar</option>
+          <option value="real_estate">Real Estate</option>
+          <option value="gym">Gym / Fitness</option>
+          <option value="dental">Dental</option>
+          <option value="coaching">Coaching</option>
+          <option value="insurance">Insurance</option>
+          <option value="legal">Legal</option>
+          <option value="marketing_agency">Marketing Agency</option>
+          <option value="weight_loss">Weight Loss</option>
+        </select>
+        <select class="filter-select" id="library-type-filter">
+          <option value="">All Types</option>
+          <option value="lead_gen">Lead Gen</option>
+          <option value="high_ticket">High Ticket</option>
+        </select>
+        <select class="filter-select" id="library-perf-filter">
+          <option value="">All Performance</option>
+          <option value="high_converting">High Converting</option>
+          <option value="trending">Trending</option>
+        </select>
+      </div>
+
+      <div class="library-grid" id="library-grid"></div>
+    </div>
+
+    <!-- ═══ AI Tools Tab ═════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-ai-tools">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">AI Tools</h1>
+          <p class="page-sub">Optimize, rewrite, and analyze funnels with GPT-4o</p>
+        </div>
+      </div>
+
+      <div class="ai-tools-grid">
+
+        <!-- Tool: AI Copy Optimizer -->
+        <div class="tool-card">
+          <div class="tool-icon">✍️</div>
+          <h3 class="tool-title">AI Copy Optimizer</h3>
+          <p class="tool-desc">Rewrite funnel copy for any niche using GPT-4o</p>
+          <div class="tool-form">
+            <select class="field-select" id="ai-opt-funnel-select">
+              <option value="">Select a funnel…</option>
+            </select>
+            <select class="field-select" id="ai-opt-niche">
+              <option value="">Select niche…</option>
+              <option value="plumber">Plumber</option>
+              <option value="electrician">Electrician</option>
+              <option value="hvac">HVAC</option>
+              <option value="roofing">Roofing</option>
+              <option value="cleaning">Cleaning</option>
+              <option value="landscaping">Landscaping</option>
+              <option value="solar">Solar</option>
+              <option value="real_estate">Real Estate</option>
+              <option value="gym">Gym / Fitness</option>
+              <option value="dental">Dental</option>
+              <option value="coaching">Coaching</option>
+              <option value="insurance">Insurance</option>
+              <option value="legal">Legal</option>
+              <option value="marketing_agency">Marketing Agency</option>
+              <option value="weight_loss">Weight Loss</option>
+            </select>
+            <input type="text" class="field-input" id="ai-opt-business" placeholder="Business name (optional)">
+            <button class="btn-primary" id="btn-ai-optimize">🚀 Optimize Copy</button>
+          </div>
+          <div class="tool-status" id="ai-opt-status"></div>
+        </div>
+
+        <!-- Tool: Funnel Intelligence -->
+        <div class="tool-card">
+          <div class="tool-icon">🧠</div>
+          <h3 class="tool-title">Funnel Intelligence</h3>
+          <p class="tool-desc">Understand why a funnel converts. Get a detailed AI breakdown.</p>
+          <div class="tool-form">
+            <select class="field-select" id="intel-funnel-select">
+              <option value="">Select a funnel…</option>
+            </select>
+            <button class="btn-primary" id="btn-intel-analyze">🔍 Analyze Funnel</button>
+          </div>
+          <div class="tool-status" id="intel-status"></div>
+          <div class="intel-report" id="intel-report" style="display:none;"></div>
+        </div>
+
+        <!-- Tool: Headline Generator -->
+        <div class="tool-card">
+          <div class="tool-icon">💡</div>
+          <h3 class="tool-title">Headline Generator</h3>
+          <p class="tool-desc">Generate 5 high-converting headline variations instantly</p>
+          <div class="tool-form">
+            <select class="field-select" id="headline-niche">
+              <option value="plumber">Plumber</option>
+              <option value="electrician">Electrician</option>
+              <option value="hvac">HVAC</option>
+              <option value="roofing">Roofing</option>
+              <option value="cleaning">Cleaning</option>
+              <option value="solar">Solar</option>
+              <option value="real_estate">Real Estate</option>
+              <option value="gym">Gym / Fitness</option>
+              <option value="dental">Dental</option>
+              <option value="coaching">Coaching</option>
+            </select>
+            <input type="text" class="field-input" id="headline-offer" placeholder="Your offer (e.g. free inspection)">
+            <button class="btn-primary" id="btn-gen-headlines">✨ Generate Headlines</button>
+          </div>
+          <div class="headlines-list" id="headlines-list" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ Ad Intelligence Tab ═══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-ad-intel">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Ad Intelligence</h1>
+          <p class="page-sub">Discover what competitors are running</p>
+        </div>
+      </div>
+
+      <div class="ad-intel-search">
+        <input type="text" class="search-input" id="ad-search-query" placeholder="Search by niche: plumber, solar, dentist…">
+        <button class="btn-primary" id="btn-ad-search">Search Ads</button>
+      </div>
+
+      <div class="ad-platforms">
+        <div class="platform-card">
+          <div class="platform-header">
+            <span class="platform-icon">📘</span>
+            <div>
+              <div class="platform-name">Facebook Ad Library</div>
+              <div class="platform-sub">See all active ads by niche</div>
+            </div>
+          </div>
+          <p class="platform-desc">Browse Facebook's public ad library to see exactly what's working in your niche. Filter by country and date.</p>
+          <button class="btn-secondary" id="btn-fb-ads">Open Facebook Ad Library →</button>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-header">
+            <span class="platform-icon">🔴</span>
+            <div>
+              <div class="platform-name">Google Ad Transparency</div>
+              <div class="platform-sub">Search Google's ad disclosure center</div>
+            </div>
+          </div>
+          <p class="platform-desc">Google's Ads Transparency Center shows all active Search and Display ads by advertiser and topic.</p>
+          <button class="btn-secondary" id="btn-google-ads">Open Google Transparency →</button>
+        </div>
+
+        <div class="platform-card">
+          <div class="platform-header">
+            <span class="platform-icon">📱</span>
+            <div>
+              <div class="platform-name">TikTok Creative Center</div>
+              <div class="platform-sub">Trending ads and creatives</div>
+            </div>
+          </div>
+          <p class="platform-desc">TikTok's free Creative Center shows top-performing ads, trending hashtags, and winning creative formats.</p>
+          <button class="btn-secondary" id="btn-tiktok-ads">Open TikTok Creative Center →</button>
+        </div>
+      </div>
+
+      <div class="ad-intel-tips">
+        <h3>How to use Ad Intelligence</h3>
+        <ol>
+          <li>Search a niche (e.g. "plumber Austin") in the platform of your choice</li>
+          <li>Find an ad with high engagement / long run time (usually means it's profitable)</li>
+          <li>Click the ad's landing page URL</li>
+          <li>Use the Clone2GHL button to clone that funnel instantly</li>
+          <li>Optimize the copy for your client's niche and location</li>
+          <li>Push to GoHighLevel in one click</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- ═══ Logo Generator Tab ════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-logo-gen">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Logo Generator</h1>
+          <p class="page-sub">AI-powered logo creation with DALL-E 3</p>
+        </div>
+      </div>
+
+      <div class="logo-form-wrap">
+        <div class="logo-form-card">
+          <div class="form-row">
+            <label class="field-label">Business Name</label>
+            <input type="text" class="field-input" id="logo-business-name" placeholder="e.g. ProClean Services">
+          </div>
+          <div class="form-row">
+            <label class="field-label">Industry</label>
+            <input type="text" class="field-input" id="logo-industry" placeholder="e.g. carpet cleaning, plumbing, real estate">
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Logo Style</label>
+              <select class="field-select" id="logo-style">
+                <option value="modern">Modern & Minimal</option>
+                <option value="professional">Professional / Corporate</option>
+                <option value="bold">Bold & Impactful</option>
+                <option value="friendly">Friendly & Approachable</option>
+                <option value="luxury">Luxury / Premium</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Color Palette</label>
+              <select class="field-select" id="logo-colors">
+                <option value="professional blue and white">Blue & White</option>
+                <option value="green and white, eco-friendly">Green & White</option>
+                <option value="orange and dark gray, energetic">Orange & Dark</option>
+                <option value="red and white, bold">Red & White</option>
+                <option value="purple and gold, premium">Purple & Gold</option>
+                <option value="black and gold, luxury">Black & Gold</option>
+                <option value="navy and silver, professional">Navy & Silver</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary btn-full" id="btn-gen-logo">🎨 Generate Logo</button>
+          <p class="logo-note">Requires OpenAI API key with DALL-E 3 access. Each generation uses ~$0.04 in API credits.</p>
+        </div>
+
+        <div class="logo-result-card" id="logo-result" style="display:none;">
+          <div class="logo-result-header">Generated Logo</div>
+          <img class="logo-preview-img" id="logo-preview-img" src="" alt="Generated logo">
+          <div class="logo-result-actions">
+            <a class="btn-primary" id="btn-download-logo" download="logo.png">⬇ Download PNG</a>
+            <div class="logo-revised-prompt" id="logo-revised-prompt"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tool-status" id="logo-status"></div>
+    </div>
+
+    <!-- ═══ Settings Tab ══════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-settings">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Settings</h1>
+          <p class="page-sub">Connect your API keys and configure Clone2GHL</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+
+        <!-- GHL Connection -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🔗</span>
+            <div>
+              <div class="settings-card-title">GoHighLevel Connection</div>
+              <div class="settings-card-sub">Required to export funnels to GHL</div>
+            </div>
+          </div>
+          <div class="settings-status" id="ghl-status-badge"></div>
+
+          <div class="form-row">
+            <label class="field-label">Private Integration Token (API Key)</label>
+            <div class="input-row">
+              <input type="password" class="field-input" id="ghl-api-key" placeholder="eyJh…">
+              <button class="btn-icon" id="toggle-ghl-key" title="Show/hide">👁</button>
+            </div>
+            <p class="field-hint">Get from GHL → Settings → Integrations → API Keys → Private Integration Token</p>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Location ID</label>
+            <input type="text" class="field-input" id="ghl-location-id" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx">
+            <p class="field-hint">Get from GHL → Settings → Business Profile → Location ID</p>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-primary" id="btn-validate-ghl">Test Connection</button>
+            <button class="btn-secondary" id="btn-save-ghl">Save</button>
+          </div>
+        </div>
+
+        <!-- OpenAI Connection -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🤖</span>
+            <div>
+              <div class="settings-card-title">OpenAI API Key</div>
+              <div class="settings-card-sub">Required for AI copy optimization and logo generation</div>
+            </div>
+          </div>
+          <div class="settings-status" id="openai-status-badge"></div>
+
+          <div class="form-row">
+            <label class="field-label">API Key</label>
+            <div class="input-row">
+              <input type="password" class="field-input" id="openai-api-key" placeholder="sk-…">
+              <button class="btn-icon" id="toggle-openai-key" title="Show/hide">👁</button>
+            </div>
+            <p class="field-hint">Get from platform.openai.com → API Keys. Requires billing enabled.</p>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-primary" id="btn-validate-openai">Test Key</button>
+            <button class="btn-secondary" id="btn-save-openai">Save</button>
+          </div>
+        </div>
+
+        <!-- Pricing / Plan -->
+        <div class="settings-card" id="tab-pricing-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">💰</span>
+            <div>
+              <div class="settings-card-title">Your Plan</div>
+              <div class="settings-card-sub" id="current-plan-label">Loading…</div>
+            </div>
+            <button class="btn-secondary" id="btn-reset-credits" style="margin-left:auto;font-size:12px;padding:7px 14px;">↺ Reset Credits</button>
+          </div>
+
+          <div class="pricing-grid">
+            <div class="pricing-card">
+              <div class="pricing-tier">Free</div>
+              <div class="pricing-price">$0</div>
+              <div class="pricing-features">
+                <div>✓ 2 clones/month</div>
+                <div>✗ No AI optimization</div>
+                <div>✗ No funnel library</div>
+              </div>
+            </div>
+            <div class="pricing-card featured">
+              <div class="pricing-badge">Most Popular</div>
+              <div class="pricing-tier">Pro</div>
+              <div class="pricing-price">$47<span>/mo</span></div>
+              <div class="pricing-features">
+                <div>✓ Unlimited cloning</div>
+                <div>✓ Full AI optimizer</div>
+                <div>✓ Funnel library</div>
+                <div>✓ Ad intelligence</div>
+              </div>
+              <button class="btn-primary btn-full">Upgrade to Pro</button>
+            </div>
+            <div class="pricing-card">
+              <div class="pricing-tier">Agency</div>
+              <div class="pricing-price">$97<span>/mo</span></div>
+              <div class="pricing-features">
+                <div>✓ Everything in Pro</div>
+                <div>✓ Team access</div>
+                <div>✓ White-label</div>
+                <div>✓ DFY discounts</div>
+              </div>
+              <button class="btn-secondary btn-full">Upgrade to Agency</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ─── Funnel Detail Modal ─────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="funnel-modal" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-funnel-title">Funnel Name</h2>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
