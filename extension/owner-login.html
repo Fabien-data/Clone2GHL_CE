@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clone2GHL — Owner Access</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A14;
+      --card: #161626;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --purple: #7C3AED;
+      --purple-light: #8B5CF6;
+      --purple-faint: rgba(124,58,237,0.15);
+      --orange: #F97316;
+      --green: #10B981;
+      --red: #EF4444;
+      --text: #F9FAFB;
+      --text2: #D1D5DB;
+      --text3: #9CA3AF;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 380px;
+      padding: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon { font-size: 28px; }
+    .brand-name { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    .brand-accent { color: var(--orange); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 12.5px;
+      color: var(--text3);
+      margin-bottom: 24px;
+    }
+
+    .owner-badge {
+      display: inline-block;
+      background: rgba(249,115,22,0.15);
+      border: 1px solid rgba(249,115,22,0.3);
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .form-row { margin-bottom: 14px; }
+
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .field-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .field-input:focus { border-color: var(--purple-light); }
+
+    .input-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .input-row .field-input { flex: 1; }
+
+    .btn-icon {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text3);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 12px;
+      transition: background 0.15s;
+    }
+
+    .btn-icon:hover { background: rgba(255,255,255,0.1); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px 20px;
+      background: var(--purple);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: inherit;
+      margin-top: 6px;
+    }
+
+    .btn-primary:hover { background: var(--purple-light); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 9px 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: inherit;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover { background: rgba(255,255,255,0.09); }
+
+    .status-box {
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status-box.error {
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #F87171;
+      display: block;
+    }
+
+    .status-box.success {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34D399;
+      display: block;
+    }
+
+    .status-box.info {
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: #A78BFA;
+      display: block;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    /* Unlocked state */
+    .unlocked-wrap { display: none; }
+    .unlocked-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .unlocked-icon { font-size: 20px; }
+    .unlocked-label { font-size: 14px; font-weight: 600; color: #34D399; }
+    .unlocked-sub { font-size: 12px; color: var(--text3); }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12.5px;
+      color: var(--text3);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .back-link:hover { color: var(--text2); }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrap">
+
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">Clone<span class="brand-accent">2</span>GHL</span>
+    </div>
+
+    <div class="card">
+
+      <div class="owner-badge">Owner Access</div>
+
+      <!-- ── Setup State (first time) ── -->
+      <div id="setup-view">
+        <div class="card-title">Set Owner Password</div>
+        <div class="card-sub">Create a private password to unlock unlimited access on this device.</div>
+
+        <div class="form-row">
+          <label class="field-label" for="setup-password">Password</label>
+          <div class="input-row">
+            <input type="password" class="field-input" id="setup-password" placeholder="Minimum 8 characters" autocomplete="new-password">
+            <button class="btn-icon" id="toggle-setup-pw" type="button">👁</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label" for="setup-confirm">Confirm Password</label>
+          <input type="password" class="field-input" id="setup-confirm" placeholder="Repeat password" autocomplete="new-password">
+        </div>
+
+        <button class="btn-primary" id="btn-setup">Set Password &amp; Unlock</button>
+        <div class="status-box" id="setup-status"></div>
+      </div>
+
+      <!-- ── Login State ── -->
+      <div id="login-view" style="display:none;">
+        <div class="card-title">Owner Login</div>
+        <div class="card-sub">Enter your owner password to unlock unlimited access.</div>
+
+        <div class="form-row">
+          <label class="field-label" for="login-password">Password</label>
+          <div class="input-row">
+            <input type="password" class="field-input" id="login-password" placeholder="Your owner password" autocomplete="current-password">
+            <button class="btn-icon" id="toggle-login-pw" type="button">👁</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-login">Unlock</button>
+        <div class="status-box" id="login-status"></div>
+
+        <hr class="divider">
+        <div class="section-label">Reset</div>
+        <button class="btn-secondary" id="btn-reset-password">Reset Owner Password</button>
+      </div>
+
+      <!-- ── Unlocked State ── -->
+      <div id="unlocked-view" style="display:none;">
+        <div class="unlocked-badge">
+          <span class="unlocked-icon">🔓</span>
+          <div>
+            <div class="unlocked-label">Owner Access Active</div>
+            <div class="unlocked-sub">Unlimited clones, all AI tools, no restrictions</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-go-dashboard">Open Dashboard →</button>
+
+        <hr class="divider">
+        <div class="section-label">Danger Zone</div>
+        <button class="btn-secondary" id="btn-lock">Lock Owner Access</button>
+        <button class="btn-secondary" id="btn-change-pw" style="margin-top:6px;">Change Owner Password</button>
+        <div class="status-box" id="unlocked-status"></div>
+      </div>
+
+    </div>
+
+    <a class="back-link" id="back-to-dashboard">← Back to dashboard</a>
+
+  </div>
+
+  <script src="owner-login.js"></script>
+</body>
+</html>

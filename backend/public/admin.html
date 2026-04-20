@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clone2GHL Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A14;
+      --surface: #161626;
+      --surface2: #1E1E30;
+      --border: rgba(255,255,255,0.08);
+      --text: #F0F0F8;
+      --muted: #9CA3AF;
+      --accent: #7C3AED;
+      --accent-light: rgba(124,58,237,0.15);
+      --green: #10B981;
+      --red: #EF4444;
+      --yellow: #F59E0B;
+      --blue: #3B82F6;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+    /* ── Header ── */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .header-brand { font-size: 20px; font-weight: 700; color: var(--text); }
+    .header-brand span { color: var(--accent); }
+    .header-badge { font-size: 10px; font-weight: 700; background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 2px 8px; }
+    .auth-row { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+    .auth-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 12px; font-size: 13px; width: 280px; outline: none; }
+    .auth-input:focus { border-color: var(--accent); }
+    .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .status-badge { font-size: 12px; padding: 4px 10px; border-radius: 4px; }
+    .status-ok { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+    .status-err { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Layout ── */
+    .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Stats row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; color: var(--text); }
+    .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Cards ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .card-title { font-size: 16px; font-weight: 700; }
+    .card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+    .filter-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 7px 12px; font-size: 13px; outline: none; }
+    .filter-input:focus { border-color: var(--accent); }
+    .filter-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 7px 12px; font-size: 13px; outline: none; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    tbody tr:hover { background: var(--surface2); }
+    td { padding: 10px 12px; font-size: 13px; vertical-align: middle; }
+    .actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .plan-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 4px; padding: 4px 8px; font-size: 12px; outline: none; }
+
+    /* ── Plan badges ── */
+    .plan-badge { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 8px; }
+    .plan-free { background: rgba(156,163,175,0.15); color: #9CA3AF; }
+    .plan-starter { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .plan-pro { background: rgba(124,58,237,0.15); color: var(--accent); }
+    .plan-agency { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+    /* ── Bar chart ── */
+    .chart-wrap { overflow-x: auto; padding: 8px 0; }
+    .chart-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+    .page-info { font-size: 12px; color: var(--muted); }
+
+    /* ── Empty state ── */
+    .empty { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+
+    /* ── Spinner ── */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div>
+      <div class="header-brand">Clone<span>2</span>GHL</div>
+    </div>
+    <div class="header-badge">ADMIN PANEL</div>
+    <div class="auth-row">
+      <input type="password" class="auth-input" id="admin-key" placeholder="Enter ADMIN_SECRET…">
+      <button class="btn btn-primary" id="btn-connect">Connect</button>
+      <span class="status-badge" id="connect-status" style="display:none;"></span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── Stats Row ── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="stat-users">—</div>
+        <div class="stat-sub">Registered accounts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Subscriptions</div>
+        <div class="stat-value" id="stat-subs">—</div>
+        <div class="stat-sub">Non-free plans</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Clones</div>
+        <div class="stat-value" id="stat-clones">—</div>
+        <div class="stat-sub">All-time clone events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Videos Completed</div>
+        <div class="stat-value" id="stat-videos">—</div>
+        <div class="stat-sub">Completed video jobs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenue (est.)</div>
+        <div class="stat-value" id="stat-revenue">—</div>
+        <div class="stat-sub">Monthly MRR estimate</div>
+      </div>
+    </div>
+
+    <!-- ── Users Section ── -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Users</div>
+          <div class="card-sub">Manage user plans, usage, and accounts</div>
+        </div>
+        <div class="filters">
+          <input type="text" class="filter-input" id="search-input" placeholder="Search email or name…" style="width:220px;">
+          <select class="filter-select" id="plan-filter">
+            <option value="">All Plans</option>
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+            <option value="agency">Agency</option>
+          </select>
+          <button class="btn btn-secondary" id="btn-search">Search</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Clones / Mo</th>
+              <th>Funnels</th>
+              <th>Last Active</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body">
+            <tr><td colspan="7" class="empty">Connect to load users.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="btn btn-secondary btn-sm" id="btn-prev" disabled>← Prev</button>
+        <span class="page-info" id="page-info">—</span>
+        <button class="btn btn-secondary btn-sm" id="btn-next" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- ── Analytics Section ── -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Platform Analytics — Last 30 Days</div>
+          <div class="card-sub">Daily clone volume and new user signups</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-refresh-analytics">↻ Refresh</button>
+      </div>
+
+      <div class="chart-label">Clone Events per Day</div>
+      <div class="chart-wrap" id="clone-chart"><span class="empty">No data yet.</span></div>
+
+      <div class="chart-label" style="margin-top:20px;">New Signups per Day</div>
+      <div class="chart-wrap" id="signup-chart"><span class="empty">No data yet.</span></div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let adminKey = localStorage.getItem('c2ghl_adminKey') || '';
+    let currentOffset = 0;
+    const PAGE_LIMIT = 50;
+    let totalUsers = 0;
+
+    // Pre-fill key on load
+    document.getElementById('admin-key').value = adminKey;
+
+    function authHeaders() {
+      return { 'Authorization': `Bearer ${adminKey}`, 'Content-Type': 'application/json' };
+    }
+
+    async function apiFetch(path, options = {}) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: { ...authHeaders(), ...(options.headers || {}) },
+      });
+      const data = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    function setConnectStatus(msg, ok) {
+      const el = document.getElementById('connect-status');
+      el.textContent = msg;
+      el.className = `status-badge ${ok ? 'status-ok' : 'status-err'}`;
+      el.style.display = 'inline-block';
+    }
+
+    function planBadge(plan) {
+      const cls = { free: 'plan-free', starter: 'plan-starter', pro: 'plan-pro', agency: 'plan-agency' }[plan] || 'plan-free';
+      return `<span class="plan-badge ${cls}">${(plan || 'free').toUpperCase()}</span>`;
+    }
+
+    function fmtDate(val) {
+      if (!val) return '—';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return '—';
+      return d.toLocaleDateString();
+    }
+
+    function escHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Load Stats ──────────────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const data = await apiFetch('/api/admin/stats');
+        document.getElementById('stat-users').textContent = data.totalUsers ?? '—';
+        document.getElementById('stat-subs').textContent = data.activeSubscriptions ?? '—';
+        document.getElementById('stat-clones').textContent = data.totalClones ?? '—';
+        document.getElementById('stat-videos').textContent = data.totalVideos ?? '—';
+        document.getElementById('stat-revenue').textContent = data.revenueEstimate != null ? `$${data.revenueEstimate}/mo` : '—';
+        setConnectStatus('✓ Connected', true);
+      } catch (e) {
+        setConnectStatus(`✗ ${e.message}`, false);
+        throw e;
+      }
+    }
+
+    // ── Load Users ──────────────────────────────────────────────────────────────
+    async function loadUsers(offset = 0) {
+      const search = document.getElementById('search-input').value.trim();
+      const plan = document.getElementById('plan-filter').value;
+      const params = new URLSearchParams({ limit: PAGE_LIMIT, offset });
+      if (search) params.set('search', search);
+      if (plan) params.set('plan', plan);
+
+      const body = document.getElementById('users-body');
+      body.innerHTML = `<tr><td colspan="7" class="empty"><span class="spinner"></span> Loading…</td></tr>`;
+
+      try {
+        const data = await apiFetch(`/api/admin/users?${params}`);
+        totalUsers = data.total || 0;
+        currentOffset = offset;
+        renderUsersTable(data.users || []);
+        updatePagination();
+      } catch (e) {
+        body.innerHTML = `<tr><td colspan="7" class="empty" style="color:var(--red);">Error: ${escHtml(e.message)}</td></tr>`;
+      }
+    }
+
+    function renderUsersTable(users) {
+      const body = document.getElementById('users-body');
+      if (!users.length) {
+        body.innerHTML = '<tr><td colspan="7" class="empty">No users found.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = users.map(u => `
+        <tr data-user-id="${escHtml(u.id)}">
+          <td>
+            <div style="font-weight:600;">${escHtml(u.email)}</div>
+            ${u.displayName ? `<div style="font-size:11px; color:var(--muted);">${escHtml(u.displayName)}</div>` : ''}
+          </td>
+          <td>${planBadge(u.plan)}</td>
+          <td>${u.clonesThisMonth}</td>
+          <td>${u.totalFunnels}</td>
+          <td>${fmtDate(u.lastActivity)}</td>
+          <td>${fmtDate(u.createdAt)}</td>
+          <td>
+            <div class="actions-cell">
+              <select class="plan-select" data-user-id="${escHtml(u.id)}" data-action="change-plan">
+                <option value="">Change plan…</option>
+                <option value="free">Free</option>
+                <option value="starter">Starter</option>
+                <option value="pro">Pro</option>
+                <option value="agency">Agency</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" data-user-id="${escHtml(u.id)}" data-action="reset-usage" title="Reset this month's usage">↺ Reset</button>
+              <button class="btn btn-danger btn-sm" data-user-id="${escHtml(u.id)}" data-action="delete-user" title="Delete user and all data">🗑 Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+
+      // Wire up actions
+      body.querySelectorAll('[data-action="change-plan"]').forEach(sel => {
+        sel.addEventListener('change', async () => {
+          const userId = sel.dataset.userId;
+          const plan = sel.value;
+          if (!plan || !userId) return;
+          sel.disabled = true;
+          try {
+            await apiFetch(`/api/admin/users/${userId}/plan`, {
+              method: 'PATCH',
+              body: JSON.stringify({ plan }),
+            });
+            await loadUsers(currentOffset);
+          } catch (e) {
+            alert(`Error changing plan: ${e.message}`);
+            sel.disabled = false;
+          }
+        });
+      });
+
+      body.querySelectorAll('[data-action="reset-usage"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const userId = btn.dataset.userId;
+          if (!userId) return;
+          btn.disabled = true;
+          btn.textContent = '…';
+          try {
+            await apiFetch(`/api/admin/users/${userId}/reset-usage`, { method: 'POST' });
+            btn.textContent = '✓';
+            setTimeout(() => { btn.textContent = '↺ Reset'; btn.disabled = false; }, 1500);
+          } catch (e) {
+            alert(`Error resetting usage: ${e.message}`);
+            btn.textContent = '↺ Reset';
+            btn.disabled = false;
+          }
+        });
+      });
+
+      body.querySelectorAll('[data-action="delete-user"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const userId = btn.dataset.userId;
+          const row = btn.closest('tr');
+          const email = row?.querySelector('td:first-child')?.textContent?.trim() || userId;
+          if (!confirm(`Delete user "${email}" and ALL their data? This cannot be undone.`)) return;
+          btn.disabled = true;
+          btn.textContent = '…';
+          try {
+            await apiFetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+            await loadUsers(currentOffset);
+          } catch (e) {
+            alert(`Error deleting user: ${e.message}`);
+            btn.textContent = '🗑 Delete';
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+
+    function updatePagination() {
+      const prev = document.getElementById('btn-prev');
+      const next = document.getElementById('btn-next');
+      const info = document.getElementById('page-info');
+      const start = currentOffset + 1;
+      const end = Math.min(currentOffset + PAGE_LIMIT, totalUsers);
+      info.textContent = totalUsers > 0 ? `${start}–${end} of ${totalUsers}` : 'No results';
+      prev.disabled = currentOffset <= 0;
+      next.disabled = currentOffset + PAGE_LIMIT >= totalUsers;
+    }
+
+    // ── Load Analytics ──────────────────────────────────────────────────────────
+    async function loadAnalytics() {
+      try {
+        const data = await apiFetch('/api/admin/analytics?days=30');
+        renderBarChart('clone-chart', data.clonesByDay || {}, '#7C3AED', 'Clone events');
+        renderBarChart('signup-chart', data.signupsByDay || {}, '#10B981', 'New signups');
+      } catch (e) {
+        document.getElementById('clone-chart').innerHTML = `<span style="color:var(--red)">Error: ${escHtml(e.message)}</span>`;
+      }
+    }
+
+    function renderBarChart(containerId, dataByDay, color, label) {
+      const container = document.getElementById(containerId);
+      const days = Object.keys(dataByDay);
+      const values = Object.values(dataByDay);
+      const maxVal = Math.max(...values, 1);
+
+      if (!days.length) {
+        container.innerHTML = '<span class="empty">No data for this period.</span>';
+        return;
+      }
+
+      const barW = Math.max(4, Math.min(12, Math.floor(560 / days.length)));
+      const gap = 2;
+      const chartH = 80;
+      const totalW = days.length * (barW + gap);
+
+      const bars = days.map((day, i) => {
+        const h = Math.max(2, Math.round((values[i] / maxVal) * chartH));
+        const x = i * (barW + gap);
+        const y = chartH - h;
+        return `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" rx="1" opacity=".85">
+                  <title>${day}: ${values[i]} ${label}</title>
+                </rect>`;
+      }).join('');
+
+      const firstDay = days[0] || '';
+      const lastDay = days[days.length - 1] || '';
+
+      container.innerHTML = `
+        <svg width="${totalW}" height="${chartH + 22}" style="overflow:visible; display:block;">
+          ${bars}
+          <text x="0" y="${chartH + 16}" fill="#6B7280" font-size="10">${escHtml(firstDay)}</text>
+          <text x="${totalW}" y="${chartH + 16}" fill="#6B7280" font-size="10" text-anchor="end">${escHtml(lastDay)}</text>
+        </svg>
+      `;
+    }
+
+    // ── Event Listeners ─────────────────────────────────────────────────────────
+    document.getElementById('btn-connect').addEventListener('click', async () => {
+      adminKey = document.getElementById('admin-key').value.trim();
+      localStorage.setItem('c2ghl_adminKey', adminKey);
+      setConnectStatus('<span class="spinner"></span>', true);
+      try {
+        await loadStats();
+        await loadUsers(0);
+        await loadAnalytics();
+      } catch { /* error shown in setConnectStatus */ }
+    });
+
+    document.getElementById('btn-search').addEventListener('click', () => loadUsers(0));
+    document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadUsers(0); });
+    document.getElementById('plan-filter').addEventListener('change', () => loadUsers(0));
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      loadUsers(Math.max(0, currentOffset - PAGE_LIMIT));
+    });
+    document.getElementById('btn-next').addEventListener('click', () => {
+      if (currentOffset + PAGE_LIMIT < totalUsers) loadUsers(currentOffset + PAGE_LIMIT);
+    });
+
+    document.getElementById('btn-refresh-analytics').addEventListener('click', loadAnalytics);
+
+    // ── Auto-load if key stored ─────────────────────────────────────────────────
+    if (adminKey) {
+      (async () => {
+        setConnectStatus('<span class="spinner"></span>', true);
+        try {
+          await loadStats();
+          await loadUsers(0);
+          await loadAnalytics();
+        } catch { /* error shown above */ }
+      })();
+    }
+  </script>
+</body>
+</html>

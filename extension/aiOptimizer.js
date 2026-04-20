@@ -6,21 +6,43 @@
 
 const AiOptimizer = (() => {
   const OPENAI_BASE = 'https://api.openai.com/v1';
+  const OPENAI_TIMEOUT_MS = 25000;
 
   async function openAIRequest(endpoint, apiKey, body) {
-    const resp = await fetch(`${OPENAI_BASE}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      throw new Error(data.error?.message || `OpenAI error: HTTP ${resp.status}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
+    try {
+      const resp = await fetch(`${OPENAI_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          const retryAfter = resp.headers.get('retry-after');
+          const waitHint = retryAfter ? ` Retry after ${retryAfter}s.` : '';
+          throw new Error(`OpenAI rate limit reached.${waitHint}`);
+        }
+        if (resp.status === 401) {
+          throw new Error('OpenAI API key is invalid or expired.');
+        }
+        throw new Error(data.error?.message || `OpenAI error: HTTP ${resp.status}`);
+      }
+      return data;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error('OpenAI request timed out. Please try again.');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
-    return data;
   }
 
   // ─── Funnel Copy Rewriter ─────────────────────────────────────────────────
@@ -133,7 +155,7 @@ Be specific and actionable. Use bullet points. Start with "This funnel [converts
   // ─── Logo Generator ───────────────────────────────────────────────────────
 
   /**
-   * Generate a logo using DALL-E 3.
+   * Generate a logo using gpt-image-1 with a DALL-E 3 fallback.
    * Returns { url: string, revisedPrompt: string }
    */
   async function generateLogo(apiKey, params) {
@@ -141,17 +163,30 @@ Be specific and actionable. Use bullet points. Start with "This funnel [converts
 
     const prompt = buildLogoPrompt(businessName, industry, style, colors);
 
-    const response = await openAIRequest('/images/generations', apiKey, {
-      model: 'dall-e-3',
-      prompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'standard',
-      response_format: 'url',
-    });
+    let response;
+    try {
+      response = await openAIRequest('/images/generations', apiKey, {
+        model: 'gpt-image-1',
+        prompt,
+        size: '1024x1024',
+        quality: 'high',
+      });
+    } catch {
+      response = await openAIRequest('/images/generations', apiKey, {
+        model: 'dall-e-3',
+        prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'url',
+      });
+    }
+
+    const imageItem = response.data?.[0] || {};
+    const imageUrl = imageItem.url || (imageItem.b64_json ? `data:image/png;base64,${imageItem.b64_json}` : '');
 
     return {
-      url: response.data?.[0]?.url,
+      url: imageUrl,
       revisedPrompt: response.data?.[0]?.revised_prompt || prompt,
     };
   }
@@ -361,6 +396,76 @@ Keep each under 12 words. Be specific with numbers.`,
     };
   }
 
+  /**
+   * Generate a local template-based email nurture sequence.
+   * Falls back gracefully when no backend is available.
+   *
+   * @param {string} niche
+   * @param {string} offer
+   * @param {string} tone  — 'professional' | 'friendly' | 'urgent' | 'story'
+   * @param {number} count — 3, 5, or 7
+   * @returns {Array<{ emailNumber, type, subject, body }>}
+   */
+  function generateEmailSequenceLocal(niche, offer, tone, count) {
+    const p = getNicheContext(niche);
+    const offerText = offer || `${niche} service`;
+
+    const TONES = {
+      professional: { g: 'Hello',              s: 'Best regards,',  u: 'I encourage you to take action' },
+      friendly:     { g: 'Hey there',          s: 'Talk soon,',     u: "don't miss this" },
+      urgent:       { g: 'Quick heads up',     s: 'Act fast,',      u: 'this offer expires soon' },
+      story:        { g: 'Let me share something', s: 'Here for you,', u: 'this chapter ends here' },
+    };
+    const t = TONES[tone] || TONES.professional;
+
+    const EMAILS = [
+      {
+        emailNumber: 1,
+        type: 'Problem Awareness',
+        subject: `Still dealing with ${p.painPoints[0]}?`,
+        body: `${t.g},\n\nIf you're struggling with ${p.painPoints[0]}, you're not alone.\n\nMost ${p.audience} tell us: they want ${p.outcomes[0]} but can't find a reliable solution.\n\nThat's exactly why we created ${offerText}.\n\nIn the next few days I'll share exactly how it works.\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 2,
+        type: 'Value / Education',
+        subject: `How to get ${p.outcomes[0]} (the simple way)`,
+        body: `${t.g},\n\nHere's what most people get wrong: ${p.painPoints[1] || 'they wait too long'}.\n\nA simple 3-step framework:\n1. Identify the real problem\n2. Match it to the right solution\n3. Start before costs compound\n\n${offerText} handles all three.\n\nReply with questions — I read every one.\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 3,
+        type: 'Social Proof',
+        subject: `What customers say about ${offerText}`,
+        body: `${t.g},\n\n"${offerText} delivered exactly what they promised." — A recent customer\n\nHere's what sets us apart:\n✓ ${p.trustSignals[0]}\n✓ ${p.trustSignals[1] || 'Years of proven experience'}\n✓ ${p.outcomes[0]}\n\nWe've helped hundreds of ${p.audience.toLowerCase()} get the results they needed.\n\nWant to be next?\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 4,
+        type: 'Offer / CTA',
+        subject: `Here's exactly what you get`,
+        body: `${t.g},\n\nHere's what ${offerText} includes:\n\n✓ ${p.outcomes[0]}\n✓ ${p.outcomes[1] || 'Professional results'}\n✓ ${p.outcomes[2] || 'Guaranteed peace of mind'}\n\nBonus: ${p.ctaAngle}\n\n[CLAIM YOUR OFFER]\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 5,
+        type: 'Urgency / Last Chance',
+        subject: `Last chance — ${offerText} offer closing`,
+        body: `${t.g},\n\nI don't want you to miss this.\n\nIf ${p.painPoints[0]} is still on your mind — ${t.u}.\n\n${offerText} closes [DATE]. After that, prices go up.\n\n1. Click the link below\n2. Book your spot (limited availability)\n3. Get ${p.outcomes[0]} within [TIMEFRAME]\n\n[FINAL CTA]\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 6,
+        type: 'Re-engagement',
+        subject: `Still on the fence? Let me help you decide`,
+        body: `${t.g},\n\nI noticed you haven't taken action yet.\n\nFair enough — big decisions take time.\n\nHere's one thing that might help: our ${p.trustSignals[0]}. If you're not satisfied, we make it right.\n\nNo risk. No long contracts. Just ${p.outcomes[0]}.\n\nReply with your biggest concern — I'll personally answer.\n\n${t.s}\n[Your Name]`,
+      },
+      {
+        emailNumber: 7,
+        type: 'Referral / Long-term',
+        subject: `You're going to love this (and so will your friends)`,
+        body: `${t.g},\n\nCustomers who get ${p.outcomes[0]} with ${offerText} often tell their friends.\n\nIf you know anyone dealing with ${p.painPoints[0]}, send them our way — we'll take great care of them.\n\nAnd if you haven't started yet — there's still time.\n\n[REFERRAL / FINAL CTA]\n\n${t.s}\n[Your Name]`,
+      },
+    ];
+
+    return EMAILS.slice(0, Math.min(count, EMAILS.length));
+  }
+
   /** Test if an OpenAI API key is valid */
   async function validateApiKey(apiKey) {
     if (!apiKey || !apiKey.startsWith('sk-')) {
@@ -383,6 +488,7 @@ Keep each under 12 words. Be specific with numbers.`,
     generateIntelligenceReport,
     generateLogo,
     generateHeadlines,
+    generateEmailSequenceLocal,
     validateApiKey,
     NICHE_PROFILES,
     getNicheContext,

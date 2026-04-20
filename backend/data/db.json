@@ -1,0 +1,496 @@
+{
+  "users": [
+    {
+      "id": "u_1776054299294",
+      "email": "dev@example.com",
+      "passwordHash": "$2a$10$UcLOBkfkRtfyfDP.vUQbsuJRUVzsBtKnEvzEUlYvAAbcrwJ4NN6iK",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:24:59.294Z"
+    },
+    {
+      "id": "u_1776054492816",
+      "email": "smoke1623570740@example.com",
+      "passwordHash": "$2a$10$kfbgWGNRDjdzAmBUexl94eD77d8BA5l9jGwyWfxpOcxUAWBMKcuba",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:28:12.816Z"
+    },
+    {
+      "id": "u_1776055265632",
+      "email": "smoke551769809@example.com",
+      "passwordHash": "$2a$10$dxzltV0.tHRHzhZEtZ0iLueptORpZEGuWYLki36BN9U.0pvpubWYW",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:41:05.633Z"
+    },
+    {
+      "id": "u_1776055280129",
+      "email": "smoke1040261700@example.com",
+      "passwordHash": "$2a$10$qypaztDy8/9N/dJWM1xsM.MpwFK3Ja3h9ul4TMHGe10TeLwPmbZD.",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:41:20.129Z"
+    },
+    {
+      "id": "u_1776055292432",
+      "email": "smoke1962157251@example.com",
+      "passwordHash": "$2a$10$mj2ZpegrX1GZn2AoJJKojOEJPqX4FOQP4XvdtNx/i0WT9PNryoNPO",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:41:32.432Z"
+    },
+    {
+      "id": "u_1776055329685",
+      "email": "smoke790986692@example.com",
+      "passwordHash": "$2a$10$xQ9O96qjS2WQ/zrS71x/xeWXalx5zUZKTfnt2/GwL3ww8VAT9ubpK",
+      "plan": "free",
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T04:42:09.685Z"
+    },
+    {
+      "id": "u_1776056822184",
+      "email": "impl613134919@example.com",
+      "passwordHash": "$2a$10$S1ji/82oyJkcq.Ptc6u35.Byv7onRizUEu/TWXyEBZJE1tkZNgVVK",
+      "plan": "free",
+      "profile": {
+        "displayName": "Test User",
+        "company": "Clone2GHL",
+        "timezone": "Asia/Colombo"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:07:02.185Z"
+    },
+    {
+      "id": "u_1776057329148",
+      "email": "videoe2e_54ced1f4@example.com",
+      "passwordHash": "$2a$10$KzCoQTVPrkOLajs38HUCgOgQYn.hvPM1gUDrFUJbDFKWBZEu1nKqu",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:15:29.148Z"
+    },
+    {
+      "id": "u_1776058258402",
+      "email": "videoprod_5136cb21@example.com",
+      "passwordHash": "$2a$10$OQt8rqKRZ/Ll8A5OMsGPMOy3U.4nRADt6pvZ2XAuAg77bQP6m7gFm",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:30:58.403Z"
+    },
+    {
+      "id": "u_1776058267241",
+      "email": "videohey_0b65b4d7@example.com",
+      "passwordHash": "$2a$10$gGAQHVlnPamTXrCYNlp9D.QZsKICSIWa9CeS7aAo8Zpt3VmlGR.xi",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:31:07.241Z"
+    },
+    {
+      "id": "u_1776058273769",
+      "email": "videohey_f8f392eb@example.com",
+      "passwordHash": "$2a$10$FJHUqcwpnKDiTY74EYmk4eZLr6ZxGGq8M7TQsHrqSuat2CNfKStCa",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:31:13.769Z"
+    },
+    {
+      "id": "u_1776058471141",
+      "email": "scriptsmoke_b3846d8a@example.com",
+      "passwordHash": "$2a$10$hsHbHJPj/xj4gm6qdPl6oO7NcBjC/.8IdyWf9K8jHI9b67CZ35VSO",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:34:31.142Z"
+    },
+    {
+      "id": "u_1776058480219",
+      "email": "videoui_ff6bbd71@example.com",
+      "passwordHash": "$2a$10$Q16Znqo7C8WKqHQN0wdvxujBqADVC5HOXQG6k8Uia2uh0h4Dvaqcu",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:34:40.219Z"
+    },
+    {
+      "id": "u_1776059168237",
+      "email": "providerstatus_2292b557@example.com",
+      "passwordHash": "$2a$10$ix7aR1H22sfRTfEKCA8kYuOFnmAFdTr4U0UklkTiYmbvraumPMVB6",
+      "plan": "free",
+      "profile": {
+        "displayName": "",
+        "company": "",
+        "timezone": "UTC"
+      },
+      "stripeCustomerId": null,
+      "createdAt": "2026-04-13T05:46:08.237Z"
+    }
+  ],
+  "funnels": [
+    {
+      "id": "f_1776054509093",
+      "userId": "u_1776054492816",
+      "name": "Smoke Funnel",
+      "sourceUrl": "https://example.com",
+      "niche": "general",
+      "status": "draft",
+      "html": "<html><body>ok</body></html>",
+      "optimizedHtml": null,
+      "analysis": null,
+      "meta": {},
+      "createdAt": "2026-04-13T04:28:29.093Z",
+      "updatedAt": "2026-04-13T04:28:29.093Z"
+    }
+  ],
+  "usage": [
+    {
+      "userId": "u_1776054299294",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T04:24:59.297Z"
+    },
+    {
+      "userId": "u_1776054492816",
+      "period": "2026-04",
+      "clonesUsed": 2,
+      "updatedAt": "2026-04-13T04:28:39.051Z"
+    },
+    {
+      "userId": "u_1776055265632",
+      "period": "2026-04",
+      "clonesUsed": 2,
+      "updatedAt": "2026-04-13T04:41:06.104Z"
+    },
+    {
+      "userId": "u_1776055280129",
+      "period": "2026-04",
+      "clonesUsed": 2,
+      "updatedAt": "2026-04-13T04:41:20.153Z"
+    },
+    {
+      "userId": "u_1776055292432",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T04:41:32.433Z"
+    },
+    {
+      "userId": "u_1776055329685",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T04:42:09.686Z"
+    },
+    {
+      "userId": "u_1776056822184",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:07:02.186Z"
+    },
+    {
+      "userId": "u_1776057329148",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:15:29.150Z"
+    },
+    {
+      "userId": "u_1776058258402",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:30:58.405Z"
+    },
+    {
+      "userId": "u_1776058267241",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:31:07.243Z"
+    },
+    {
+      "userId": "u_1776058273769",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:31:13.772Z"
+    },
+    {
+      "userId": "u_1776058471141",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:34:31.144Z"
+    },
+    {
+      "userId": "u_1776058480219",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:34:40.222Z"
+    },
+    {
+      "userId": "u_1776059168237",
+      "period": "2026-04",
+      "clonesUsed": 0,
+      "updatedAt": "2026-04-13T05:46:08.239Z"
+    }
+  ],
+  "preferences": [
+    {
+      "userId": "u_1776056822184",
+      "theme": "light",
+      "defaultNiche": "plumber",
+      "notifications": false,
+      "updatedAt": "2026-04-13T05:07:02.241Z"
+    },
+    {
+      "userId": "u_1776057329148",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:15:29.150Z"
+    },
+    {
+      "userId": "u_1776058258402",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:30:58.405Z"
+    },
+    {
+      "userId": "u_1776058267241",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:31:07.243Z"
+    },
+    {
+      "userId": "u_1776058273769",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:31:13.772Z"
+    },
+    {
+      "userId": "u_1776058471141",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:34:31.144Z"
+    },
+    {
+      "userId": "u_1776058480219",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:34:40.222Z"
+    },
+    {
+      "userId": "u_1776059168237",
+      "theme": "dark",
+      "defaultNiche": "general",
+      "notifications": true,
+      "updatedAt": "2026-04-13T05:46:08.239Z"
+    }
+  ],
+  "activity": [
+    {
+      "id": "act_1776058482907_kz0hft",
+      "userId": "u_1776058480219",
+      "action": "video.generated",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776058480299_gt2ose",
+      "status": "ok",
+      "metadata": {
+        "provider": "mock",
+        "funnelId": ""
+      },
+      "createdAt": "2026-04-13T05:34:42.907Z"
+    },
+    {
+      "id": "act_1776058480303_8khbnj",
+      "userId": "u_1776058480219",
+      "action": "video.queued",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776058480299_gt2ose",
+      "status": "ok",
+      "metadata": {
+        "funnelId": "",
+        "provider": "mock"
+      },
+      "createdAt": "2026-04-13T05:34:40.303Z"
+    },
+    {
+      "id": "act_1776058261121_9bpn74",
+      "userId": "u_1776058258402",
+      "action": "video.generated",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776058258509_cnzhyh",
+      "status": "ok",
+      "metadata": {
+        "provider": "mock",
+        "funnelId": ""
+      },
+      "createdAt": "2026-04-13T05:31:01.121Z"
+    },
+    {
+      "id": "act_1776058258516_njyz11",
+      "userId": "u_1776058258402",
+      "action": "video.queued",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776058258509_cnzhyh",
+      "status": "ok",
+      "metadata": {
+        "funnelId": "",
+        "provider": "mock"
+      },
+      "createdAt": "2026-04-13T05:30:58.516Z"
+    },
+    {
+      "id": "act_1776057331851_elqk97",
+      "userId": "u_1776057329148",
+      "action": "video.generated",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776057329245_b6rv5s",
+      "status": "ok",
+      "metadata": {
+        "provider": "mock",
+        "funnelId": ""
+      },
+      "createdAt": "2026-04-13T05:15:31.851Z"
+    },
+    {
+      "id": "act_1776057329246_rbxqtd",
+      "userId": "u_1776057329148",
+      "action": "video.queued",
+      "resourceType": "videoJob",
+      "resourceId": "vj_1776057329245_b6rv5s",
+      "status": "ok",
+      "metadata": {
+        "funnelId": "",
+        "provider": "mock"
+      },
+      "createdAt": "2026-04-13T05:15:29.246Z"
+    },
+    {
+      "id": "act_1776056822255_e8nt8f",
+      "userId": "u_1776056822184",
+      "action": "clone.created",
+      "resourceType": "funnel",
+      "resourceId": "f_1",
+      "status": "ok",
+      "metadata": {
+        "niche": "plumber"
+      },
+      "createdAt": "2026-04-13T05:07:02.255Z"
+    }
+  ],
+  "invoices": [],
+  "videoJobs": [
+    {
+      "id": "vj_1776058480299_gt2ose",
+      "userId": "u_1776058480219",
+      "funnelId": "",
+      "script": "UI provider selector smoke",
+      "avatar": "alex",
+      "voice": "male_en_us",
+      "template": "short_promo",
+      "provider": "mock",
+      "providerJobId": "",
+      "status": "completed",
+      "progress": 100,
+      "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "error": "",
+      "createdAt": "2026-04-13T05:34:40.299Z",
+      "updatedAt": "2026-04-13T05:34:42.907Z",
+      "completedAt": "2026-04-13T05:34:42.907Z"
+    },
+    {
+      "id": "vj_1776058258509_cnzhyh",
+      "userId": "u_1776058258402",
+      "funnelId": "",
+      "script": "Short promo script for provider-ready route.",
+      "avatar": "alex",
+      "voice": "male_en_us",
+      "template": "short_promo",
+      "provider": "mock",
+      "providerJobId": "",
+      "status": "completed",
+      "progress": 100,
+      "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "error": "",
+      "createdAt": "2026-04-13T05:30:58.509Z",
+      "updatedAt": "2026-04-13T05:31:01.121Z",
+      "completedAt": "2026-04-13T05:31:01.121Z"
+    },
+    {
+      "id": "vj_1776057329245_b6rv5s",
+      "userId": "u_1776057329148",
+      "funnelId": "",
+      "script": "This is a quick promo video test script for Clone2GHL.",
+      "avatar": "alex",
+      "voice": "male_en_us",
+      "template": "short_promo",
+      "provider": "mock",
+      "status": "completed",
+      "progress": 100,
+      "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "error": "",
+      "createdAt": "2026-04-13T05:15:29.245Z",
+      "updatedAt": "2026-04-13T05:15:31.851Z",
+      "completedAt": "2026-04-13T05:15:31.851Z"
+    }
+  ],
+  "videoAssets": [
+    {
+      "id": "va_1776058482907_q883zm",
+      "userId": "u_1776058480219",
+      "jobId": "vj_1776058480299_gt2ose",
+      "funnelId": "",
+      "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "provider": "mock",
+      "durationSec": 30,
+      "createdAt": "2026-04-13T05:34:42.907Z"
+    },
+    {
+      "id": "va_1776058261121_iuey5l",
+      "userId": "u_1776058258402",
+      "jobId": "vj_1776058258509_cnzhyh",
+      "funnelId": "",
+      "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "provider": "mock",
+      "durationSec": 30,
+      "createdAt": "2026-04-13T05:31:01.121Z"
+    },
+    {
+      "id": "va_1776057331851_hj7rgc",
+      "userId": "u_1776057329148",
+      "jobId": "vj_1776057329245_b6rv5s",
+      "funnelId": "",
+      "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+      "provider": "mock",
+      "durationSec": 30,
+      "createdAt": "2026-04-13T05:15:31.851Z"
+    }
+  ]
+}

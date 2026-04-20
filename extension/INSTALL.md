@@ -44,6 +44,31 @@ Click the extension icon → **Settings** tab, or open the Dashboard.
 3. Paste it into the "OpenAI API Key" field in Settings
 4. Note: Requires a paid OpenAI account with billing enabled
 
+### Step 4: Run Lean Backend (Auth + Usage + Billing)
+
+If you want cloud auth, usage metering, and Stripe billing foundation, run the backend service:
+
+1. Open a terminal in `backend/`
+2. Copy `.env.example` to `.env` and set at least `JWT_SECRET`
+   - For Video Generation (HeyGen provider), also set: `HEYGEN_API_KEY`
+   - For AI video script generation, set: `OPENAI_API_KEY`
+   - For OpenAI prompt-to-video generation, set: `OPENAI_API_KEY` and optionally `OPENAI_VIDEO_MODEL=sora-2-pro`
+3. Install dependencies:
+   - `npm install`
+4. Start server:
+   - `npm run dev`
+
+Default API base URL: `http://localhost:8080`
+
+### Step 5: Connect Extension to Backend
+
+1. Open Dashboard → Settings → Cloud Backend
+2. Set Backend API Base URL (local dev: `http://localhost:8080`)
+3. Register or Sign In with email/password
+4. Click **Refresh Usage** to pull plan limits from backend
+5. (Optional) Click **Sync Funnels** to upload local funnels to backend
+6. Use **Upgrade to Pro** or **Upgrade to Agency** to open Stripe checkout when Stripe keys are configured
+
 ---
 
 ## How to Use
@@ -73,6 +98,13 @@ Click the extension icon → **Settings** tab, or open the Dashboard.
 3. Click **"Optimize Copy"**
 4. GPT-4o rewrites all headlines, CTAs, and copy for your niche
 
+### AI Video Generator
+1. Dashboard → **AI Tools**
+2. Write a prompt describing the video you want for a website hero, funnel, ad, or promo
+3. Choose duration and format
+4. Click **"Generate Video"**
+5. The job is queued with OpenAI Sora 2 Pro by default and appears in **Video Generation** when ready
+
 ### Funnel Intelligence
 1. After cloning a page, view it in **My Funnels**
 2. Each funnel gets a score (0-100) with letter grade
@@ -81,8 +113,16 @@ Click the extension icon → **Settings** tab, or open the Dashboard.
 ### Logo Generator
 1. Dashboard → **Logo Generator**
 2. Enter business name + industry
-3. Click **"Generate Logo"** — DALL-E 3 creates a professional logo
+3. Click **"Generate Logo"** — `gpt-image-1` creates a professional logo (with automatic fallback to DALL-E 3)
 4. Download the PNG and insert it into your funnel
+
+### Video Generation
+1. Dashboard → **Video Generation**
+2. Enter a short script or prompt and choose avatar/voice/template
+3. Click **"Generate Video"** to queue a backend job
+4. Track status in the jobs table and open the preview URL when completed
+5. For avatar-style production mode, configure `HEYGEN_API_KEY` in backend `.env`
+6. For OpenAI Sora videos, configure `OPENAI_API_KEY` and use provider **OpenAI Sora 2 Pro**
 
 ### Ad Intelligence
 1. Dashboard → **Ad Intelligence**
@@ -120,6 +160,7 @@ Clone2GHL is the ultimate tool for GoHighLevel users and marketing agencies. Tra
 📚 Funnel Library — 15+ battle-tested templates across local service niches
 🔍 Ad Intelligence — discover what's working on Facebook, Google, and TikTok
 🎨 AI Logo Generator — DALL-E 3 creates branded logos instantly
+🎬 Video Generation — GPT-written scripts and HeyGen avatar rendering
 → Direct GHL Export — push funnels directly to your GoHighLevel account
 
 **Perfect for:**
@@ -129,6 +170,9 @@ Clone2GHL is the ultimate tool for GoHighLevel users and marketing agencies. Tra
 - Anyone who wants to learn from winning funnels
 
 **Privacy:** Your API keys are stored locally in Chrome storage and never transmitted to our servers. All page processing happens locally.
+
+**Security note:** API keys are encrypted at rest inside extension storage. They are decrypted only during runtime API calls.
+If a local machine profile is fully compromised, no client-only extension can provide absolute secret protection without a remote key service.
 
 ### Categories
 - **Primary:** Productivity
@@ -160,7 +204,9 @@ The current codebase has a free/starter/pro/agency plan structure in storage. To
 |-------|------------|
 | Extension | Chrome Manifest V3, Vanilla JS |
 | AI Optimization | OpenAI GPT-4o |
-| Logo Generation | OpenAI DALL-E 3 |
+| Video Script Generation | OpenAI GPT-4.1 |
+| Video Rendering | OpenAI Sora 2 Pro (with HeyGen and mock fallback) |
+| Logo Generation | OpenAI gpt-image-1 (fallback: DALL-E 3) |
 | Funnel Export | GoHighLevel API v2 |
 | Storage | chrome.storage.local |
 | Styling | Custom CSS (no framework) |
@@ -175,6 +221,8 @@ The current codebase has a free/starter/pro/agency plan structure in storage. To
 
 **GHL export fails:** Verify your Private Integration Token is active and your Location ID is correct. The token must have Funnels permissions enabled.
 
-**AI features not working:** Ensure your OpenAI API key has billing enabled and sufficient credits. GPT-4o requires a paid account.
+**AI features not working:** Ensure your OpenAI API key has billing enabled and sufficient credits. GPT-4o/GPT-4.1/gpt-image-1 require a paid account.
 
-**Logo download link doesn't work:** DALL-E 3 URLs expire after ~1 hour. Right-click → "Save image as" immediately after generation.
+**Logo download link doesn't work:** Provider URLs can expire. Save the image immediately after generation.
+
+**Video generation stuck in queued:** Verify backend `.env` has the correct provider key and restart backend. Use `HEYGEN_API_KEY` for avatar videos or `OPENAI_API_KEY` for Sora videos. For local testing without either provider, use `mock`.

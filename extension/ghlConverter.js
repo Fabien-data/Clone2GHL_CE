@@ -42,12 +42,25 @@ const GHLConverter = (() => {
     // Remove on* event handlers
     html = html.replace(/\s+on\w+="[^"]*"/gi, '');
     html = html.replace(/\s+on\w+='[^']*'/gi, '');
-    // Remove style imports of Google Fonts (GHL has its own font system)
-    html = html.replace(/<link[^>]*fonts\.googleapis[^>]*>/gi, '');
-    // Remove iframes (except video embeds)
-    html = html.replace(/<iframe(?![^>]*youtube|[^>]*vimeo)[^>]*>[\s\S]*?<\/iframe>/gi, '');
-    // Convert Google Font @import in styles
-    html = html.replace(/@import\s+url\(['"]*https:\/\/fonts\.googleapis\.com[^)]*\)['"]*;?/gi, '');
+    // Keep Google Fonts — they affect visual fidelity; GHL can override fonts later
+    // Remove non-video iframes (tracking pixels, chat widgets, etc.)
+    html = html.replace(/<iframe(?![^>]*(?:youtube|vimeo|loom|wistia))[^>]*>[\s\S]*?<\/iframe>/gi, '');
+    return html;
+  }
+
+  /**
+   * Remove copyright notices, trademark symbols, and legal boilerplate
+   * so cloned pages can be freely customized without IP liability.
+   */
+  function removeCopyrightContent(html) {
+    // © YEAR or © YEAR–YEAR followed by company name or trailing text
+    html = html.replace(/©\s*\d{4}(?:\s*[-–—]\s*\d{4})?\s*[^<]{0,80}/g, '');
+    // "Copyright 2024" patterns
+    html = html.replace(/Copyright\s*©?\s*\d{4}(?:\s*[-–—]\s*\d{4})?\s*[^<]{0,80}/gi, '');
+    // "All Rights Reserved"
+    html = html.replace(/All\s+Rights?\s+Reserved\.?/gi, '');
+    // Trademark / registered / service mark symbols
+    html = html.replace(/[™®℠]/g, '');
     return html;
   }
 
@@ -216,32 +229,40 @@ ${bodyHtml}
     let html = capturedData.html || '';
     const meta = capturedData.meta || {};
 
-    // Step 1: Sanitize
+    // Step 1: Sanitize (removes scripts, event handlers, non-video iframes)
     html = sanitizeHTML(html);
 
-    // Step 2: Extract parts
-    let bodyHtml = extractBody(html);
-    const inlineStyles = extractStyles(html);
+    // Step 2: Remove copyright notices and trademark symbols
+    html = removeCopyrightContent(html);
 
-    // Step 3: Replace forms
+    // Step 3: Extract parts
+    let bodyHtml = extractBody(html);
+
+    // Merge styles: external CSS fetched at capture time (capturedData.styles)
+    // comes first as the base layer; inline <style> tags override on top.
+    const externalStyles = capturedData.styles || '';
+    const inlineStyles = extractStyles(html);
+    const mergedStyles = [externalStyles, inlineStyles].filter(Boolean).join('\n');
+
+    // Step 4: Replace forms with GHL placeholder
     if (replaceForms) {
       bodyHtml = replaceFormsWithGHLPlaceholder(bodyHtml, ghlFormId);
     }
 
-    // Step 4: Replace phone numbers
+    // Step 5: Replace phone numbers with GHL token
     if (replacePhone) {
       bodyHtml = replacePhoneNumbers(bodyHtml);
     }
 
-    // Step 5: Replace business name
+    // Step 6: Replace business name with GHL token
     if (businessName) {
       bodyHtml = replaceBusinessName(bodyHtml, businessName);
     }
 
-    // Step 6: Wrap in GHL-ready template
-    const ghlHtml = wrapInGHLTemplate(bodyHtml, inlineStyles, meta);
+    // Step 7: Wrap in GHL-ready template
+    const ghlHtml = wrapInGHLTemplate(bodyHtml, mergedStyles, meta);
 
-    // Step 7: Build payload
+    // Step 8: Build payload
     const payload = buildGHLPagePayload({
       name: meta.title || 'Cloned Page',
       html: ghlHtml,
@@ -256,16 +277,19 @@ ${bodyHtml}
       stats: {
         originalLength: (capturedData.html || '').length,
         convertedLength: ghlHtml.length,
+        externalCssBytes: externalStyles.length,
         replacementsApplied: [
+          'copyright notices removed',
           replaceForms ? 'forms → GHL placeholder' : null,
           replacePhone ? 'phones → {{location.phone}}' : null,
           businessName ? `"${businessName}" → {{location.name}}` : null,
+          externalStyles.length ? 'external stylesheets inlined' : null,
         ].filter(Boolean),
       },
     };
   }
 
-  return { convert, buildGHLPagePayload, sanitizeHTML, slugify };
+  return { convert, buildGHLPagePayload, sanitizeHTML, removeCopyrightContent, slugify };
 })();
 
 if (typeof module !== 'undefined') module.exports = GHLConverter;

@@ -163,14 +163,38 @@ const DomExtractor = (() => {
    * Returns a structured object for the GHL converter and Funnel Analyzer.
    */
   function extractStructure() {
+    const ctaSelector = [
+      'button',
+      'a.btn',
+      'a.button',
+      'a[href][role="button"]',
+      '[role="button"]',
+      'input[type="submit"]',
+      'input[type="button"]',
+      '[class*="cta"] button',
+      '[class*="cta"] a',
+    ].join(', ');
+
     const headlines = Array.from(document.querySelectorAll('h1, h2, h3'))
       .slice(0, 10)
       .map(el => ({ tag: el.tagName, text: el.textContent.trim(), level: parseInt(el.tagName[1]) }));
 
-    const ctaButtons = Array.from(document.querySelectorAll('button, a.btn, a.button, [class*="cta"], input[type="submit"]'))
-      .slice(0, 10)
-      .map(el => ({ text: el.textContent.trim(), tag: el.tagName, type: el.type || '' }))
-      .filter(b => b.text.length > 0 && b.text.length < 100);
+    const ctaButtons = Array.from(document.querySelectorAll(ctaSelector))
+      .map(el => {
+        const text = (el.textContent || el.value || '').trim();
+        return {
+          text,
+          tag: el.tagName,
+          type: el.type || '',
+          href: el.tagName === 'A' ? el.getAttribute('href') || '' : '',
+        };
+      })
+      .filter(btn => {
+        if (!btn.text || btn.text.length >= 100) return false;
+        if (btn.tag === 'A' && (!btn.href || btn.href === '#')) return false;
+        return true;
+      })
+      .slice(0, 10);
 
     const forms = Array.from(document.querySelectorAll('form')).map(form => ({
       fields: Array.from(form.querySelectorAll('input, select, textarea')).map(f => ({

@@ -11,6 +11,21 @@
 const GHLApi = (() => {
   const BASE_URL = 'https://services.leadconnectorhq.com';
   const API_VERSION = '2021-07-28';
+  const REQUEST_TIMEOUT_MS = 20000;
+  const MAX_RETRIES = 2;
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function shouldRetry(status) {
+    return status === 408 || status === 429 || status >= 500;
+  }
+
+  function validateLocationId(locationId) {
+    if (!locationId || typeof locationId !== 'string') return false;
+    return /^[A-Za-z0-9_-]{8,}$/.test(locationId);
+  }
 
   function headers(apiKey) {
     return {
@@ -21,24 +36,138 @@ const GHLApi = (() => {
     };
   }
 
-  async function request(method, path, apiKey, body = null) {
-    const opts = {
-      method,
-      headers: headers(apiKey),
+  function asArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function normalizeFunnel(item) {
+    if (!item || typeof item !== 'object') return null;
+    const id = item.id || item._id || item.funnelId || item.funnel_id;
+    if (!id) return null;
+    return {
+      id,
+      name: item.name || item.title || item.funnelName || 'Unnamed Funnel',
     };
-    if (body) opts.body = JSON.stringify(body);
+  }
 
-    const resp = await fetch(`${BASE_URL}${path}`, opts);
-    const data = await resp.json().catch(() => ({ error: 'Invalid JSON response' }));
+  function extractFunnelsFromAnyShape(payload) {
+    const candidates = [
+      payload,
+      payload?.data,
+      payload?.data?.data,
+      payload?.result,
+      payload?.results,
+      payload?.response,
+      payload?.response?.data,
+      payload?.payload,
+    ];
 
-    if (!resp.ok) {
-      throw new GHLApiError(
-        data.message || data.error || `HTTP ${resp.status}`,
-        resp.status,
-        data
-      );
+    for (const node of candidates) {
+      if (!node) continue;
+
+      const arraysToTry = [
+        asArray(node),
+        asArray(node.funnels),
+        asArray(node.list),
+        asArray(node.items),
+        asArray(node.records),
+        asArray(node.results),
+        asArray(node.docs),
+        asArray(node.rows),
+      ];
+
+      for (const arr of arraysToTry) {
+        if (!arr.length) continue;
+        const normalized = arr.map(normalizeFunnel).filter(Boolean);
+        if (normalized.length) return normalized;
+      }
     }
-    return data;
+
+    return [];
+  }
+
+  function clampInt(value, fallback, min, max) {
+    const parsed = Number.parseInt(String(value), 10);
+    if (Number.isNaN(parsed)) return fallback;
+    return Math.max(min, Math.min(max, parsed));
+  }
+
+  function buildFunnelListPath(locationId, limit, offset, useLegacySkip = false) {
+    const safeLimit = clampInt(limit, 20, 1, 20);
+    const safeOffset = clampInt(offset, 0, 0, Number.MAX_SAFE_INTEGER);
+    const encodedLocation = encodeURIComponent(locationId || '');
+
+    if (useLegacySkip) {
+      return `/funnels/funnel/list?locationId=${encodedLocation}&limit=${safeLimit}&skip=${safeOffset}`;
+    }
+
+    return `/funnels/funnel/list?locationId=${encodedLocation}&limit=${safeLimit}&offset=${safeOffset}`;
+  }
+
+  async function fetchFunnelsPage(apiKey, locationId, { limit = 20, offset = 0 } = {}) {
+    const primaryPath = buildFunnelListPath(locationId, limit, offset, false);
+    try {
+      return await request('GET', primaryPath, apiKey);
+    } catch (err) {
+      // Backward compatibility for tenants that still expect "skip" instead of "offset".
+      const fallbackPath = buildFunnelListPath(locationId, limit, offset, true);
+      return request('GET', fallbackPath, apiKey);
+    }
+  }
+
+  async function request(method, path, apiKey, body = null) {
+    const trimmedKey = typeof apiKey === 'string' ? apiKey.trim() : '';
+    if (!trimmedKey) {
+      throw new GHLApiError('Missing API key.', 401, null);
+    }
+
+    let lastError;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+      try {
+        const opts = {
+          method,
+          headers: headers(trimmedKey),
+          signal: controller.signal,
+        };
+        if (body) opts.body = JSON.stringify(body);
+
+        const resp = await fetch(`${BASE_URL}${path}`, opts);
+        const data = await resp.json().catch(() => ({ error: 'Invalid JSON response' }));
+
+        if (!resp.ok) {
+          const err = new GHLApiError(
+            data.message || data.error || `HTTP ${resp.status}`,
+            resp.status,
+            data
+          );
+
+          if (attempt < MAX_RETRIES && shouldRetry(resp.status)) {
+            await wait(500 * (attempt + 1));
+            continue;
+          }
+          throw err;
+        }
+
+        return data;
+      } catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES && (err.name === 'AbortError' || shouldRetry(err.status || 0))) {
+          await wait(500 * (attempt + 1));
+          continue;
+        }
+        break;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    if (lastError?.name === 'AbortError') {
+      throw new GHLApiError('Request timed out while contacting GoHighLevel.', 408, null);
+    }
+    throw lastError;
   }
 
   class GHLApiError extends Error {
@@ -60,8 +189,9 @@ const GHLApi = (() => {
   // ─── Funnels ──────────────────────────────────────────────────────────────
 
   /** List all funnels for a location */
-  async function listFunnels(apiKey, locationId, { limit = 20, skip = 0 } = {}) {
-    return request('GET', `/funnels/funnel/list?locationId=${locationId}&limit=${limit}&skip=${skip}`, apiKey);
+  async function listFunnels(apiKey, locationId, { limit = 20, skip = 0, offset = null } = {}) {
+    const finalOffset = offset == null ? skip : offset;
+    return fetchFunnelsPage(apiKey, locationId, { limit, offset: finalOffset });
   }
 
   /**
@@ -100,18 +230,35 @@ const GHLApi = (() => {
 
   /**
    * Update page content (HTML) via the page data endpoint.
+   * Tries the documented body shape first, then a fallback shape used by some
+   * GHL tenants that expect `body` instead of `content.html`.
    * @param {string} apiKey
    * @param {Object} params - { locationId, pageId, html }
    */
   async function updatePageContent(apiKey, params) {
-    return request('PUT', '/funnels/page/data', apiKey, {
-      locationId: params.locationId,
-      id: params.pageId,
-      updatedAt: new Date().toISOString(),
-      content: {
-        html: params.html || '',
-      },
-    });
+    const html = params.html || '';
+    // Primary shape (documented GHL v2 API)
+    try {
+      return await request('PUT', '/funnels/page/data', apiKey, {
+        locationId: params.locationId,
+        id: params.pageId,
+        updatedAt: new Date().toISOString(),
+        content: { html },
+      });
+    } catch (primaryErr) {
+      // Fallback: some tenants use a `body` field at the top level
+      try {
+        return await request('PUT', '/funnels/page/data', apiKey, {
+          locationId: params.locationId,
+          id: params.pageId,
+          updatedAt: new Date().toISOString(),
+          body: html,
+        });
+      } catch {
+        // Re-throw the original error so callers get the real message
+        throw primaryErr;
+      }
+    }
   }
 
   // ─── Websites (alternative to funnels) ───────────────────────────────────
@@ -129,18 +276,19 @@ const GHLApi = (() => {
    * Returns an array of { id, name } objects.
    */
   async function getExistingFunnels(apiKey, locationId) {
-    const data = await request('GET', `/funnels/funnel/list?locationId=${locationId}&limit=50&skip=0`, apiKey);
-    // GHL has returned funnels under different keys across versions
-    const list =
-      data?.funnels ||
-      data?.list ||
-      data?.data?.funnels ||
-      data?.data?.list ||
-      data?.data ||
-      (Array.isArray(data) ? data : []);
-    return list
-      .filter(f => f && f.id)
-      .map(f => ({ id: f.id, name: f.name || 'Unnamed Funnel' }));
+    const firstPage = await fetchFunnelsPage(apiKey, locationId, { limit: 20, offset: 0 });
+    const firstFunnels = extractFunnelsFromAnyShape(firstPage);
+    if (firstFunnels.length) return firstFunnels;
+
+    // Some accounts return data only after the first page token/offset.
+    const secondPage = await fetchFunnelsPage(apiKey, locationId, { limit: 20, offset: 20 })
+      .catch(() => null);
+    const secondFunnels = extractFunnelsFromAnyShape(secondPage);
+    if (secondFunnels.length) return secondFunnels;
+
+    // Final fallback: website objects can include funnel metadata in some tenants.
+    const websites = await listWebsites(apiKey, locationId).catch(() => null);
+    return extractFunnelsFromAnyShape(websites);
   }
 
   /**
@@ -158,6 +306,11 @@ const GHLApi = (() => {
    * @returns {Object} { funnelId, funnelName, pageId, ghlBuilderUrl, success }
    */
   async function pushFunnelToGHL(apiKey, params, onProgress) {
+    if (!apiKey) throw new Error('Missing GHL API key.');
+    if (!validateLocationId(params?.locationId)) {
+      throw new Error('Invalid GHL Location ID format. Please verify your Location ID in Settings.');
+    }
+
     const progress = (step, total, msg) => onProgress && onProgress(step, total, msg);
 
     // ── Step 1: Find an existing funnel to use ────────────────────────────────
@@ -180,6 +333,38 @@ const GHLApi = (() => {
     // ── Step 2: Create a new page inside that funnel ──────────────────────────
     progress(2, 3, `Adding page to funnel "${funnelName}"…`);
 
+    /** Extract page ID from any shape GHL returns */
+    function extractPageId(resp) {
+      if (!resp || typeof resp !== 'object') return null;
+      return (
+        resp?.page?.id ||
+        resp?.data?.page?.id ||
+        resp?.data?.id ||
+        resp?.result?.id ||
+        resp?.id ||
+        null
+      );
+    }
+
+    /** Extract first page from any shape GHL returns for page list */
+    function extractFirstPage(resp) {
+      if (!resp || typeof resp !== 'object') return null;
+      const candidates = [
+        resp?.funnelPages,
+        resp?.pages,
+        resp?.list,
+        resp?.data?.funnelPages,
+        resp?.data?.pages,
+        resp?.data,
+        resp?.results,
+        resp?.items,
+      ];
+      for (const arr of candidates) {
+        if (Array.isArray(arr) && arr.length) return arr[0];
+      }
+      return null;
+    }
+
     let pageId;
     try {
       const pageData = await createFunnelPage(apiKey, {
@@ -187,22 +372,27 @@ const GHLApi = (() => {
         funnelId,
         name: params.pageName || 'Clone2GHL Page',
       });
-      pageId = pageData?.page?.id || pageData?.id;
-      if (!pageId) throw new Error('No page ID in response');
+      pageId = extractPageId(pageData);
+      if (!pageId) throw new Error('No page ID in create response');
     } catch (err) {
-      // createFunnelPage may also be restricted — fall back to first existing page
+      // createFunnelPage may be restricted — fall back to first existing page
       console.warn('Page create failed, falling back to first existing page:', err.message);
-      const pagesResp = await listFunnelPages(apiKey, params.locationId, funnelId);
-      const firstPage = (pagesResp?.pages || pagesResp?.list || pagesResp?.data || [])[0];
-      if (firstPage?.id) {
-        pageId = firstPage.id;
-      } else {
+      try {
+        const pagesResp = await listFunnelPages(apiKey, params.locationId, funnelId);
+        const firstPage = extractFirstPage(pagesResp);
+        if (firstPage?.id) {
+          pageId = firstPage.id;
+        }
+      } catch (listErr) {
+        console.warn('Page list also failed:', listErr.message);
+      }
+      if (!pageId) {
         return {
           funnelId, funnelName,
           pageId: null,
           success: 'html_only',
           ghlBuilderUrl: `https://app.gohighlevel.com/funnels/${funnelId}/builder`,
-          warning: 'Could not create a new page automatically. Open the funnel in GHL builder and paste the downloaded HTML manually.',
+          warning: 'Could not create or find a page automatically. Open the funnel in GHL builder and paste the downloaded HTML manually.',
         };
       }
     }

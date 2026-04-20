@@ -28,6 +28,14 @@
         <span class="nav-icon">🤖</span>
         <span>AI Tools</span>
       </button>
+      <button class="nav-item" data-tab="watchlist">
+        <span class="nav-icon">🕵️</span>
+        <span>Watchlist</span>
+      </button>
+      <button class="nav-item" data-tab="video-gen">
+        <span class="nav-icon">🎬</span>
+        <span>Video Generation</span>
+      </button>
       <button class="nav-item" data-tab="ad-intel">
         <span class="nav-icon">🔍</span>
         <span>Ad Intelligence</span>
@@ -35,6 +43,10 @@
       <button class="nav-item" data-tab="logo-gen">
         <span class="nav-icon">🎨</span>
         <span>Logo Generator</span>
+      </button>
+      <button class="nav-item" data-tab="account">
+        <span class="nav-icon">👤</span>
+        <span>My Account</span>
       </button>
       <button class="nav-item" data-tab="settings">
         <span class="nav-icon">⚙️</span>
@@ -47,6 +59,22 @@
         <div class="plan-name">Free Plan</div>
         <div class="plan-credits" id="sidebar-credits">2 clones remaining</div>
         <button class="btn-upgrade" id="btn-upgrade-sidebar">Upgrade →</button>
+      </div>
+      <div id="devmode-badge" style="display:none; font-size:10px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); border-radius:4px; padding:2px 8px; margin-top:6px; text-align:center;">⚡ DEV MODE — Unlimited</div>
+      <label style="margin-top:6px; font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-muted, #9CA3AF);">
+        <input type="checkbox" id="sidebar-devmode-toggle">
+        <span>Dev Mode (unlimited clones)</span>
+      </label>
+      <!-- Owner access entry — shown only when not in owner plan -->
+      <div id="owner-entry" style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+        <button id="btn-owner-login" style="background:none; border:none; padding:0; font-size:11px; color:#6B7280; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px;">
+          🔑 <span>Owner Access</span>
+        </button>
+      </div>
+      <!-- Owner badge — shown only when in owner plan -->
+      <div id="owner-badge" style="display:none; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+        <div style="font-size:10px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); border-radius:4px; padding:2px 8px; text-align:center; margin-bottom:6px;">👑 OWNER — Unlimited</div>
+        <button id="btn-owner-lock" style="background:none; border:none; padding:0; font-size:11px; color:#6B7280; cursor:pointer; font-family:inherit;">🔒 Lock owner access</button>
       </div>
     </div>
   </aside>
@@ -67,6 +95,56 @@
           ⚡ Clone New Page
         </button>
       </div>
+
+      <!-- Bulk Clone Section -->
+      <details class="bulk-clone-section" id="bulk-clone-section">
+        <summary class="bulk-clone-toggle">
+          <span>⚡ Bulk Clone</span>
+          <span class="bulk-clone-hint">Clone up to 20 URLs at once</span>
+          <span class="bulk-toggle-arrow">▾</span>
+        </summary>
+        <div class="bulk-clone-body">
+          <div class="form-row" style="margin-top:14px;">
+            <label class="field-label">URLs to Clone (one per line, max 20)</label>
+            <textarea class="field-input" id="bulk-urls-input" rows="5"
+              placeholder="https://competitor1.com/landing&#10;https://competitor2.com/offer&#10;https://example.com/page"></textarea>
+          </div>
+          <div class="form-row-2" style="margin-top:10px;">
+            <div>
+              <label class="field-label">Niche (applies to all)</label>
+              <select class="field-select" id="bulk-niche-select">
+                <option value="">Auto-detect per page</option>
+                <option value="plumber">Plumber</option>
+                <option value="electrician">Electrician</option>
+                <option value="hvac">HVAC</option>
+                <option value="roofing">Roofing</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="landscaping">Landscaping</option>
+                <option value="solar">Solar</option>
+                <option value="real_estate">Real Estate</option>
+                <option value="gym">Gym / Fitness</option>
+                <option value="dental">Dental</option>
+                <option value="coaching">Coaching</option>
+                <option value="insurance">Insurance</option>
+                <option value="legal">Legal</option>
+                <option value="marketing_agency">Marketing Agency</option>
+                <option value="weight_loss">Weight Loss</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+              <button class="btn-primary" id="btn-bulk-clone" style="width:100%;">⚡ Clone All</button>
+            </div>
+          </div>
+          <div id="bulk-progress-wrap" style="display:none; margin-top:14px;">
+            <div class="bulk-progress-label" id="bulk-progress-label">Cloning 0 of 0…</div>
+            <div class="bulk-progress-track">
+              <div class="bulk-progress-fill" id="bulk-progress-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <div id="bulk-url-status-list" style="margin-top:10px; display:none;"></div>
+          <div class="tool-status" id="bulk-clone-status"></div>
+        </div>
+      </details>
 
       <!-- Empty state -->
       <div class="empty-state" id="funnels-empty">
@@ -131,7 +209,7 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">AI Tools</h1>
-          <p class="page-sub">Optimize, rewrite, and analyze funnels with GPT-4o</p>
+          <p class="page-sub">Optimize, rewrite, analyze, and generate videos with OpenAI</p>
         </div>
       </div>
 
@@ -209,6 +287,326 @@
           <div class="headlines-list" id="headlines-list" style="display:none;"></div>
         </div>
 
+        <!-- Tool: AI Video Generator -->
+        <div class="tool-card">
+          <div class="tool-icon">🎞️</div>
+          <h3 class="tool-title">AI Video Generator</h3>
+          <p class="tool-desc">Write a prompt and generate a Sora 2 Pro video for your website or funnel.</p>
+          <div class="tool-form">
+            <textarea class="field-input" id="ai-video-prompt" rows="5" placeholder="Describe the video: offer, audience, setting, motion, style, and any brand details."></textarea>
+            <div class="form-row-2">
+              <div>
+                <label class="field-label">Duration</label>
+                <select class="field-select" id="ai-video-duration">
+                  <option value="8">8 seconds</option>
+                  <option value="16" selected>16 seconds</option>
+                  <option value="20">20 seconds</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Format</label>
+                <select class="field-select" id="ai-video-size">
+                  <option value="1920x1080" selected>Website Hero (1920x1080)</option>
+                  <option value="1280x720">Landscape (1280x720)</option>
+                  <option value="1080x1920">Vertical (1080x1920)</option>
+                  <option value="1024x1024">Square (1024x1024)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-ai-video-generate">🎬 Generate Video</button>
+          </div>
+          <div class="field-hint">Uses OpenAI Sora 2 Pro through your backend API key. The job appears in Video Generation once queued.</div>
+          <div class="tool-status" id="ai-video-status"></div>
+        </div>
+
+        <!-- Tool: Email Sequence Generator -->
+        <div class="tool-card">
+          <div class="tool-icon">📧</div>
+          <h3 class="tool-title">Email Sequence Generator</h3>
+          <p class="tool-desc">Generate a nurture email sequence for any niche. Works offline with smart templates, or AI-powered when signed in.</p>
+          <div class="tool-form">
+            <select class="field-select" id="email-seq-funnel">
+              <option value="">No funnel (manual inputs below)</option>
+            </select>
+            <select class="field-select" id="email-seq-niche">
+              <option value="general">General</option>
+              <option value="plumber">Plumber</option>
+              <option value="electrician">Electrician</option>
+              <option value="hvac">HVAC</option>
+              <option value="roofing">Roofing</option>
+              <option value="cleaning">Cleaning</option>
+              <option value="landscaping">Landscaping</option>
+              <option value="solar">Solar</option>
+              <option value="real_estate">Real Estate</option>
+              <option value="gym">Gym / Fitness</option>
+              <option value="dental">Dental</option>
+              <option value="coaching">Coaching</option>
+              <option value="insurance">Insurance</option>
+              <option value="legal">Legal</option>
+              <option value="marketing_agency">Marketing Agency</option>
+              <option value="weight_loss">Weight Loss</option>
+            </select>
+            <input type="text" class="field-input" id="email-seq-offer" placeholder="Your offer (e.g. free inspection, 30-day trial)">
+            <div class="form-row-2">
+              <div>
+                <label class="field-label">Emails</label>
+                <select class="field-select" id="email-seq-count">
+                  <option value="3">3 emails</option>
+                  <option value="5" selected>5 emails</option>
+                  <option value="7">7 emails</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Tone</label>
+                <select class="field-select" id="email-seq-tone">
+                  <option value="professional">Professional</option>
+                  <option value="friendly">Friendly</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="story">Story-based</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-gen-email-seq">📧 Generate Sequence</button>
+          </div>
+          <div class="tool-status" id="email-seq-status"></div>
+          <div class="email-seq-list" id="email-seq-list" style="display:none;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ Watchlist Tab ═════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-watchlist">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Competitor Watchlist</h1>
+          <p class="page-sub">Monitor competitor pages and get alerted when conversion elements change</p>
+        </div>
+        <button class="btn-primary" id="btn-watchlist-check-all">🔄 Check All</button>
+      </div>
+
+      <!-- Add URL form -->
+      <div class="settings-card" style="margin-bottom:20px;">
+        <div class="settings-card-header">
+          <span class="settings-icon">➕</span>
+          <div>
+            <div class="settings-card-title">Add Competitor URL</div>
+            <div class="settings-card-sub">Paste any landing page or funnel to monitor</div>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="field-label">URL</label>
+            <input type="url" class="field-input" id="watchlist-url-input" placeholder="https://competitor.com/landing">
+          </div>
+          <div>
+            <label class="field-label">Label</label>
+            <input type="text" class="field-input" id="watchlist-label-input" placeholder="Competitor Name">
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:10px;">
+          <label class="field-label">Niche</label>
+          <select class="field-select" id="watchlist-niche-input">
+            <option value="general">General</option>
+            <option value="plumber">Plumber</option>
+            <option value="electrician">Electrician</option>
+            <option value="hvac">HVAC</option>
+            <option value="roofing">Roofing</option>
+            <option value="cleaning">Cleaning</option>
+            <option value="landscaping">Landscaping</option>
+            <option value="solar">Solar</option>
+            <option value="real_estate">Real Estate</option>
+            <option value="gym">Gym / Fitness</option>
+            <option value="dental">Dental</option>
+            <option value="coaching">Coaching</option>
+            <option value="insurance">Insurance</option>
+            <option value="legal">Legal</option>
+            <option value="marketing_agency">Marketing Agency</option>
+            <option value="weight_loss">Weight Loss</option>
+          </select>
+        </div>
+        <div class="settings-actions">
+          <button class="btn-primary" id="btn-watchlist-add">Add to Watchlist</button>
+        </div>
+        <div class="tool-status" id="watchlist-add-status"></div>
+      </div>
+
+      <!-- Watched URL cards -->
+      <div id="watchlist-grid" class="watchlist-grid"></div>
+      <div id="watchlist-empty" class="empty-state" style="display:none;">
+        <div class="empty-icon">🕵️</div>
+        <h3>No URLs watched yet</h3>
+        <p>Add competitor URLs above to start tracking their headlines, CTAs, and conversion score.</p>
+      </div>
+    </div>
+
+    <!-- ═══ Video Generation Tab ═════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-video-gen">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Video Generation</h1>
+          <p class="page-sub">Generate short avatar videos or OpenAI Sora videos from a prompt using your backend queue</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🎥</span>
+            <div>
+              <div class="settings-card-title">Create Video Job</div>
+              <div class="settings-card-sub">Queue a video and monitor progress below</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Linked Funnel (Optional)</label>
+            <select class="field-select" id="video-funnel-select">
+              <option value="">No linked funnel (optional)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Video Script / Prompt</label>
+            <textarea class="field-input" id="video-script" rows="5" placeholder="Write a script for avatar video generation, or a prompt for OpenAI Sora generation..."></textarea>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Script Niche</label>
+              <input type="text" class="field-input" id="video-script-niche" placeholder="e.g. plumber">
+            </div>
+            <div>
+              <label class="field-label">Offer</label>
+              <input type="text" class="field-input" id="video-script-offer" placeholder="e.g. same-day emergency service">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Tone</label>
+              <select class="field-select" id="video-script-tone">
+                <option value="professional">Professional</option>
+                <option value="confident">Confident</option>
+                <option value="friendly">Friendly</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Duration (seconds)</label>
+              <select class="field-select" id="video-script-duration">
+                <option value="15">15</option>
+                <option value="30" selected>30</option>
+                <option value="45">45</option>
+                <option value="60">60</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">CTA Line</label>
+            <input type="text" class="field-input" id="video-script-cta" placeholder="e.g. Book your slot now">
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Avatar</label>
+              <select class="field-select" id="video-avatar">
+                <option value="default">Default</option>
+                <option value="alex">Alex</option>
+                <option value="maya">Maya</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Voice</label>
+              <select class="field-select" id="video-voice">
+                <option value="default">Default</option>
+                <option value="male_en_us">Male (US)</option>
+                <option value="female_en_us">Female (US)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Template</label>
+            <select class="field-select" id="video-template">
+              <option value="short_promo">Short Promo (30s)</option>
+              <option value="explainer">Explainer</option>
+              <option value="testimonial">Testimonial Style</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Provider</label>
+            <select class="field-select" id="video-provider">
+              <option value="mock" selected>Mock / Demo Mode (no API keys needed)</option>
+              <option value="heygen">HeyGen (Production)</option>
+              <option value="openai">OpenAI Sora 2 Pro</option>
+            </select>
+          </div>
+
+          <div class="tool-status info" id="video-provider-status" style="display:none;"></div>
+          <div id="video-demo-banner" class="tool-status" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10B981; margin-top:8px;">
+            ✅ Demo Mode active — video jobs complete in ~3 seconds using a sample clip. No API key required.
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-secondary" id="btn-video-script">✨ Generate Script</button>
+            <button class="btn-primary" id="btn-video-generate">🎬 Generate Video</button>
+            <button class="btn-secondary" id="btn-video-refresh">Refresh Jobs</button>
+          </div>
+
+          <div class="video-script-preview" id="video-script-preview" style="display:none;">
+            <div class="section-label">Script Preview</div>
+            <div class="video-script-box" id="video-script-preview-body"></div>
+            <div class="video-script-meta" id="video-script-preview-meta"></div>
+            <div class="settings-actions" style="margin-top: 10px;">
+              <button class="btn-primary" id="btn-video-apply-script">Use This Script</button>
+            </div>
+          </div>
+
+          <div class="tool-status" id="video-status"></div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">📋</span>
+            <div>
+              <div class="settings-card-title">Recent Video Jobs</div>
+              <div class="settings-card-sub">Track job states and preview completed videos</div>
+            </div>
+          </div>
+
+          <div class="activity-table-wrap">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>Created</th>
+                  <th>Job ID</th>
+                  <th>Status</th>
+                  <th>Preview</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="video-jobs-body">
+                <tr><td colspan="5" class="activity-empty">Sign in to load video jobs.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Inline Video Player + Attach to Funnel -->
+          <div id="video-preview-wrap" style="display:none; margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div class="section-label">Video Preview</div>
+            <video id="video-preview-player" controls style="width:100%; max-width:640px; border-radius:8px; background:#000; margin-top:8px;"></video>
+            <div style="margin-top:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <select class="field-select" id="video-attach-funnel-select" style="flex:1; min-width:200px; max-width:300px;">
+                <option value="">Attach to funnel…</option>
+              </select>
+              <button class="btn-secondary" id="btn-video-attach-funnel">📎 Attach to Funnel</button>
+            </div>
+            <div class="tool-status" id="video-attach-status" style="margin-top:8px;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -336,6 +734,189 @@
       <div class="tool-status" id="logo-status"></div>
     </div>
 
+    <!-- ═══ My Account Tab ════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-account">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">My Account</h1>
+          <p class="page-sub">Profile, preferences, usage stats and activity</p>
+        </div>
+        <button class="btn-secondary" id="btn-refresh-profile">↻ Refresh</button>
+      </div>
+
+      <div class="settings-grid">
+
+        <!-- Usage Overview -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">📈</span>
+            <div>
+              <div class="settings-card-title">Usage Overview</div>
+              <div class="settings-card-sub">Current billing period at a glance</div>
+            </div>
+          </div>
+          <div class="analytics-grid" style="margin-top:12px;">
+            <div class="analytics-card">
+              <div class="analytics-label">Plan</div>
+              <div class="analytics-value" id="acct-plan-name">—</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-label">Clones This Month</div>
+              <div class="analytics-value" id="acct-clones-used">—</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-label">Videos Generated</div>
+              <div class="analytics-value" id="acct-videos">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile + Preferences -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">👤</span>
+            <div>
+              <div class="settings-card-title">Personal Dashboard</div>
+              <div class="settings-card-sub">Manage your profile, preferences, and account security</div>
+            </div>
+          </div>
+
+          <div class="settings-status" id="profile-status-badge"></div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Display Name</label>
+              <input type="text" class="field-input" id="profile-display-name" placeholder="Your name">
+            </div>
+            <div>
+              <label class="field-label">Company</label>
+              <input type="text" class="field-input" id="profile-company" placeholder="Company name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Timezone</label>
+            <input type="text" class="field-input" id="profile-timezone" placeholder="UTC">
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-primary" id="btn-save-profile">Save Profile</button>
+          </div>
+
+          <div class="section-label">Password</div>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Current Password</label>
+              <input type="password" class="field-input" id="profile-current-password" placeholder="Current password">
+            </div>
+            <div>
+              <label class="field-label">New Password</label>
+              <input type="password" class="field-input" id="profile-new-password" placeholder="Minimum 8 characters">
+            </div>
+          </div>
+          <div class="settings-actions" style="margin-top:10px;">
+            <button class="btn-secondary" id="btn-change-password">Change Password</button>
+          </div>
+
+          <div class="section-label">Preferences</div>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Theme</label>
+              <select class="field-select" id="pref-theme">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Default Niche</label>
+              <select class="field-select" id="pref-default-niche">
+                <option value="general">General</option>
+                <option value="plumber">Plumber</option>
+                <option value="electrician">Electrician</option>
+                <option value="hvac">HVAC</option>
+                <option value="roofing">Roofing</option>
+                <option value="cleaning">Cleaning</option>
+                <option value="landscaping">Landscaping</option>
+                <option value="solar">Solar</option>
+                <option value="real_estate">Real Estate</option>
+                <option value="gym">Gym / Fitness</option>
+                <option value="dental">Dental</option>
+                <option value="coaching">Coaching</option>
+                <option value="insurance">Insurance</option>
+                <option value="legal">Legal</option>
+                <option value="marketing_agency">Marketing Agency</option>
+                <option value="weight_loss">Weight Loss</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="toggle-row" for="pref-notifications">
+            <input type="checkbox" id="pref-notifications">
+            <span>Enable in-dashboard notifications</span>
+          </label>
+
+          <div class="settings-actions" style="margin-top:10px;">
+            <button class="btn-primary" id="btn-save-preferences">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- Analytics + Activity -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">📊</span>
+            <div>
+              <div class="settings-card-title">Analytics & Activity</div>
+              <div class="settings-card-sub">Track funnel operations and usage behavior</div>
+            </div>
+          </div>
+
+          <div class="settings-status" id="analytics-status-badge"></div>
+
+          <div class="settings-actions" style="margin-top:0;">
+            <button class="btn-secondary" id="btn-load-analytics">Refresh Analytics</button>
+            <button class="btn-secondary" id="btn-load-activity">Load Activity</button>
+          </div>
+
+          <div class="analytics-grid" id="analytics-grid">
+            <div class="analytics-card">
+              <div class="analytics-label">Total Funnels</div>
+              <div class="analytics-value" id="analytics-total-funnels">-</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-label">Clone Events</div>
+              <div class="analytics-value" id="analytics-clones">-</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-label">AI Optimizations</div>
+              <div class="analytics-value" id="analytics-optimizations">-</div>
+            </div>
+            <div class="analytics-card">
+              <div class="analytics-label">GHL Exports</div>
+              <div class="analytics-value" id="analytics-exports">-</div>
+            </div>
+          </div>
+
+          <div class="section-label">Recent Activity</div>
+          <div class="activity-table-wrap">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Action</th>
+                  <th>Resource</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="activity-table-body">
+                <tr><td colspan="4" class="activity-empty">No activity loaded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ═══ Settings Tab ══════════════════════════════════════════════════════ -->
     <div class="tab-content" id="tab-settings">
       <div class="page-header">
@@ -379,29 +960,41 @@
           </div>
         </div>
 
-        <!-- OpenAI Connection -->
+        <!-- Backend Auth + Sync -->
         <div class="settings-card">
           <div class="settings-card-header">
-            <span class="settings-icon">🤖</span>
+            <span class="settings-icon">☁</span>
             <div>
-              <div class="settings-card-title">OpenAI API Key</div>
-              <div class="settings-card-sub">Required for AI copy optimization and logo generation</div>
+              <div class="settings-card-title">Cloud Backend</div>
+              <div class="settings-card-sub">Auth, usage limits, funnel sync, and Stripe billing</div>
             </div>
           </div>
-          <div class="settings-status" id="openai-status-badge"></div>
+          <div class="settings-status" id="backend-status-badge"></div>
 
           <div class="form-row">
-            <label class="field-label">API Key</label>
-            <div class="input-row">
-              <input type="password" class="field-input" id="openai-api-key" placeholder="sk-…">
-              <button class="btn-icon" id="toggle-openai-key" title="Show/hide">👁</button>
-            </div>
-            <p class="field-hint">Get from platform.openai.com → API Keys. Requires billing enabled.</p>
+            <label class="field-label">Backend API Base URL</label>
+            <input type="text" class="field-input" id="backend-api-base" placeholder="http://localhost:8080">
           </div>
 
-          <div class="settings-actions">
-            <button class="btn-primary" id="btn-validate-openai">Test Key</button>
-            <button class="btn-secondary" id="btn-save-openai">Save</button>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Email</label>
+              <input type="email" class="field-input" id="backend-auth-email" placeholder="you@example.com">
+            </div>
+            <div>
+              <label class="field-label">Password</label>
+              <input type="password" class="field-input" id="backend-auth-password" placeholder="Minimum 8 characters">
+            </div>
+          </div>
+
+          <div class="settings-actions" style="margin-top:12px;">
+            <button class="btn-secondary" id="btn-backend-register">Register</button>
+            <button class="btn-primary" id="btn-backend-login">Sign In</button>
+            <button class="btn-secondary" id="btn-backend-logout">Sign Out</button>
+          </div>
+          <div class="settings-actions" style="margin-top:10px;">
+            <button class="btn-secondary" id="btn-backend-usage">Refresh Usage</button>
+            <button class="btn-secondary" id="btn-backend-sync">Sync Funnels</button>
           </div>
         </div>
 
@@ -421,33 +1014,48 @@
               <div class="pricing-tier">Free</div>
               <div class="pricing-price">$0</div>
               <div class="pricing-features">
-                <div>✓ 2 clones/month</div>
-                <div>✗ No AI optimization</div>
+                <div>✓ 6 clones/month</div>
+                <div>✓ Basic AI optimization</div>
                 <div>✗ No funnel library</div>
+                <div>✗ No logo generation</div>
               </div>
+            </div>
+            <div class="pricing-card">
+              <div class="pricing-tier">Starter</div>
+              <div class="pricing-price">$27<span>/mo</span></div>
+              <div class="pricing-features">
+                <div>✓ 24 clones/month</div>
+                <div>✓ Basic AI rewrite</div>
+                <div>✓ Standard funnel access</div>
+                <div>✗ No logo generation</div>
+              </div>
+              <button class="btn-secondary btn-full" id="btn-upgrade-starter">Upgrade to Starter</button>
             </div>
             <div class="pricing-card featured">
               <div class="pricing-badge">Most Popular</div>
               <div class="pricing-tier">Pro</div>
-              <div class="pricing-price">$47<span>/mo</span></div>
+              <div class="pricing-price">$97<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ Unlimited cloning</div>
+                <div>✓ 300 clones/month</div>
                 <div>✓ Full AI optimizer</div>
+                <div>✓ 50 logo generations/mo</div>
                 <div>✓ Funnel library</div>
                 <div>✓ Ad intelligence</div>
               </div>
-              <button class="btn-primary btn-full">Upgrade to Pro</button>
+              <button class="btn-primary btn-full" id="btn-upgrade-pro">Upgrade to Pro</button>
             </div>
             <div class="pricing-card">
               <div class="pricing-tier">Agency</div>
-              <div class="pricing-price">$97<span>/mo</span></div>
+              <div class="pricing-price">$199<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ Everything in Pro</div>
+                <div>✓ Unlimited cloning</div>
+                <div>✓ 200 logo generations/mo</div>
+                <div>✓ Full AI suite</div>
                 <div>✓ Team access</div>
-                <div>✓ White-label</div>
+                <div>✓ Priority support</div>
                 <div>✓ DFY discounts</div>
               </div>
-              <button class="btn-secondary btn-full">Upgrade to Agency</button>
+              <button class="btn-secondary btn-full" id="btn-upgrade-agency">Upgrade to Agency</button>
             </div>
           </div>
         </div>
@@ -467,6 +1075,63 @@
       <div class="modal-body" id="modal-body">
         <!-- Populated by JS -->
       </div>
+    </div>
+  </div>
+
+  <!-- ─── Visual Editor Overlay ────────────────────────────────────────── -->
+  <div id="visual-editor" class="editor-overlay" style="display:none;">
+
+    <!-- Header Bar -->
+    <div class="editor-header">
+      <div class="editor-header-left">
+        <button class="editor-btn-back" id="editor-btn-close">← Back</button>
+        <span class="editor-title" id="editor-funnel-name">Customizing Funnel</span>
+      </div>
+      <div class="editor-header-center">
+        <div class="editor-unsaved" id="editor-unsaved" style="display:none;">● Unsaved changes</div>
+      </div>
+      <div class="editor-header-right">
+        <button class="btn-secondary editor-btn-sm" id="editor-btn-undo" title="Undo last change">↩ Undo</button>
+        <button class="btn-secondary editor-btn-sm" id="editor-btn-reset">Reset All</button>
+        <button class="btn-primary editor-btn-sm" id="editor-btn-save">Save Changes</button>
+        <button class="btn-primary editor-btn-sm" id="editor-btn-push">→ Push to GHL</button>
+      </div>
+    </div>
+
+    <!-- Body: Sidebar + Preview -->
+    <div class="editor-body">
+
+      <!-- Left Panel Sidebar -->
+      <aside class="editor-sidebar">
+        <nav class="editor-panel-tabs">
+          <button class="editor-tab active" data-panel="brand">🏢 Brand</button>
+          <button class="editor-tab" data-panel="copyright">⚠️ Copyright</button>
+          <button class="editor-tab" data-panel="text">✏️ Text</button>
+          <button class="editor-tab" data-panel="images">🖼️ Images</button>
+          <button class="editor-tab" data-panel="colors">🎨 Colors</button>
+          <button class="editor-tab" data-panel="fonts">🔤 Fonts</button>
+        </nav>
+        <div class="editor-panel-content" id="editor-panel-content">
+          <div class="editor-loading">Loading...</div>
+        </div>
+      </aside>
+
+      <!-- Right: Live Preview -->
+      <div class="editor-preview-wrap">
+        <div class="editor-preview-toolbar">
+          <span class="editor-preview-label">Live Preview</span>
+          <div class="editor-device-btns">
+            <button class="editor-device-btn active" data-device="desktop" title="Desktop (full width)">🖥</button>
+            <button class="editor-device-btn" data-device="tablet" title="Tablet (768px)">📱</button>
+            <button class="editor-device-btn" data-device="mobile" title="Mobile (375px)">📲</button>
+          </div>
+        </div>
+        <div class="editor-preview-container" id="editor-preview-container">
+          <iframe id="editor-iframe" class="editor-iframe device-desktop"
+            sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+      </div>
+
     </div>
   </div>
 
