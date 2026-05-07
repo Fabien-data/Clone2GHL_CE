@@ -17,11 +17,11 @@ This Privacy Policy explains how we collect, use, store, and protect your inform
 
 ### A. Data You Provide Directly
 
-**API Credentials:**
-- GoHighLevel API keys
-- OpenAI API keys
-- HeyGen API keys (if using video generation)
-- These are entered by you in the Settings tab and used to authenticate with external services
+**API Credentials and Account Access:**
+- GoHighLevel API key and location ID
+- OpenAI API key
+- Clone2GHL backend sign-in email and auth token
+- Your password may be transmitted to the Clone2GHL backend only during sign-in or registration and is not stored by the extension after authentication
 
 **Cloned Webpage Content:**
 - When you click "Clone This Page," the extension captures:
@@ -35,13 +35,13 @@ This Privacy Policy explains how we collect, use, store, and protect your inform
 - Niche/industry selection (e.g., Plumber, Electrician, Coach, etc.)
 - Plan type (Free, Pro, Agency)
 - Dashboard settings and preferences
-- Saved funnels and templates
+- Saved funnels, watchlist entries, and templates
 
 ### B. Data Collected Automatically
 
 **Extension Usage & Behavior:**
 - Which dashboard tabs you access
-- Whether you clone pages, use AI tools, or export to GHL
+- Whether you clone pages, use AI tools, export to GHL, sync with backend, or create video jobs
 - Funnel Intelligence analysis results (generated locally)
 - Error logs (if features fail)
 
@@ -57,10 +57,11 @@ This Privacy Policy explains how we collect, use, store, and protect your inform
 
 ### A. Core Functionality
 - **Cloning:** Your data is used to preserve and recreate page layouts within the GHL ecosystem
-- **AI Optimization:** Your copy (headlines, CTAs, body text) is processed by OpenAI's GPT-4o to generate improved versions in your selected niche
-- **Logo Generation:** Your text prompts are sent to OpenAI's DALL-E 3 to generate logos
-- **Video Generation:** Video generation parameters are sent to HeyGen API (if enabled)
+- **AI Optimization:** Your copy (headlines, CTAs, body text) may be processed by OpenAI directly or by the Clone2GHL backend, depending on the feature you choose
+- **Logo Generation:** Your text prompts are sent to OpenAI to generate logo images
+- **Video Generation:** Video prompts/scripts and related settings may be sent to the Clone2GHL backend, which can use OpenAI, HeyGen, or a configured provider to fulfill the request
 - **Export to GHL:** Cloned funnel data is exported to your GoHighLevel account via their official REST API
+- **Cloud Features:** If you sign into the Clone2GHL backend, account state, usage information, sync requests, and backend workflow data are processed by that backend
 
 ### B. Service Improvement
 - We do NOT use your data to improve our algorithms, train models, or perform analytics
@@ -75,10 +76,10 @@ This Privacy Policy explains how we collect, use, store, and protect your inform
 
 ### A. Browser Storage (Local)
 **What's Stored:**
-- API keys (encrypted using Chrome's encrypted storage mechanism)
+- GoHighLevel API key, OpenAI API key, and backend auth token (encrypted in extension storage)
 - Cloned webpage HTML and CSS
 - User preferences (niche, plan, dashboard settings)
-- Saved funnels and template library
+- Saved funnels, watchlist entries, template/library data, and related metadata
 
 **Where It's Stored:**
 - Locally on your device in Chrome's `chrome-extension://` storage
@@ -90,10 +91,12 @@ This Privacy Policy explains how we collect, use, store, and protect your inform
 - If you uninstall the extension, all stored data is automatically deleted
 
 ### B. External Storage (Optional)
-**When You Use Export Features:**
+**When You Use Export / AI / Backend Features:**
 - Cloned funnel HTML is **sent to GoHighLevel's servers** when you click "Push to GHL" (at your request)
-- Copy optimization requests are **sent to OpenAI's servers** when you click "Optimize with AI"
+- Copy optimization requests may be **sent to OpenAI's servers** or the **Clone2GHL backend** when you click an AI action
 - Logo generation requests are **sent to OpenAI's servers** when you generate a logo
+- Video generation requests may be **sent to the Clone2GHL backend**, which may then communicate with OpenAI, HeyGen, or another configured provider
+- Sign-in, sync, usage refresh, and backend workflow requests are **sent to the Clone2GHL backend** only when you explicitly use those features
 - **These are NOT automatic.** Data is only sent when you explicitly trigger these actions.
 
 ---
@@ -105,21 +108,21 @@ We do NOT:
 - Sell or rent your data to third parties
 - Share your data with marketers, advertisers, or data brokers
 - Use your cloned pages for our own benefit or training
-- Store your data on our servers (extensions do not have persistent backend storage by default)
+- Use your data for advertising or profiling
 
 ### B. Third-Party Data Processing
 When you use the following features, data is shared directly with these services **at your request**:
 
 | Service | Data Shared | Purpose | Privacy Link |
 |---------|------------|---------|--------------|
-| GoHighLevel API | Cloned HTML, form data | Create funnel in your GHL account | [GHL Privacy Policy](https://gohighlevel.com/privacy-policy) |
-| OpenAI (GPT-4o) | Copy text (headlines, CTAs, body) | AI copy optimization | [OpenAI Privacy Policy](https://openai.com/privacy/) |
-| OpenAI (DALL-E 3) | Text prompt | Generate logo from description | [OpenAI Privacy Policy](https://openai.com/privacy/) |
-| HeyGen | Video parameters | Generate promo video | [HeyGen Privacy Policy](https://www.heygen.com/privacy-policy) |
+| GoHighLevel API | Cloned HTML, export data | Create funnel in your GHL account | [GHL Privacy Policy](https://gohighlevel.com/privacy-policy) |
+| OpenAI | Copy text, prompts, logo requests | Direct AI optimization and image generation | [OpenAI Privacy Policy](https://openai.com/privacy/) |
+| Clone2GHL Backend | Account email, auth/session data, optional sync and workflow payloads | Account features, sync, usage, and backend workflows | [Support URL to be added] |
+| Optional backend video provider (for example HeyGen) | Video prompts or scripts routed through backend | Generate video output when backend provider is enabled | [Provider privacy policy, if applicable] |
 
 **Important:** You control these sharing decisions. You must:
-1. Provide your API keys (indicating consent to use that service)
-2. Click "Optimize," "Export," or "Generate" buttons (triggering data transmission)
+1. Provide your API keys or sign into the backend (indicating consent to use that service)
+2. Click "Optimize," "Export," "Generate," "Sync," or another workflow action (triggering data transmission)
 
 We recommend reviewing the privacy policies of these services before connecting your API keys.
 
@@ -137,10 +140,10 @@ We recommend reviewing the privacy policies of these services before connecting 
 - Cannot access other extensions' data, browser history, or cookies from other sites
 - Content Security Policy (`script-src 'self'; object-src 'self'`) prevents inline script injection
 
-### C. No Remote Backend
-- Clone2GHL does NOT have a persistent backend database for user data
-- All data storage is local to your browser
-- We cannot access your clones, API keys, or settings remotely
+### C. Optional Backend Integration
+- Clone2GHL supports an optional backend for account, usage, sync, and video workflows
+- If you do not sign in, those backend features are not used
+- If you do sign in, the backend can process the data needed to fulfill the workflow you requested
 
 ---
 
@@ -185,7 +188,7 @@ If you don't want data synced across your Chrome devices:
 
 Clone2GHL is not intended for children under 13. We do not knowingly collect data from children under 13. If we become aware of such collection, we will delete it immediately.
 
-If you believe we have collected data from a child, contact us immediately at [support email].
+If you believe we have collected data from a child, contact us immediately at wazwide@gmail.com.
 
 ---
 
@@ -221,9 +224,9 @@ Your continued use of Clone2GHL after changes constitutes acceptance of the upda
 If you have questions about this Privacy Policy, wish to exercise your rights, or believe your data has been mishandled:
 
 **Contact Information:**
-- Email: [support email to be added]
-- Website: [support website to be added]
-- Extension Support: [link to support page]
+- Email: wazwide@gmail.com
+- Website: https://preview-1777215622669307854.vibepreview.com/
+- Extension Support: https://preview-1777215622669307854.vibepreview.com/
 
 For GDPR, CCPA, or other regulatory requests, contact us with:
 - Your name and email

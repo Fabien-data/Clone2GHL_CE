@@ -11,8 +11,8 @@
 
 ### ✅ Step 1: Extension Package
 
-- [ ] ZIP file created: `Clone2GHL_v1.0.1.zip`
-- [ ] Location: Root of project folder (parent of `/extension`)
+- [ ] ZIP file created: `webstore-kit/Clone2GHL_v1.0.1_webstore.zip`
+- [ ] Location: `webstore-kit/`
 - [ ] Size: Verified reasonable size (≤200MB)
 - [ ] Contents verified: manifest.json at root (not nested in extension/ folder)
 - [ ] All required files present:
@@ -28,7 +28,7 @@
 **Command to verify ZIP contents:**
 ```bash
 # On Windows PowerShell:
-Expand-Archive -Path Clone2GHL_v1.0.1.zip -DestinationPath ./verify
+Expand-Archive -Path webstore-kit/Clone2GHL_v1.0.1_webstore.zip -DestinationPath ./verify
 Get-ChildItem ./verify | head -20  # Should show manifest.json, popup.html, etc.
 ```
 
@@ -126,23 +126,23 @@ Get-ChildItem ./verify | head -20  # Should show manifest.json, popup.html, etc.
 - **File name:** `screenshot_5_export_ghl.png`
 
 **Optional (for better conversion):**
-- Small promo tile: 440×280 px
-- Large promo image: 920×680 px
-- Marquee promo: 1400×560 px (if applying for Chrome Web Store featuring)
+- Small promo tile: `webstore-kit/promo/small_promo_tile_440x280.png`
+- Large promo image: `webstore-kit/promo/large_promo_tile_920x680.png`
+- Marquee promo: `webstore-kit/promo/marquee_promo_1400x560.png` (if applying for Chrome Web Store featuring)
 
 ---
 
 ### ✅ Step 4: Privacy Policy
 
-- [ ] **Privacy Policy created:** `PRIVACY_POLICY.md`
-- [ ] **Privacy Policy hosted:** [URL where it's publicly accessible]
+- [ ] **Privacy Policy created:** `webstore-kit/privacy-policy.html`
+- [ ] **Privacy Policy hosted:** https://preview-1777215622669307854.vibepreview.com/
   - Option A: GitHub Pages
   - Option B: External hosting (privacychecklist.com, etc.)
-  - **URL to add in submission:** `________________________`
+  - **URL to add in submission:** `https://preview-1777215622669307854.vibepreview.com/`
 - [ ] **Policy covers:**
   - [ ] What data is collected
   - [ ] How data is stored (local browser storage)
-  - [ ] What data is shared externally (OpenAI, GHL, HeyGen)
+  - [ ] What data is shared externally (OpenAI, GHL, optional Clone2GHL backend / video provider)
   - [ ] User rights (deletion, GDPR, CCPA)
   - [ ] Security measures
   - [ ] Contact information
@@ -173,6 +173,11 @@ Permission: <all_urls>
 Justification: [Paste detailed explanation from PERMISSIONS_JUSTIFICATION.md]
 ```
 
+Privacy practices tab must also include:
+- [ ] Single purpose description
+- [ ] Remote code use justification
+- [ ] Data usage compliance certification checked
+
 ---
 
 ### ✅ Step 6: Manifest Verification
@@ -197,6 +202,14 @@ Justification: [Paste detailed explanation from PERMISSIONS_JUSTIFICATION.md]
   - [ ] 16×16 px icon exists
   - [ ] 48×48 px icon exists
   - [ ] 128×128 px icon exists
+
+- [ ] **Store listing media upload checks:**
+  - [ ] At least 1 screenshot uploaded to CWS listing
+  - [ ] Store icon uploaded manually if CWS still shows "Icon image is missing"
+
+- [ ] **Publisher contact checks:**
+  - [ ] Publisher contact email is entered in CWS Settings
+  - [ ] Publisher contact email is verified in CWS Settings
 
 ---
 
@@ -262,7 +275,7 @@ URL: `https://chrome.google.com/webstore/devconsole`
 **Step 2: Click "+ New Item"**
 
 **Step 3: Upload Your ZIP**
-- Upload: `Clone2GHL_v1.0.1.zip`
+- Upload: `webstore-kit/Clone2GHL_v1.0.1_webstore.zip`
 
 **Step 4: Fill Out Store Listing**
 
@@ -273,7 +286,7 @@ URL: `https://chrome.google.com/webstore/devconsole`
 | Description | [Full description from Step 2] | [ ] |
 | Category | Productivity | [ ] |
 | Language | English | [ ] |
-| Privacy Policy URL | [Your hosted privacy policy URL] | [ ] |
+| Privacy Policy URL | https://preview-1777215622669307854.vibepreview.com/ | [ ] |
 
 **Step 5: Upload Screenshots**
 - [ ] Screenshot 1: My Funnels (1280×800)
@@ -295,6 +308,61 @@ Justification: [From doc]
 
 ... (continue for all permissions)
 ```
+
+---
+
+## Unable To Publish Error Map (Use This Exact Sequence)
+
+Complete these in order on the CWS edit page, then click Save Draft after each section:
+
+- [ ] `A justification for activeTab is required`  
+  Action: Privacy practices tab → add activeTab justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for host permission use is required`  
+  Action: Privacy practices tab → add host permission use justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for notifications is required`  
+  Action: Privacy practices tab → add notifications justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for remote code use is required`  
+  Action: Privacy practices tab → add remote code use justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for scripting is required`  
+  Action: Privacy practices tab → add scripting justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for storage is required`  
+  Action: Privacy practices tab → add storage justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `A justification for tabs is required`  
+  Action: Privacy practices tab → add tabs justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+
+- [ ] `The single purpose description is required`  
+  Action: Privacy practices tab → paste single purpose description from `webstore-kit/STORE_LISTING.md`.
+
+- [ ] `At least one screenshot or video is required`  
+  Action: Store listing tab → upload at least one file from:
+  - `webstore-kit/screenshots/screenshot_1_my_funnels.png`
+  - `webstore-kit/screenshots/screenshot_2_live_clone.png`
+  - `webstore-kit/screenshots/screenshot_3_ai_tools.png`
+  - `webstore-kit/screenshots/screenshot_4_funnel_intelligence.png`
+  - `webstore-kit/screenshots/screenshot_5_export_ghl.png`
+
+- [ ] `Icon image is missing`  
+  Action: Store listing tab → manually upload `extension/icons/icon128.png` in the icon field.
+
+- [ ] `You must certify that your data usage complies with Program Policies`  
+  Action: Privacy practices tab → check the data usage compliance certification checkbox.
+
+- [ ] `You must provide a contact email before publishing`  
+  Action: CWS Settings page → ensure publisher contact email is present and saved.
+
+- [ ] `You must verify the publisher's contact email before publishing`  
+  Action: CWS Settings page → confirm verified status is shown (you already verified this, so just re-save and refresh if the warning persists).
+
+Validation tips:
+- [ ] Save Draft after every major section (Privacy practices, Store listing, Settings)
+- [ ] Refresh the edit page once after Settings changes
+- [ ] Re-open the publish blocker dialog and confirm all lines are cleared
 
 ---
 

@@ -609,17 +609,20 @@ async function handleMessage(message, sender) {
       let aiReport = null;
       if (optimize && settings.backendToken) {
         try {
-          const optResult = await backendRequest(settings, 'POST', '/api/ai/optimize', {
-            html: converted.ghlHtml,
-            niche: niche || (analysis?.detectedNiche) || 'general',
-            businessName: businessName || '',
+          const optResult = await backendRequest(settings, '/api/ai/optimize', {
+            method: 'POST', useAuth: true,
+            body: {
+              html: converted.ghlHtml,
+              niche: niche || (analysis?.detectedNiche) || 'general',
+              businessName: businessName || '',
+            },
           });
           optimizedHtml = optResult?.html || null;
 
           if (analysis) {
-            const reportResult = await backendRequest(settings, 'POST', '/api/ai/report', {
-              html: converted.ghlHtml,
-              analysis,
+            const reportResult = await backendRequest(settings, '/api/ai/report', {
+              method: 'POST', useAuth: true,
+              body: { html: converted.ghlHtml, analysis },
             }).catch(() => null);
             aiReport = reportResult?.report || null;
           }
@@ -671,18 +674,21 @@ async function handleMessage(message, sender) {
       const funnel = funnels.find(f => f.id === funnelId);
       if (!funnel) throw new Error('Funnel not found.');
 
-      const optResult = await backendRequest(settings, 'POST', '/api/ai/optimize', {
-        html: funnel.html,
-        niche: niche || funnel.niche || 'general',
-        businessName: businessName || '',
+      const optResult = await backendRequest(settings, '/api/ai/optimize', {
+        method: 'POST', useAuth: true,
+        body: {
+          html: funnel.html,
+          niche: niche || funnel.niche || 'general',
+          businessName: businessName || '',
+        },
       });
       const optimizedHtml = optResult?.html || funnel.html;
 
       let aiReport = null;
       if (funnel.analysis) {
-        const reportResult = await backendRequest(settings, 'POST', '/api/ai/report', {
-          html: funnel.html,
-          analysis: funnel.analysis,
+        const reportResult = await backendRequest(settings, '/api/ai/report', {
+          method: 'POST', useAuth: true,
+          body: { html: funnel.html, analysis: funnel.analysis },
         }).catch(() => null);
         aiReport = reportResult?.report || null;
       }
@@ -752,7 +758,23 @@ async function handleMessage(message, sender) {
     case 'GENERATE_LOGO': {
       const settings = await getSettings();
       if (!settings.backendToken) throw new Error('Sign in to your Clone2GHL account to use AI features.');
-      const result = await backendRequest(settings, 'POST', '/api/ai/logo', message.data);
+      const result = await backendRequest(settings, '/api/ai/logo', { method: 'POST', useAuth: true, body: message.data });
+      return { url: result?.url, revisedPrompt: result?.revisedPrompt };
+    }
+
+    // ── Generate Image (for image panel AI replacement) ───────────────────────
+    case 'GENERATE_IMAGE': {
+      const settings = await getSettings();
+      if (!settings.backendToken) throw new Error('Sign in to your Clone2GHL account to use AI features.');
+      const result = await backendRequest(settings, '/api/ai/logo', {
+        method: 'POST', useAuth: true,
+        body: {
+          businessName: message.subject || 'placeholder image',
+          industry: message.industry || 'general',
+          style: message.style || 'modern',
+          colors: [],
+        },
+      });
       return { url: result?.url, revisedPrompt: result?.revisedPrompt };
     }
 
@@ -760,9 +782,9 @@ async function handleMessage(message, sender) {
     case 'GENERATE_HEADLINES': {
       const settings = await getSettings();
       if (!settings.backendToken) throw new Error('Sign in to your Clone2GHL account to use AI features.');
-      const result = await backendRequest(settings, 'POST', '/api/ai/headlines', {
-        niche: message.niche,
-        offer: message.offer,
+      const result = await backendRequest(settings, '/api/ai/headlines', {
+        method: 'POST', useAuth: true,
+        body: { niche: message.niche, offer: message.offer },
       });
       return { headlines: result?.headlines || [] };
     }

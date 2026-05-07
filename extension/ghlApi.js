@@ -391,7 +391,7 @@ const GHLApi = (() => {
           funnelId, funnelName,
           pageId: null,
           success: 'html_only',
-          ghlBuilderUrl: `https://app.gohighlevel.com/funnels/${funnelId}/builder`,
+          ghlBuilderUrl: `https://app.gohighlevel.com/v2/location/${params.locationId}/funnels/${funnelId}`,
           warning: 'Could not create or find a page automatically. Open the funnel in GHL builder and paste the downloaded HTML manually.',
         };
       }
@@ -411,7 +411,7 @@ const GHLApi = (() => {
       return {
         funnelId, funnelName, pageId,
         success: 'partial',
-        ghlBuilderUrl: `https://app.gohighlevel.com/funnels/${funnelId}/builder`,
+        ghlBuilderUrl: `https://app.gohighlevel.com/v2/location/${params.locationId}/funnels/${funnelId}`,
         warning: `Page added to "${funnelName}" but HTML upload failed (${err.message}). Open the page in GHL builder and paste the HTML manually.`,
       };
     }
@@ -419,7 +419,7 @@ const GHLApi = (() => {
     return {
       funnelId, funnelName, pageId,
       success: 'full',
-      ghlBuilderUrl: `https://app.gohighlevel.com/funnels/${funnelId}/builder`,
+      ghlBuilderUrl: `https://app.gohighlevel.com/v2/location/${params.locationId}/funnels/${funnelId}`,
     };
   }
 

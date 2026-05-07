@@ -33,9 +33,9 @@ This document explains why Clone2GHL requires each permission listed in the mani
 **Purpose:** Save user data locally in encrypted browser storage.
 
 **Justification:**
-- User API keys (OpenAI, GoHighLevel, HeyGen) are stored locally using Chrome's `storage.local` API
+- Sensitive settings such as the GoHighLevel API key, OpenAI API key, and Clone2GHL backend auth token are stored locally using Chrome's `storage.local` API
 - Cloned funnel HTML and metadata are cached locally for quick retrieval and editing
-- User preferences (selected niche, plan type, dashboard settings) are persisted across sessions
+- User preferences (selected niche, plan type, dashboard settings, watchlist entries, and linked account state) are persisted across sessions
 - All data is encrypted at rest and never synced to external servers
 - Users can delete all stored data via the Settings tab at any time
 - This is necessary for the extension to maintain state between sessions
@@ -76,7 +76,7 @@ This document explains why Clone2GHL requires each permission listed in the mani
   - Modify the page permanently (only in the clone)
   - Execute malicious code or perform hidden operations
   - Access sensitive data (passwords, form fields, cookies)
-- Data is processed locally and only sent to GoHighLevel or OpenAI if the user explicitly chooses to export or use AI tools
+- Data is processed locally and is only sent to GoHighLevel, OpenAI, or the user's configured Clone2GHL backend when the user explicitly chooses export, AI, sync, or video features
 - Without this permission, the extension would be limited to a pre-approved list of sites, defeating the core use case
 
 ---
@@ -90,8 +90,8 @@ These are specific to known external services:
 - **Justification:** These are the official GHL API endpoints; permission is required for the export feature to function
 
 ### **https://api.openai.com/***
-- **Purpose:** Send copy/content to GPT-4o for optimization and logo generation requests to DALL-E
-- **Justification:** Optional AI features require communication with OpenAI's servers; users are informed before sending data
+- **Purpose:** Send copy/content to OpenAI for optimization, logo generation, and direct key validation requests
+- **Justification:** Optional AI features require communication with OpenAI's servers; these requests are only made after the user provides a key and explicitly runs the feature
 
 ---
 
@@ -102,7 +102,7 @@ These are specific to known external services:
 3. **Encrypted Storage:** API keys and sensitive data are encrypted at rest in Chrome's local storage.
 4. **User Control:** Users can clear all data, toggle features, and disable the extension at any time.
 5. **CSP Compliance:** The manifest's Content Security Policy (`script-src 'self'; object-src 'self'`) prevents inline script injection.
-6. **Transparent APIs:** External APIs (GHL, OpenAI, HeyGen) are only called when users explicitly request export or AI features.
+6. **Transparent APIs:** External APIs are only called when users explicitly request export, AI, sync, or video features.
 
 ---
 
@@ -133,4 +133,4 @@ These are specific to known external services:
 
 **Last Updated:** April 16, 2026
 **Extension Version:** 1.0.1
-**Contact:** [Support URL] (to be added)
+**Contact:** https://preview-1777215622669307854.vibepreview.com/

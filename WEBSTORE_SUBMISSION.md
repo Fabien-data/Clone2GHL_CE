@@ -14,7 +14,7 @@
 
 Clone2GHL lets users clone any webpage's design and content, analyze its conversion potential with AI, optimize the copy for a specific niche, and push the result directly into their GoHighLevel (GHL) account — all from the browser.
 
-Users do **not** need an OpenAI API key or any third-party credentials beyond a Clone2GHL subscription and their GHL API key. All AI features (GPT-4o copy rewriting, DALL-E 3 logo generation, AI headline generation, funnel intelligence analysis, and video generation) are handled server-side by the Clone2GHL backend. The subscription covers all AI costs.
+Users can clone pages locally, then optionally connect their own GoHighLevel API key for export, their own OpenAI API key for direct AI tools, and a Clone2GHL backend account for cloud and video workflows. Data is only sent to those services when the user explicitly triggers those features.
 
 ---
 
@@ -170,14 +170,14 @@ Clone2GHL is the #1 tool for GoHighLevel agencies and funnel builders.
 
 ### Step 5 — Required Visual Assets
 
-> These are required for submission. Without them, the listing cannot go live.
+> At least one screenshot is required for submission. Promo tiles are optional.
 
 | Asset | Dimensions | Format | Notes |
 |-------|-----------|--------|-------|
 | Screenshots | 1280×800 or 640×400 | PNG or JPG | Min 1, max 5 — required |
-| Small promo tile | 440×280 | PNG | Shown in search results |
-| Large promo image | 920×680 | PNG | Shown on detail page |
-| Marquee promo | 1400×560 | PNG | For editorial featuring |
+| Small promo tile | 440×280 | PNG | Optional |
+| Large promo image | 920×680 | PNG | Optional |
+| Marquee promo | 1400×560 | PNG | Optional |
 
 **Recommended screenshots to take (in order):**
 1. **Dashboard — My Funnels tab** showing funnel cards with conversion scores
@@ -194,11 +194,11 @@ Clone2GHL is the #1 tool for GoHighLevel agencies and funnel builders.
 
 A privacy policy URL is **required** before submission. The policy must cover:
 
-- **Data collected:** GHL API key (stored locally, encrypted), funnel HTML content, user email (for backend account)
-- **Data transmitted:** GHL API key sent to GHL servers, funnel HTML and niche sent to Clone2GHL backend for AI processing, Stripe handles payment data
-- **Data NOT collected:** Browsing history, personal data from cloned pages beyond what the user explicitly clones
-- **Data retention:** Local storage cleared when extension is removed; backend data retained per account until deletion requested
-- **Third parties:** GoHighLevel API, OpenAI API (via our backend), Stripe (billing), HeyGen (video, Pro/Agency)
+- **Data collected:** GoHighLevel API key/location ID, OpenAI API key, backend sign-in email/auth token, cloned page HTML/content, page URL/title, and user settings
+- **Data transmitted:** GHL export data to GoHighLevel, AI prompts/content to OpenAI, optional account/sync/video workflow data to the Clone2GHL backend
+- **Data NOT collected:** Browsing history outside explicit user clone actions, passwords from arbitrary sites, or cookies from arbitrary sites
+- **Data retention:** Local storage is cleared when the extension is removed; backend-side data depends on the optional backend workflow and third-party service retention policies
+- **Third parties:** GoHighLevel API, OpenAI API, optional Clone2GHL backend, optional backend-configured video provider such as HeyGen
 - **No data sold** to third parties
 
 Host on GitHub Pages (`docs/privacy.html`), Notion, or any public URL.
@@ -223,6 +223,52 @@ Google requires a written justification for each permission. Use these:
 
 ---
 
+### Step 7A — Privacy Practices Paste Text (Use This To Clear Required Fields)
+
+Use the following exact text in the Chrome Web Store Privacy practices tab for the blocked items:
+
+**Single purpose description**
+```
+Clone2GHL captures user-selected webpages, converts them into editable funnel drafts, and helps users optimize and export those funnels into GoHighLevel.
+```
+
+**activeTab justification**
+```
+Clone2GHL requires activeTab to read the DOM structure and styles of the page the user explicitly chooses to clone. Access is tied to user action and used only for the cloning workflow.
+```
+
+**host permission use justification**
+```
+Host permissions are required because users can clone any site and the target domain is unknown in advance. Requests to OpenAI and GoHighLevel are only made when users explicitly run AI or export actions.
+```
+
+**notifications justification**
+```
+The extension uses notifications to confirm completion or failure of long-running user-triggered actions such as clone, export, and video workflows.
+```
+
+**remote code use justification**
+```
+Clone2GHL does not execute remote JavaScript code. All executable scripts are packaged with the extension and enforced by Content Security Policy: script-src 'self'.
+```
+
+**scripting justification**
+```
+Scripting permission is required to inject the extension's own content script so it can capture page structure for the clone workflow after explicit user action.
+```
+
+**storage justification**
+```
+Storage is required to persist user settings, cloned funnel drafts, and encrypted credentials locally so users can continue work across sessions.
+```
+
+**tabs justification**
+```
+Tabs permission is required for user-triggered navigation, such as opening the dashboard and GoHighLevel export-related pages.
+```
+
+---
+
 ### Step 8 — Single Purpose Statement
 
 > Google requires a clear single purpose statement.
@@ -242,6 +288,14 @@ build and launch funnels in GHL faster.
 3. Click **"Submit for review"**
 4. Review typically takes **1–3 business days** (up to 7 in some cases)
 5. You'll receive an email when approved or if changes are requested
+
+Before clicking submit, ensure all draft blockers are green:
+- Privacy practices justifications completed for activeTab, host permissions, notifications, remote code use, scripting, storage, and tabs
+- Single purpose description added
+- Data usage compliance certification checked
+- At least one screenshot uploaded
+- Store icon uploaded (if auto-detection still reports missing icon)
+- Publisher contact email is entered and verified in CWS Settings
 
 ---
 

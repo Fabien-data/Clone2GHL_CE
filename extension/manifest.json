@@ -1,14 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Clone2GHL – Funnel Intelligence Platform",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Clone any webpage, analyze funnel intelligence, optimize copy with AI, and launch directly into GoHighLevel in minutes.",
   "permissions": [
     "activeTab",
     "storage",
     "scripting",
-    "tabs",
-    "notifications"
+    "tabs"
   ],
   "host_permissions": [
     "https://services.leadconnectorhq.com/*",

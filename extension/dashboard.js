@@ -2068,6 +2068,59 @@ function replaceTextGlobal(doc, pattern, replacement) {
   }
 }
 
+/**
+ * Heuristically finds the best tagline/subtitle element in the page.
+ * Priority:
+ * 1. Element with class/id containing tagline, subtitle, slogan, subhead, description in hero/header
+ * 2. First <p> immediately after a <h1> with 30–250 chars
+ * 3. First <p> inside the hero/banner section with 30–250 chars
+ */
+function findTaglineElement(doc) {
+  // Priority 1: semantic class/id hints
+  const semanticRx = /tagline|subtitle|slogan|subhead|sub-head|descriptor/i;
+  const candidates = doc.querySelectorAll('p, h2, h3, [class*="tagline"], [class*="subtitle"], [class*="slogan"], [id*="tagline"], [id*="subtitle"]');
+  for (const el of candidates) {
+    const cls = (el.className || '') + ' ' + (el.id || '');
+    if (semanticRx.test(cls)) {
+      const txt = el.textContent.trim();
+      if (txt.length >= 5 && txt.length <= 300) return el;
+    }
+  }
+
+  // Priority 2: first <p> sibling right after an h1
+  const h1 = doc.querySelector('h1');
+  if (h1) {
+    let sib = h1.nextElementSibling;
+    while (sib) {
+      if (sib.tagName === 'P') {
+        const txt = sib.textContent.trim();
+        if (txt.length >= 30 && txt.length <= 300) return sib;
+      }
+      // Only look at first couple siblings
+      if (['H1','H2','H3','SECTION','FOOTER'].includes(sib.tagName)) break;
+      sib = sib.nextElementSibling;
+    }
+  }
+
+  // Priority 3: first <p> inside hero/banner
+  const heroSel = '.hero, .hero-section, .banner, [class*="hero"], [class*="banner"], [class*="jumbotron"], header, main > section:first-child';
+  const heroArea = doc.querySelector(heroSel);
+  if (heroArea) {
+    for (const p of heroArea.querySelectorAll('p')) {
+      const txt = p.textContent.trim();
+      if (txt.length >= 30 && txt.length <= 300) return p;
+    }
+  }
+
+  // Fallback: first descriptive <p> anywhere
+  for (const p of doc.querySelectorAll('p')) {
+    const txt = p.textContent.trim();
+    if (txt.length >= 30 && txt.length <= 300) return p;
+  }
+
+  return null;
+}
+
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -2204,7 +2257,7 @@ function extractFonts(doc) {
   return { googleFonts: [...new Set(googleFonts)], bodyFont, headingFont };
 }
 
-function applyFontChange(target, fontFamily) {
+function applyFontChange(target, fontFamily, smartSizes) {
   const doc = getEditorDoc();
   if (!doc) return;
   const slug = fontFamily.replace(/\s+/g, '+');
@@ -2218,12 +2271,29 @@ function applyFontChange(target, fontFamily) {
   }
   let ov = doc.getElementById('c2ghl-font-overrides');
   if (!ov) { ov = doc.createElement('style'); ov.id = 'c2ghl-font-overrides'; doc.head.appendChild(ov); }
+
   if (target === 'heading') {
-    ov.textContent = ov.textContent.replace(/h1,h2,h3[^}]+}/g, '');
-    ov.textContent += `\nh1, h2, h3 { font-family: '${fontFamily}', sans-serif !important; }`;
+    // Remove old heading rule
+    ov.textContent = ov.textContent.replace(/\/\* headings-start \*\/[\s\S]*?\/\* headings-end \*\//g, '');
+    if (smartSizes && smartSizes.length) {
+      // Per-element-with-exact-size overrides
+      const rules = smartSizes.map(({ selector, size }) =>
+        `${selector} { font-family: '${fontFamily}', sans-serif !important; font-size: ${size} !important; }`
+      ).join('\n');
+      ov.textContent += `\n/* headings-start */\n${rules}\n/* headings-end */`;
+    } else {
+      ov.textContent += `\n/* headings-start */\nh1, h2, h3 { font-family: '${fontFamily}', sans-serif !important; }\n/* headings-end */`;
+    }
   } else {
-    ov.textContent = ov.textContent.replace(/body,p,li[^}]+}/g, '');
-    ov.textContent += `\nbody, p, li, span, a, button { font-family: '${fontFamily}', sans-serif !important; }`;
+    ov.textContent = ov.textContent.replace(/\/\* body-start \*\/[\s\S]*?\/\* body-end \*\//g, '');
+    if (smartSizes && smartSizes.length) {
+      const rules = smartSizes.map(({ selector, size }) =>
+        `${selector} { font-family: '${fontFamily}', sans-serif !important; font-size: ${size} !important; }`
+      ).join('\n');
+      ov.textContent += `\n/* body-start */\n${rules}\n/* body-end */`;
+    } else {
+      ov.textContent += `\n/* body-start */\nbody, p, li, span, a, button { font-family: '${fontFamily}', sans-serif !important; }\n/* body-end */`;
+    }
   }
   addPatch({ type: 'font-replace', selector: target, attribute: 'fontFamily', oldValue: '', newValue: fontFamily });
 }
@@ -2412,7 +2482,15 @@ function renderBrandPanel(content) {
       addPatch({ type: 'text', selector: 'body', attribute: null, oldValue: 'phone', newValue: phone });
     }
     if (tagline) {
-      addPatch({ type: 'text', selector: 'body', attribute: null, oldValue: 'tagline', newValue: tagline });
+      // Find the best tagline element using heuristics
+      const taglineEl = findTaglineElement(doc);
+      if (taglineEl) {
+        const oldText = taglineEl.textContent;
+        taglineEl.textContent = tagline;
+        addPatch({ type: 'text', selector: buildUniqueSelector(taglineEl), attribute: null, oldValue: oldText, newValue: tagline });
+      } else {
+        addPatch({ type: 'text', selector: 'body', attribute: null, oldValue: 'tagline', newValue: tagline });
+      }
     }
     showSaveToast('Text replacements applied!');
   });
@@ -2487,9 +2565,13 @@ function updateLogoPreview(content, src) {
   content.querySelector('#ep-logo-apply-btn').style.display = 'inline-block';
 }
 
-function renderCopyrightPanel(content) {
-  const risks = runCopyrightAudit();
-  highlightRiskElements();
+function renderCopyrightPanel(content, forceReaudit = true) {
+  if (forceReaudit) {
+    runCopyrightAudit();
+    highlightRiskElements();
+  }
+
+  const risks = editorState.copyrightRisks;
 
   if (risks.length === 0) {
     content.innerHTML = `
@@ -2536,7 +2618,7 @@ function renderCopyrightPanel(content) {
         el.remove();
       }
       editorState.copyrightRisks.splice(idx, 1);
-      renderCopyrightPanel(content);
+      renderCopyrightPanel(content, false);
     });
   });
 
@@ -2554,6 +2636,7 @@ function renderCopyrightPanel(content) {
   content.querySelector('#ep-fix-all')?.addEventListener('click', () => {
     const doc = getEditorDoc();
     if (!doc) return;
+    const toRemove = [];
     [...editorState.copyrightRisks].forEach(risk => {
       const el = doc.querySelector(risk.selector);
       if (!el) return;
@@ -2563,14 +2646,25 @@ function renderCopyrightPanel(content) {
           addPatch({ type: 'text', selector: risk.selector, attribute: null, oldValue: el.textContent, newValue: newText });
           el.textContent = newText;
         }
+        toRemove.push(risk);
       } else if (risk.type === 'external-link') {
-        el.removeAttribute('href');
+        const oldHref = el.getAttribute('href');
         el.setAttribute('href', '#');
-        addPatch({ type: 'attr', selector: risk.selector, attribute: 'href', oldValue: el.getAttribute('href'), newValue: '#' });
+        addPatch({ type: 'attr', selector: risk.selector, attribute: 'href', oldValue: oldHref, newValue: '#' });
+        toRemove.push(risk);
+      } else if (risk.type === 'brand-logo-img' || risk.type === 'brand-logo-svg') {
+        // Remove brand logo elements from the DOM directly
+        addPatch({ type: 'element-remove', selector: risk.selector, attribute: null, oldValue: el.outerHTML.slice(0, 200), newValue: '' });
+        el.remove();
+        toRemove.push(risk);
       }
     });
-    editorState.copyrightRisks = editorState.copyrightRisks.filter(r => ['brand-logo-img','brand-logo-svg'].includes(r.type));
-    renderCopyrightPanel(content);
+    // Remove fixed risks from the array
+    toRemove.forEach(r => {
+      const idx = editorState.copyrightRisks.indexOf(r);
+      if (idx >= 0) editorState.copyrightRisks.splice(idx, 1);
+    });
+    renderCopyrightPanel(content, false);
     showSaveToast('Copyright issues fixed!');
   });
 }
@@ -2693,11 +2787,13 @@ function renderImagesPanel(content) {
               📁 <input type="file" accept="image/*" class="ep-img-upload" data-id="${img.id}" style="display:none;">
             </label>
             <button class="btn-editor-xs neutral ep-img-url-toggle" data-id="${img.id}" style="font-size:10px;">🔗 URL</button>
+            <button class="btn-editor-xs primary ep-img-ai-btn" data-id="${img.id}" style="font-size:10px;">✨ AI</button>
           </div>
           <div class="editor-img-url-row" id="ep-url-row-${img.id}">
             <input type="url" placeholder="https://...image.jpg" class="ep-img-url-input" data-id="${img.id}">
             <button class="btn-editor-xs primary ep-img-url-ok" data-id="${img.id}">OK</button>
           </div>
+          <div class="editor-img-ai-status" id="ep-ai-status-${img.id}" style="padding:4px 6px;font-size:10px;color:var(--text4);display:none;"></div>
         </div>`).join('')}
     </div>`;
 
@@ -2733,6 +2829,33 @@ function renderImagesPanel(content) {
       content.querySelector(`#ep-url-row-${id}`)?.classList.remove('visible');
     });
   });
+
+  // AI image generation per card
+  content.querySelectorAll('.ep-img-ai-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const imgEntry = editorState.allImages.find(x => x.id === id);
+      if (!imgEntry) return;
+      const statusEl = content.querySelector(`#ep-ai-status-${id}`);
+      btn.textContent = '⏳';
+      btn.disabled = true;
+      if (statusEl) { statusEl.textContent = 'Generating…'; statusEl.style.display = 'block'; }
+      const result = await sendMsg({
+        action: 'GENERATE_IMAGE',
+        subject: imgEntry.alt || 'professional image',
+        industry: 'general',
+        style: 'modern',
+      });
+      btn.textContent = '✨ AI';
+      btn.disabled = false;
+      if (result?.url) {
+        applyImageReplacement(imgEntry, result.url, content);
+        if (statusEl) { statusEl.textContent = 'AI image applied!'; setTimeout(() => { statusEl.style.display = 'none'; }, 2000); }
+      } else {
+        if (statusEl) { statusEl.textContent = result?.error || 'Generation failed — sign in to use AI'; setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }
+      }
+    });
+  });
 }
 
 function applyImageReplacement(imgEntry, newSrc, content) {
@@ -2746,6 +2869,39 @@ function applyImageReplacement(imgEntry, newSrc, content) {
     if (thumb) { thumb.src = newSrc; thumb.style.display = 'block'; }
     showSaveToast('Image replaced!');
   }
+}
+
+// ─── Color Wheel Helpers ──────────────────────────────────────────────────────
+
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function hexToHsl(hex) {
+  let r = parseInt(hex.slice(1, 3), 16) / 255;
+  let g = parseInt(hex.slice(3, 5), 16) / 255;
+  let b = parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
 }
 
 function renderColorsPanel(content) {
@@ -2766,38 +2922,212 @@ function renderColorsPanel(content) {
         <div class="editor-color-swatch" data-hex="${c.hex}" title="${c.cssVarName || c.hex}"
           style="background:${c.hex};" data-var="${c.cssVarName || ''}"></div>`).join('')}
     </div>
-    <div class="editor-color-detail" id="ep-color-detail">
-      <label>Replace color</label>
-      <div class="editor-color-hex" id="ep-color-hex-label">#000000</div>
-      <div class="editor-color-var" id="ep-color-var-label"></div>
-      <input type="color" id="ep-color-picker" value="#000000">
-      <button class="editor-btn-apply" id="ep-color-apply" style="margin-top:8px;">Apply Color</button>
+    <div class="editor-color-editor" id="ep-color-editor">
+      <div class="editor-section-title" style="margin-bottom:10px;">Editing: <span id="ep-editing-hex">#000000</span></div>
+
+      <!-- Hue ring -->
+      <div class="color-wheel-wrap">
+        <canvas id="ep-hue-ring" class="color-hue-ring" width="180" height="180"></canvas>
+        <div class="color-sl-pad-wrap">
+          <canvas id="ep-sl-pad" class="color-sl-pad" width="120" height="120"></canvas>
+          <div class="color-sl-cursor" id="ep-sl-cursor"></div>
+        </div>
+        <div class="color-hue-cursor" id="ep-hue-cursor"></div>
+      </div>
+
+      <!-- Preview + hex input -->
+      <div class="color-result-row">
+        <div class="color-result-preview" id="ep-color-preview" style="background:#000000;"></div>
+        <input type="text" class="color-hex-input" id="ep-hex-input" value="#000000" maxlength="7" spellcheck="false">
+      </div>
+
+      <button class="editor-btn-apply" id="ep-color-apply" style="margin-top:10px;">Apply Color</button>
     </div>`;
 
+  // State for the interactive wheel
+  const wheelState = { h: 0, s: 100, l: 50 };
+
+  function drawHueRing(canvas) {
+    const ctx = canvas.getContext('2d');
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const outerR = cx - 2, innerR = outerR - 20;
+    for (let deg = 0; deg < 360; deg++) {
+      const start = (deg - 1) * Math.PI / 180;
+      const end = (deg + 1) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, outerR, start, end);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${deg},100%,50%)`;
+      ctx.fill();
+    }
+    // Punch inner hole
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(cx, cy, innerR, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function drawSlPad(canvas, hue) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    // Horizontal: saturation 0→100
+    const gradS = ctx.createLinearGradient(0, 0, w, 0);
+    gradS.addColorStop(0, `hsl(${hue},0%,50%)`);
+    gradS.addColorStop(1, `hsl(${hue},100%,50%)`);
+    ctx.fillStyle = gradS;
+    ctx.fillRect(0, 0, w, h);
+    // Vertical: lightness overlay (white top → black bottom)
+    const gradL = ctx.createLinearGradient(0, 0, 0, h);
+    gradL.addColorStop(0, 'rgba(255,255,255,1)');
+    gradL.addColorStop(0.5, 'rgba(255,255,255,0)');
+    gradL.addColorStop(0.5, 'rgba(0,0,0,0)');
+    gradL.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = gradL;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function updateHueCursor(hue) {
+    const ring = content.querySelector('#ep-hue-ring');
+    const cursor = content.querySelector('#ep-hue-cursor');
+    if (!ring || !cursor) return;
+    const rect = ring.getBoundingClientRect();
+    const cx = ring.width / 2, cy = ring.height / 2;
+    const r = cx - 12;
+    const rad = (hue - 90) * Math.PI / 180;
+    const x = cx + r * Math.cos(rad);
+    const y = cy + r * Math.sin(rad);
+    cursor.style.left = (x / ring.width * 100) + '%';
+    cursor.style.top = (y / ring.height * 100) + '%';
+    cursor.style.background = `hsl(${hue},100%,50%)`;
+  }
+
+  function updateSlCursor(s, l) {
+    const cursor = content.querySelector('#ep-sl-cursor');
+    if (!cursor) return;
+    // Map s(0-100) → x, l(0-100) → y but inverted (lightness 100=top, 0=bottom)
+    // The pad shows: x=saturation, y=lightness (100 at top, 0 at bottom)
+    // But pure white is top-left, pure hue is top-right, black is bottom
+    // s: 0-100 → x: 0-100%, l: 0-100 → y: bottom-top
+    const xPct = s;
+    const yPct = 100 - l * 2; // approximate mapping: l=50 at center, l=100 at top, l=0 at bottom
+    cursor.style.left = Math.max(0, Math.min(100, xPct)) + '%';
+    cursor.style.top = Math.max(0, Math.min(100, yPct)) + '%';
+  }
+
+  function updateFromWheel() {
+    const hex = hslToHex(wheelState.h, wheelState.s, wheelState.l);
+    content.querySelector('#ep-color-preview').style.background = hex;
+    content.querySelector('#ep-hex-input').value = hex;
+    content.querySelector('#ep-editing-hex').textContent = hex;
+    updateHueCursor(wheelState.h);
+    updateSlCursor(wheelState.s, wheelState.l);
+    const slPad = content.querySelector('#ep-sl-pad');
+    if (slPad) drawSlPad(slPad, wheelState.h);
+  }
+
+  function initWheel() {
+    const hueRing = content.querySelector('#ep-hue-ring');
+    const slPad = content.querySelector('#ep-sl-pad');
+    if (!hueRing || !slPad) return;
+
+    drawHueRing(hueRing);
+    drawSlPad(slPad, wheelState.h);
+    updateHueCursor(wheelState.h);
+    updateSlCursor(wheelState.s, wheelState.l);
+
+    // Hue ring interaction
+    let draggingHue = false;
+    function pickHue(e) {
+      const rect = hueRing.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = clientX - cx, dy = clientY - cy;
+      let angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+      if (angle < 0) angle += 360;
+      wheelState.h = Math.round(angle) % 360;
+      updateFromWheel();
+    }
+    hueRing.addEventListener('mousedown', (e) => { draggingHue = true; pickHue(e); });
+    window.addEventListener('mousemove', (e) => { if (draggingHue) pickHue(e); });
+    window.addEventListener('mouseup', () => { draggingHue = false; });
+
+    // SL pad interaction
+    let draggingSl = false;
+    function pickSl(e) {
+      const rect = slPad.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+      wheelState.s = Math.round(x * 100);
+      // y=0 → l=100 (white top), y=1 → l=0 (black bottom); mid hue at y=0.5 → l=50
+      wheelState.l = Math.round((1 - y) * 50 + (1 - x) * y * 50 + (1 - y) * x * 0);
+      // Simpler: l = (1-y)*100, but clamp
+      wheelState.l = Math.round((1 - y) * (100 - x * 50));
+      wheelState.l = Math.max(0, Math.min(100, wheelState.l));
+      updateFromWheel();
+    }
+    slPad.addEventListener('mousedown', (e) => { draggingSl = true; pickSl(e); });
+    window.addEventListener('mousemove', (e) => { if (draggingSl) pickSl(e); });
+    window.addEventListener('mouseup', () => { draggingSl = false; });
+  }
+
+  // Swatch click → open editor with that color
   content.querySelectorAll('.editor-color-swatch').forEach(swatch => {
     swatch.addEventListener('click', () => {
       content.querySelectorAll('.editor-color-swatch').forEach(s => s.classList.remove('selected'));
       swatch.classList.add('selected');
       editorState.selectedColorHex = swatch.dataset.hex;
-      const detail = content.querySelector('#ep-color-detail');
-      detail.classList.add('visible');
-      detail.querySelector('#ep-color-hex-label').textContent = swatch.dataset.hex;
-      detail.querySelector('#ep-color-var-label').textContent = swatch.dataset.var || '';
-      detail.querySelector('#ep-color-picker').value = swatch.dataset.hex.slice(0, 7);
+      const editor = content.querySelector('#ep-color-editor');
+      editor.classList.add('visible');
+      content.querySelector('#ep-editing-hex').textContent = swatch.dataset.hex;
+      content.querySelector('#ep-color-preview').style.background = swatch.dataset.hex;
+      content.querySelector('#ep-hex-input').value = swatch.dataset.hex.slice(0, 7);
+      // Sync wheel to this color's HSL
+      const hsl = hexToHsl(swatch.dataset.hex.slice(0, 7).padEnd(7, '0'));
+      wheelState.h = hsl.h; wheelState.s = hsl.s; wheelState.l = hsl.l;
+      updateFromWheel();
     });
+  });
+
+  // Manual hex input
+  content.querySelector('#ep-hex-input').addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      content.querySelector('#ep-color-preview').style.background = val;
+      content.querySelector('#ep-editing-hex').textContent = val;
+      const hsl = hexToHsl(val);
+      wheelState.h = hsl.h; wheelState.s = hsl.s; wheelState.l = hsl.l;
+      updateHueCursor(wheelState.h);
+      updateSlCursor(wheelState.s, wheelState.l);
+      const slPad = content.querySelector('#ep-sl-pad');
+      if (slPad) drawSlPad(slPad, wheelState.h);
+    }
   });
 
   content.querySelector('#ep-color-apply')?.addEventListener('click', () => {
     if (!editorState.selectedColorHex) return;
-    const newHex = content.querySelector('#ep-color-picker').value;
+    const newHex = content.querySelector('#ep-hex-input').value.trim();
+    if (!/^#[0-9a-fA-F]{6}$/.test(newHex)) {
+      showSaveToast('Enter a valid hex color (e.g. #FF5733)');
+      return;
+    }
     const oldHex = editorState.selectedColorHex;
     replaceColorInPage(oldHex, newHex);
-    // Update swatch
-    content.querySelector(`.editor-color-swatch[data-hex="${oldHex}"]`)?.setAttribute('data-hex', newHex);
-    content.querySelector(`.editor-color-swatch[data-hex="${newHex}"]`)?.setAttribute('style', `background:${newHex};`);
-    content.querySelector('#ep-color-hex-label').textContent = newHex;
+    // Update the swatch
+    const swatch = content.querySelector(`.editor-color-swatch.selected`);
+    if (swatch) { swatch.setAttribute('data-hex', newHex); swatch.style.background = newHex; }
+    content.querySelector('#ep-editing-hex').textContent = newHex;
     showSaveToast('Color updated!');
   });
+
+  // Init wheel after DOM is painted
+  requestAnimationFrame(() => initWheel());
 }
 
 const GOOGLE_FONTS = [
@@ -2810,27 +3140,65 @@ function renderFontsPanel(content) {
   const doc = getEditorDoc();
   const fontInfo = doc ? extractFonts(doc) : { bodyFont: '', headingFont: '' };
 
+  // Smart detection: read actual computed sizes from the iframe elements
+  let headingSizes = [], bodySizes = [];
+  if (doc) {
+    const headingSelectors = ['h1', 'h2', 'h3'];
+    headingSelectors.forEach(sel => {
+      const el = doc.querySelector(sel);
+      if (el) {
+        const cs = doc.defaultView?.getComputedStyle(el);
+        const size = cs?.fontSize;
+        if (size) headingSizes.push({ selector: sel, size, detected: cs?.fontFamily?.split(',')[0].replace(/['"]/g, '').trim() });
+      }
+    });
+    const bodySelectors = ['p', 'li', 'button'];
+    bodySelectors.forEach(sel => {
+      const el = doc.querySelector(sel);
+      if (el) {
+        const cs = doc.defaultView?.getComputedStyle(el);
+        const size = cs?.fontSize;
+        if (size) bodySizes.push({ selector: sel, size, detected: cs?.fontFamily?.split(',')[0].replace(/['"]/g, '').trim() });
+      }
+    });
+  }
+
   const fontOptions = GOOGLE_FONTS.map(f => `<option value="${f}">${f}</option>`).join('');
+
+  const headingSizeHtml = headingSizes.length
+    ? headingSizes.map(h => `<div class="editor-font-size-row"><span>${h.selector}</span><span>${h.size}</span>${h.detected ? `<span style="color:var(--text4)">${h.detected}</span>` : ''}</div>`).join('')
+    : '';
+  const bodySizeHtml = bodySizes.length
+    ? bodySizes.map(h => `<div class="editor-font-size-row"><span>${h.selector}</span><span>${h.size}</span>${h.detected ? `<span style="color:var(--text4)">${h.detected}</span>` : ''}</div>`).join('')
+    : '';
 
   content.innerHTML = `
     <div class="editor-section-title">Heading Font</div>
     <div class="editor-font-row">
-      <label>Choose font for H1, H2, H3</label>
+      <label>H1, H2, H3 — Smart Apply preserves detected sizes</label>
+      ${headingSizeHtml ? `<div class="editor-font-size-table">${headingSizeHtml}</div>` : ''}
       <select class="editor-font-select" id="ep-heading-font">${fontOptions}</select>
       <div class="editor-font-preview" id="ep-heading-preview" style="font-family:'Inter',sans-serif;">
         The Quick Brown Fox
       </div>
-      <button class="editor-btn-apply" id="ep-apply-heading" style="margin-top:8px;">Apply to Headings</button>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="editor-btn-apply" id="ep-apply-heading" style="flex:1;">Apply</button>
+        <button class="editor-btn-apply" id="ep-smart-apply-heading" style="flex:1;background:var(--purple-faint);border:1px solid rgba(124,58,237,0.4);color:#C4B5FD;">✨ Smart Apply</button>
+      </div>
     </div>
 
     <div class="editor-section-title">Body Font</div>
     <div class="editor-font-row">
-      <label>Choose font for paragraphs & body</label>
+      <label>Paragraphs, lists, buttons</label>
+      ${bodySizeHtml ? `<div class="editor-font-size-table">${bodySizeHtml}</div>` : ''}
       <select class="editor-font-select" id="ep-body-font">${fontOptions}</select>
       <div class="editor-font-preview" id="ep-body-preview" style="font-family:'Inter',sans-serif;">
         The quick brown fox jumps over the lazy dog.
       </div>
-      <button class="editor-btn-apply" id="ep-apply-body" style="margin-top:8px;">Apply to Body</button>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="editor-btn-apply" id="ep-apply-body" style="flex:1;">Apply</button>
+        <button class="editor-btn-apply" id="ep-smart-apply-body" style="flex:1;background:var(--purple-faint);border:1px solid rgba(124,58,237,0.4);color:#C4B5FD;">✨ Smart Apply</button>
+      </div>
     </div>
 
     ${fontInfo.headingFont || fontInfo.bodyFont ? `
@@ -2843,23 +3211,33 @@ function renderFontsPanel(content) {
 
   // Live font preview on select change
   content.querySelector('#ep-heading-font').addEventListener('change', (e) => {
-    const f = e.target.value;
-    loadGoogleFontForPreview(f, content.querySelector('#ep-heading-preview'));
+    loadGoogleFontForPreview(e.target.value, content.querySelector('#ep-heading-preview'));
   });
   content.querySelector('#ep-body-font').addEventListener('change', (e) => {
-    const f = e.target.value;
-    loadGoogleFontForPreview(f, content.querySelector('#ep-body-preview'));
+    loadGoogleFontForPreview(e.target.value, content.querySelector('#ep-body-preview'));
   });
 
   content.querySelector('#ep-apply-heading').addEventListener('click', () => {
     const f = content.querySelector('#ep-heading-font').value;
-    applyFontChange('heading', f);
+    applyFontChange('heading', f, null);
     showSaveToast(`Heading font set to ${f}!`);
   });
   content.querySelector('#ep-apply-body').addEventListener('click', () => {
     const f = content.querySelector('#ep-body-font').value;
-    applyFontChange('body', f);
+    applyFontChange('body', f, null);
     showSaveToast(`Body font set to ${f}!`);
+  });
+
+  // Smart Apply — passes detected sizes so font-size is preserved per element
+  content.querySelector('#ep-smart-apply-heading').addEventListener('click', () => {
+    const f = content.querySelector('#ep-heading-font').value;
+    applyFontChange('heading', f, headingSizes.length ? headingSizes : null);
+    showSaveToast(`✨ Smart heading font set to ${f}!`);
+  });
+  content.querySelector('#ep-smart-apply-body').addEventListener('click', () => {
+    const f = content.querySelector('#ep-body-font').value;
+    applyFontChange('body', f, bodySizes.length ? bodySizes : null);
+    showSaveToast(`✨ Smart body font set to ${f}!`);
   });
 }
 
