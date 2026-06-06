@@ -1,0 +1,21 @@
+{
+  "appName": { "message": "Clone2GHL", "description": "Extension name" },
+  "clonePage": { "message": "⚡ Clone This Page", "description": "Primary clone action" },
+  "openDashboard": { "message": "📊 Dashboard" },
+  "library": { "message": "📚 Library" },
+  "settings": { "message": "⚙️ Settings" },
+  "currentPage": { "message": "Current page" },
+  "nicheIndustry": { "message": "Niche / Industry" },
+  "aiOptimize": { "message": "AI Optimize" },
+  "aiOptimizeSub": { "message": "Rewrite copy with AI" },
+  "signIn": { "message": "Sign In" },
+  "activatePlan": { "message": "Activate Plan" },
+  "forgotPassword": { "message": "Forgot password?" },
+  "upgradePlan": { "message": "Upgrade or activate your plan" },
+  "creditsRemaining": { "message": "$COUNT$ free clones remaining", "placeholders": { "count": { "content": "$1" } } },
+  "planActive": { "message": "Active" },
+  "planExpired": { "message": "Plan expired — renew to reactivate" },
+  "accountSuspended": { "message": "Account suspended — contact support" },
+  "syncFunnels": { "message": "Sync Funnels" },
+  "pushToGhl": { "message": "Push to GoHighLevel" }
+}

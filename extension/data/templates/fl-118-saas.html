@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — The All-in-One Platform for Teams</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#F8FAFC;color:#0F172A;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Inter',sans-serif;font-weight:800;line-height:1.15;letter-spacing:-.5px;color:#0F172A}
+a{color:inherit;text-decoration:none}
+.container{max-width:1220px;margin:0 auto;padding:0 24px}
+.btn-primary{display:inline-block;background:#4F46E5;color:#fff;font-weight:600;padding:13px 26px;border-radius:10px;transition:all .25s ease;font-size:15px;border:none;cursor:pointer;letter-spacing:-.1px}
+.btn-primary:hover{background:#4338CA;transform:translateY(-2px);box-shadow:0 14px 28px rgba(79,70,229,.35)}
+.btn-secondary{display:inline-block;background:transparent;color:#0F172A;font-weight:600;padding:13px 24px;border-radius:10px;border:1.5px solid #E2E8F0;transition:all .25s ease;font-size:15px;background:#fff}
+.btn-secondary:hover{border-color:#4F46E5;color:#4F46E5;transform:translateY(-2px)}
+.btn-hero-primary{padding:15px 30px;font-size:16px}
+.btn-hero-secondary{padding:15px 28px;font-size:16px;background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.25);backdrop-filter:blur(8px)}
+.btn-hero-secondary:hover{background:#fff;color:#4F46E5;border-color:#fff}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,.4)}50%{box-shadow:0 0 0 18px rgba(34,211,238,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes barGrow{0%{width:0}100%{width:var(--w,80%)}}
+nav{position:sticky;top:0;background:rgba(248,250,252,.92);backdrop-filter:blur(14px);z-index:100;padding:14px 0;border-bottom:1px solid rgba(15,23,42,.06)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:20px;font-weight:800;color:#0F172A;display:flex;align-items:center;gap:8px;letter-spacing:-.5px}
+.logo::before{content:'';width:28px;height:28px;background:linear-gradient(135deg,#4F46E5,#22D3EE);border-radius:8px;display:inline-block}
+.nav-cta{display:flex;gap:10px;align-items:center}
+.hero{background:linear-gradient(135deg,#1E1B4B 0%,#312E81 30%,#4F46E5 60%,#312E81 85%,#1E1B4B 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;padding:90px 0 110px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;right:-100px;width:600px;height:600px;background:radial-gradient(circle,rgba(34,211,238,.18),transparent 70%);border-radius:50%;animation:float 10s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-300px;left:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(79,70,229,.2),transparent 70%);border-radius:50%}
+.hero .container{position:relative;z-index:2;display:grid;grid-template-columns:1.1fr 1fr;gap:60px;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(34,211,238,.12);color:#22D3EE;padding:7px 14px;border-radius:50px;font-size:13px;font-weight:600;margin-bottom:22px;opacity:0;animation:fadeInUp .8s ease forwards;border:1px solid rgba(34,211,238,.3)}
+.hero-tag::before{content:'';width:8px;height:8px;background:#22D3EE;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.hero h1{font-size:clamp(38px,5vw,62px);font-weight:800;margin-bottom:20px;opacity:0;animation:fadeInUp 1s ease .15s forwards;color:#fff;letter-spacing:-1.5px}
+.hero h1 span{background:linear-gradient(135deg,#22D3EE,#A5F3FC);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(16px,1.6vw,18.5px);max-width:560px;margin-bottom:32px;opacity:0;animation:fadeInUp 1s ease .3s forwards;color:rgba(255,255,255,.82)}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .45s forwards;margin-bottom:22px}
+.no-card{display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,.7);opacity:0;animation:fadeInUp 1s ease .55s forwards}
+.no-card::before{content:'\2713';width:20px;height:20px;background:#22D3EE;color:#1E1B4B;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+.trust-strip{margin-top:46px;opacity:0;animation:fadeInUp 1s ease .7s forwards;display:flex;align-items:center;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.55);font-size:13px}
+.trust-strip strong{color:rgba(255,255,255,.75)}
+.hero-visual{position:relative;height:480px;opacity:0;animation:fadeInUp 1s ease .3s forwards}
+.dash{position:absolute;background:#fff;border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.4);overflow:hidden;animation:float 6s ease-in-out infinite}
+.dash-main{top:30px;left:0;width:420px;height:380px}
+.dash-card{top:60px;right:0;width:240px;height:180px;animation-delay:.8s;background:linear-gradient(135deg,#22D3EE,#06B6D4);color:#fff;padding:20px}
+.dash-card .ic{font-size:24px;margin-bottom:10px}
+.dash-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.85;font-weight:600}
+.dash-card .val{font-size:32px;font-weight:800;margin-top:6px;line-height:1}
+.dash-card .delta{font-size:12px;margin-top:8px;opacity:.85}
+.dash-card2{bottom:30px;right:30px;width:280px;height:130px;animation-delay:1.5s;padding:18px 20px}
+.dash-card2 .title{font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.dash-bars{display:flex;align-items:flex-end;gap:6px;height:60px}
+.dash-bars .bar{flex:1;background:linear-gradient(180deg,#4F46E5,#22D3EE);border-radius:4px}
+.dash-bars .b1{height:40%}.dash-bars .b2{height:65%}.dash-bars .b3{height:55%}
+.dash-bars .b4{height:85%}.dash-bars .b5{height:70%}.dash-bars .b6{height:95%}.dash-bars .b7{height:80%}
+.dash-main .top-bar{height:36px;background:#F1F5F9;display:flex;align-items:center;padding:0 14px;gap:6px;border-bottom:1px solid #E2E8F0}
+.dash-main .dot{width:10px;height:10px;border-radius:50%}
+.dash-main .dot.r{background:#EF4444}.dash-main .dot.y{background:#F59E0B}.dash-main .dot.g{background:#10B981}
+.dash-main .url{margin-left:auto;background:#fff;border:1px solid #E2E8F0;padding:4px 14px;border-radius:6px;font-size:11px;color:#94A3B8;font-family:'JetBrains Mono',monospace}
+.dash-main .body{padding:18px;display:grid;grid-template-columns:90px 1fr;gap:14px;height:calc(100% - 36px)}
+.dash-main .side{background:#F8FAFC;border-radius:8px;padding:10px 8px}
+.dash-main .side-item{height:10px;background:#E2E8F0;border-radius:4px;margin-bottom:8px}
+.dash-main .side-item.active{background:#4F46E5}
+.dash-main .content .heading{height:18px;width:60%;background:#E2E8F0;border-radius:4px;margin-bottom:14px}
+.dash-main .content .row-r{display:flex;gap:8px;margin-bottom:8px}
+.dash-main .content .row-r .pill{height:24px;background:#F1F5F9;border-radius:6px;flex:1}
+.dash-main .content .row-r .pill.p1{background:linear-gradient(90deg,#4F46E5,#6366F1);flex:2}
+.dash-main .content .row-r .pill.p2{background:linear-gradient(90deg,#22D3EE,#06B6D4);flex:1.5}
+.dash-main .content .progress{margin-top:14px;background:#F1F5F9;border-radius:6px;height:8px;overflow:hidden}
+.dash-main .content .progress::after{content:'';display:block;height:100%;width:72%;background:linear-gradient(90deg,#4F46E5,#22D3EE)}
+section{padding:90px 0}
+.section-tag{display:inline-block;background:#EEF2FF;color:#4F46E5;padding:6px 14px;border-radius:50px;font-size:12.5px;font-weight:600;letter-spacing:.5px;margin-bottom:14px;text-transform:uppercase}
+.section-title{font-size:clamp(30px,4vw,46px);margin-bottom:14px}
+.section-sub{font-size:17.5px;color:#475569;max-width:680px;margin:0 auto 56px}
+.center{text-align:center}
+.trust{background:#fff;padding:50px 0;border-bottom:1px solid #E2E8F0}
+.trust .label{text-align:center;font-size:13px;color:#64748B;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:28px}
+.trust .row{display:flex;flex-wrap:wrap;justify-content:space-around;align-items:center;gap:20px}
+.trust .row .brand{font-weight:800;font-size:20px;color:#94A3B8;letter-spacing:-.5px;font-family:'JetBrains Mono',monospace;opacity:.8;transition:opacity .3s ease}
+.trust .row .brand:hover{opacity:1;color:#4F46E5}
+.problems{background:#F8FAFC}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.problem-card{background:#fff;padding:34px 28px;border-radius:14px;border:1px solid #E2E8F0;transition:all .3s ease}
+.problem-card:hover{transform:translateY(-6px);box-shadow:0 22px 50px rgba(15,23,42,.08);border-color:#4F46E5}
+.problem-card .emoji{font-size:36px;margin-bottom:18px;display:inline-flex;width:60px;height:60px;background:#EEF2FF;border-radius:12px;align-items:center;justify-content:center}
+.problem-card h3{font-size:19px;margin-bottom:10px}
+.problem-card p{color:#475569;font-size:15px}
+.solution{background:#fff}
+.solution .split{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.solution .visual{height:420px;background:linear-gradient(135deg,#1E1B4B,#4F46E5);border-radius:18px;padding:30px;position:relative;overflow:hidden}
+.solution .visual::before{content:'';position:absolute;top:50%;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(34,211,238,.4),transparent 70%);border-radius:50%;transform:translateY(-50%)}
+.solution .visual .panel{background:rgba(255,255,255,.95);border-radius:10px;padding:14px 18px;margin-bottom:12px;position:relative;z-index:2}
+.solution .visual .panel .ic{font-size:18px;margin-right:8px}
+.solution .visual .panel strong{font-size:14px;color:#0F172A;font-weight:700}
+.solution .visual .panel .meta{font-size:12px;color:#64748B;margin-top:4px}
+.solution .visual .panel.task{display:flex;align-items:center;gap:10px}
+.solution .visual .panel .checkbox{width:18px;height:18px;border-radius:5px;background:#10B981;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:12px 0 12px 38px;position:relative;font-size:16.5px;color:#0F172A;font-weight:500}
+.checklist li::before{content:'\2713';position:absolute;left:0;top:12px;width:24px;height:24px;background:#4F46E5;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.features{background:#F8FAFC}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.feature-card{background:#fff;padding:32px 28px;border-radius:14px;border:1px solid #E2E8F0;transition:all .3s ease}
+.feature-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(15,23,42,.08);border-color:#4F46E5}
+.feature-card .emoji{font-size:32px;margin-bottom:16px;display:inline-flex;width:56px;height:56px;background:linear-gradient(135deg,#EEF2FF,#CFFAFE);border-radius:12px;align-items:center;justify-content:center}
+.feature-card h3{font-size:18px;margin-bottom:8px}
+.feature-card p{color:#475569;font-size:14.5px;line-height:1.6}
+.steps{background:#fff}
+.steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:50px}
+.step{padding:32px 26px;background:#F8FAFC;border-radius:14px;transition:all .3s ease;border:1px solid #E2E8F0}
+.step:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(79,70,229,.1)}
+.step-num{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#4F46E5,#22D3EE);color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.step h3{font-size:19px;margin-bottom:8px}
+.step p{color:#475569;font-size:15px}
+.testimonials{background:#F8FAFC}
+.testimonial-carousel{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 4px 28px;scrollbar-width:thin}
+.testimonial{flex:0 0 min(400px,90%);scroll-snap-align:start;background:#fff;padding:32px 28px;border-radius:14px;border:1px solid #E2E8F0}
+.testimonial .stars{color:#F59E0B;font-size:16px;margin-bottom:12px}
+.testimonial .quote{font-size:16px;color:#0F172A;margin-bottom:22px;line-height:1.65;font-weight:500}
+.testimonial .who{display:flex;align-items:center;gap:12px}
+.testimonial .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4F46E5,#22D3EE);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.testimonial .who-name{font-weight:700;color:#0F172A;font-size:14.5px}
+.testimonial .who-name small{display:block;color:#64748B;font-weight:500;margin-top:2px;font-size:12.5px}
+.stats-section{background:linear-gradient(135deg,#1E1B4B,#312E81);color:#fff;padding:80px 0}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.stat .num{font-size:50px;font-weight:800;background:linear-gradient(135deg,#22D3EE,#A5F3FC);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1;letter-spacing:-1px}
+.stat .label{margin-top:10px;font-size:14.5px;color:rgba(255,255,255,.78);font-weight:500}
+.pricing{background:#fff}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{background:#F8FAFC;padding:38px 32px;border-radius:18px;transition:all .35s ease;border:1.5px solid #E2E8F0;position:relative}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 22px 50px rgba(15,23,42,.1);border-color:#4F46E5}
+.price-card.featured{background:linear-gradient(180deg,#312E81,#4F46E5);color:#fff;border-color:#22D3EE;transform:scale(1.04)}
+.price-card.featured h3,.price-card.featured .price{color:#fff}
+.price-card.featured .price-card-sub{color:rgba(255,255,255,.7)}
+.featured-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#22D3EE;color:#1E1B4B;padding:5px 16px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+.price-card h3{font-size:20px;margin-bottom:6px}
+.price-card-sub{color:#64748B;font-size:14px;margin-bottom:18px}
+.price-card .price{font-size:46px;font-weight:800;color:#0F172A;margin:6px 0;line-height:1;letter-spacing:-1px}
+.price-card .price small{font-size:15px;font-weight:500;color:#64748B}
+.price-card.featured .price small{color:rgba(255,255,255,.7)}
+.price-card ul{list-style:none;margin:22px 0 28px}
+.price-card ul li{padding:8px 0 8px 26px;position:relative;font-size:14.5px}
+.price-card ul li::before{content:'\2713';position:absolute;left:0;color:#4F46E5;font-weight:800}
+.price-card.featured ul li::before{color:#22D3EE}
+.price-card .btn-primary{display:block;text-align:center;width:100%}
+.price-card.featured .btn-primary{background:#22D3EE;color:#1E1B4B}
+.price-card.featured .btn-primary:hover{background:#fff;color:#4F46E5}
+.faq{background:#F8FAFC}
+.faq-wrap{max-width:780px;margin:0 auto}
+details{background:#fff;border-radius:12px;margin-bottom:12px;border:1px solid #E2E8F0;overflow:hidden;transition:all .3s ease}
+details[open]{box-shadow:0 12px 30px rgba(15,23,42,.08);border-color:#4F46E5}
+summary{padding:20px 24px;cursor:pointer;font-weight:700;font-size:16.5px;color:#0F172A;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{font-size:18px;color:#4F46E5;transition:transform .3s ease}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 24px 22px;color:#475569;font-size:15px}
+.cta-final{background:linear-gradient(135deg,#1E1B4B 0%,#4F46E5 50%,#1E1B4B 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;padding:100px 0;position:relative;overflow:hidden}
+.cta-final::before{content:'';position:absolute;top:-200px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(34,211,238,.15),transparent 70%);border-radius:50%}
+.cta-final h2{font-size:clamp(30px,4.2vw,46px);margin-bottom:14px;color:#fff;text-align:center}
+.cta-final .lead{font-size:17.5px;color:rgba(255,255,255,.85);max-width:620px;margin:0 auto 40px;text-align:center}
+form{max-width:680px;margin:0 auto;background:#fff;padding:38px 36px;border-radius:18px;box-shadow:0 30px 60px rgba(0,0,0,.3);position:relative;z-index:2}
+form .form-title{font-size:22px;font-weight:800;color:#0F172A;text-align:center;margin-bottom:6px}
+form .form-sub{text-align:center;color:#64748B;font-size:14px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+form input,form select{width:100%;padding:13px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;background:#F8FAFC;color:#0F172A;transition:all .25s ease;margin-bottom:14px}
+.form-row input,.form-row select{margin-bottom:0}
+form input:focus,form select:focus{outline:none;border-color:#4F46E5;background:#fff;box-shadow:0 0 0 4px rgba(79,70,229,.1)}
+form button{width:100%;background:#4F46E5;color:#fff;border:none;padding:16px;border-radius:10px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;cursor:pointer;transition:all .25s ease;animation:pulse 2.5s ease-in-out infinite}
+form button:hover{background:#4338CA;transform:translateY(-2px)}
+form .no-card-note{text-align:center;margin-top:14px;font-size:13px;color:#64748B}
+footer{background:#0F172A;color:#94A3B8;padding:60px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;margin-bottom:40px}
+footer h4{color:#fff;font-size:15px;margin-bottom:18px;font-weight:700}
+footer p,footer a{color:#94A3B8;font-size:14px;line-height:1.9;display:block}
+footer a:hover{color:#22D3EE}
+.social-row{display:flex;gap:10px;margin-top:18px}
+.social-row a{width:34px;height:34px;border-radius:8px;background:rgba(34,211,238,.1);display:flex;align-items:center;justify-content:center;color:#22D3EE;font-size:12px;font-weight:800;transition:all .25s ease}
+.social-row a:hover{background:#22D3EE;color:#0F172A}
+.copyright{border-top:1px solid #1E293B;padding-top:24px;text-align:center;font-size:13px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.copyright .badges{display:flex;gap:14px}
+.copyright .badges span{padding:4px 10px;background:#1E293B;border-radius:6px;font-size:11px;color:#22D3EE;font-family:'JetBrains Mono',monospace}
+@media (max-width:768px){
+.hero .container{grid-template-columns:1fr;gap:40px}
+.hero-visual{height:420px}
+.problem-grid,.feature-grid,.pricing-grid,.steps-row{grid-template-columns:1fr}
+.stats-grid,.footer-grid{grid-template-columns:repeat(2,1fr)}
+.solution .split{grid-template-columns:1fr;gap:40px}
+.form-row{grid-template-columns:1fr;gap:0}
+.hero{padding:60px 0 80px}
+section{padding:60px 0}
+form{padding:26px 20px}
+.dash-main{width:90%;left:5%}
+.dash-card{width:60%;right:0}
+.dash-card2{width:70%}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<div class="logo">{{location.name}}</div>
+<div class="nav-cta">
+<a href="#" class="btn-secondary" style="padding:9px 18px;font-size:14px">Sign In</a>
+<a href="#contact" class="btn-primary" style="padding:9px 18px;font-size:14px">Start Free Trial</a>
+</div>
+</div>
+</nav>
+
+<header class="hero">
+<div class="container">
+<div>
+<span class="hero-tag">New: AI Automation just launched</span>
+<h1>The All-in-One Platform <span>Your Team Has Been Waiting For.</span></h1>
+<p>Project management, team chat, and AI automation — all in one workspace. Used by 50,000+ teams worldwide.</p>
+<div class="hero-ctas">
+<a href="#contact" class="btn-primary btn-hero-primary">Start Free 14-Day Trial</a>
+<a href="#demo" class="btn-secondary btn-hero-secondary">&#9658; Watch 2-min Demo</a>
+</div>
+<div class="no-card">No credit card required &middot; Full feature access &middot; Cancel anytime</div>
+<div class="trust-strip">
+<span><strong>4.9&#9733;</strong> on G2</span>
+<span>&bull;</span>
+<span><strong>SOC 2</strong> Certified</span>
+<span>&bull;</span>
+<span><strong>99.99%</strong> Uptime</span>
+<span>&bull;</span>
+<span><strong>50,000+</strong> Teams</span>
+</div>
+</div>
+<div class="hero-visual">
+<div class="dash dash-main">
+<div class="top-bar">
+<div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+<div class="url">app.{{location.name}}.com/projects</div>
+</div>
+<div class="body">
+<div class="side">
+<div class="side-item active"></div>
+<div class="side-item"></div>
+<div class="side-item"></div>
+<div class="side-item"></div>
+<div class="side-item"></div>
+</div>
+<div class="content">
+<div class="heading"></div>
+<div class="row-r"><div class="pill p1"></div><div class="pill p2"></div></div>
+<div class="row-r"><div class="pill p2"></div><div class="pill p1"></div></div>
+<div class="row-r"><div class="pill p1"></div><div class="pill"></div></div>
+<div class="progress"></div>
+</div>
+</div>
+</div>
+<div class="dash dash-card">
+<div class="ic">&#128202;</div>
+<div class="label">Active Projects</div>
+<div class="val">247</div>
+<div class="delta">&#9650; 12% this week</div>
+</div>
+<div class="dash dash-card2">
+<div class="title">Weekly Velocity</div>
+<div class="dash-bars">
+<div class="bar b1"></div><div class="bar b2"></div><div class="bar b3"></div>
+<div class="bar b4"></div><div class="bar b5"></div><div class="bar b6"></div><div class="bar b7"></div>
+</div>
+</div>
+</div>
+</div>
+</header>
+
+<section class="trust">
+<div class="container">
+<div class="label">Trusted by teams at</div>
+<div class="row">
+<div class="brand">ACME</div>
+<div class="brand">TechCo</div>
+<div class="brand">stripe.</div>
+<div class="brand">Notion</div>
+<div class="brand">Spotify</div>
+<div class="brand">Linear</div>
+<div class="brand">Vercel</div>
+</div>
+</div>
+</section>
+
+<section class="problems">
+<div class="container center">
+<span class="section-tag">The Problem</span>
+<h2 class="section-title">Tool Sprawl Is Killing Your Team's Focus</h2>
+<p class="section-sub">Most teams pay for 7+ tools that don't talk to each other. Context lives in 12 tabs. Productivity dies a thousand small deaths.</p>
+<div class="problem-grid">
+<div class="problem-card" style="text-align:left"><span class="emoji">&#128274;</span><h3>Tools That Don't Talk</h3><p>Slack, Asana, Notion, Drive, Calendly, Loom — they all charge separately and none of them talk to each other.</p></div>
+<div class="problem-card" style="text-align:left"><span class="emoji">&#128221;</span><h3>Context Lost in 12 Tabs</h3><p>Half your team's day is "where did we put that?" Tickets, docs, recordings, deadlines — scattered across apps.</p></div>
+<div class="problem-card" style="text-align:left"><span class="emoji">&#128176;</span><h3>$$ Stacking Up</h3><p>The average team pays $87/user/month across SaaS tools. Most features go unused. Budget keeps growing.</p></div>
+</div>
+</div>
+</section>
+
+<section class="solution" id="demo">
+<div class="container">
+<div class="split">
+<div>
+<span class="section-tag">The Solution</span>
+<h2 class="section-title" style="font-size:42px;text-align:left">One Workspace. Everything Connected.</h2>
+<p style="color:#475569;font-size:17px;margin-bottom:10px">Projects, docs, chat, and automation — under one login, one bill, one URL. Built for teams that ship.</p>
+<ul class="checklist">
+<li>Replace 7+ tools with a single workspace</li>
+<li>Real-time chat, async docs, project tracking — all linked</li>
+<li>AI agents that draft, summarize, and automate</li>
+<li>Enterprise security: SOC 2, SSO, audit logs</li>
+<li>Native iOS, Android, desktop, web</li>
+</ul>
+<a href="#contact" class="btn-primary" style="margin-top:20px;padding:14px 28px;font-size:15px">Start Free 14-Day Trial &rarr;</a>
+</div>
+<div class="visual">
+<div class="panel"><span class="ic">&#128221;</span><strong>Project Brief: Q4 Launch</strong><div class="meta">Updated 2 hours ago &middot; 4 collaborators</div></div>
+<div class="panel task"><div class="checkbox">&#10003;</div><div><strong>Design landing page mockups</strong><div class="meta">Maya R. &middot; Due Friday</div></div></div>
+<div class="panel task"><div class="checkbox" style="background:#F59E0B">&#9203;</div><div><strong>Run pricing experiments</strong><div class="meta">David K. &middot; In Progress</div></div></div>
+<div class="panel"><span class="ic">&#129302;</span><strong>AI Summary Ready</strong><div class="meta">3 action items &middot; 2 risks flagged</div></div>
+<div class="panel task"><div class="checkbox" style="background:#4F46E5">&#128172;</div><div><strong>5 new messages in #marketing</strong><div class="meta">Today, 11:42 AM</div></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="features">
+<div class="container center">
+<span class="section-tag">Features</span>
+<h2 class="section-title">Built for How Teams Actually Work</h2>
+<p class="section-sub">Six core capabilities that replace your bloated toolchain. Designed for speed, built for scale.</p>
+<div class="feature-grid">
+<div class="feature-card"><span class="emoji">&#128101;</span><h3>Real-time Collaboration</h3><p>Live cursors, instant comments, threaded discussions. Work together as if you're in the same room.</p></div>
+<div class="feature-card"><span class="emoji">&#129302;</span><h3>AI Automation</h3><p>Auto-draft replies, summarize meetings, generate reports. Your AI teammate that never sleeps.</p></div>
+<div class="feature-card"><span class="emoji">&#128200;</span><h3>Advanced Analytics</h3><p>Track velocity, time-to-ship, project health. Custom dashboards in 60 seconds — no SQL required.</p></div>
+<div class="feature-card"><span class="emoji">&#9881;</span><h3>Custom Workflows</h3><p>Drag-and-drop automation builder. If-this-then-that, but for your entire stack. No-code.</p></div>
+<div class="feature-card"><span class="emoji">&#128279;</span><h3>API &amp; Integrations</h3><p>200+ native integrations. Robust REST &amp; GraphQL APIs. Webhooks for everything that matters.</p></div>
+<div class="feature-card"><span class="emoji">&#128737;</span><h3>Enterprise SSO</h3><p>SAML SSO, SCIM provisioning, role-based access, audit logs. SOC 2 Type II certified.</p></div>
+</div>
+</div>
+</section>
+
+<section class="steps">
+<div class="container center">
+<span class="section-tag">Getting Started</span>
+<h2 class="section-title">Up and Running in 3 Minutes</h2>
+<div class="steps-row">
+<div class="step"><div class="step-num">1</div><h3>Sign up free</h3><p>14-day free trial of every feature. No credit card. Invite your whole team in one click.</p></div>
+<div class="step"><div class="step-num">2</div><h3>Import &amp; connect</h3><p>One-click import from Asana, Notion, Slack, Jira, Trello. We map everything automatically.</p></div>
+<div class="step"><div class="step-num">3</div><h3>Ship faster</h3><p>Set up your first AI automation, see velocity go up, cancel your other 6 tools. Done.</p></div>
+</div>
+</div>
+</section>
+
+<section class="testimonials">
+<div class="container">
+<div class="center">
+<span class="section-tag">Customer Stories</span>
+<h2 class="section-title">Loved by Modern Teams</h2>
+<p class="section-sub">From 5-person startups to 5,000-person enterprises. Real teams, real outcomes.</p>
+</div>
+<div class="testimonial-carousel">
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"We canceled Slack, Asana, and Notion in our first month. Saved $14K/year and the team has never been more focused. Best decision of 2024."</div><div class="who"><div class="avatar">MR</div><div class="who-name">Maya Rodriguez<small>Head of Ops &middot; Linear-stage startup</small></div></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"The AI summary feature pays for itself. Meeting notes, action items, follow-up emails — auto-generated. Our managers got 5 hours back per week."</div><div class="who"><div class="avatar">DK</div><div class="who-name">David Kim<small>VP Engineering &middot; Series C SaaS</small></div></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"SOC 2, SSO, and audit logs out of the box meant our security team approved this in 48 hours — vs months for other tools we evaluated."</div><div class="who"><div class="avatar">JN</div><div class="who-name">Jessica Nakamura<small>CTO &middot; Fortune 500</small></div></div></div>
+</div>
+</div>
+</section>
+
+<section class="stats-section">
+<div class="container">
+<div class="center" style="margin-bottom:46px">
+<h2 style="color:#fff;font-size:clamp(28px,4vw,40px);margin-bottom:10px">Numbers Don't Lie</h2>
+<p style="color:rgba(255,255,255,.78);font-size:17px">The platform high-performing teams choose.</p>
+</div>
+<div class="stats-grid">
+<div class="stat"><div class="num">50,000+</div><div class="label">Active Teams</div></div>
+<div class="stat"><div class="num">99.99%</div><div class="label">Uptime SLA</div></div>
+<div class="stat"><div class="num">4.9&#9733;</div><div class="label">G2 Rating</div></div>
+<div class="stat"><div class="num">SOC 2</div><div class="label">Type II Certified</div></div>
+</div>
+</div>
+</section>
+
+<section class="pricing">
+<div class="container center">
+<span class="section-tag">Pricing</span>
+<h2 class="section-title">Simple, Transparent Pricing</h2>
+<p class="section-sub">Free forever for small teams. Per-user pricing as you grow. No surprises.</p>
+<div class="pricing-grid">
+<div class="price-card"><h3>Starter</h3><div class="price-card-sub">For small teams getting started</div><div class="price">$0<small>/forever</small></div><ul><li>Up to 5 users</li><li>Unlimited projects</li><li>Real-time chat &amp; docs</li><li>Mobile + desktop apps</li><li>Community support</li></ul><a href="#contact" class="btn-primary" style="background:#0F172A">Get Started Free</a></div>
+<div class="price-card featured"><div class="featured-badge">Most Popular</div><h3>Pro</h3><div class="price-card-sub">For growing teams that ship</div><div class="price">$19<small>/user/mo</small></div><ul><li>Unlimited users</li><li>AI automation &amp; summaries</li><li>Advanced analytics</li><li>200+ integrations</li><li>Priority support &middot; 24/7</li></ul><a href="#contact" class="btn-primary">Start 14-Day Trial</a></div>
+<div class="price-card"><h3>Enterprise</h3><div class="price-card-sub">For organizations at scale</div><div class="price">Custom</div><ul><li>Everything in Pro</li><li>SAML SSO &amp; SCIM</li><li>Dedicated success manager</li><li>Custom data residency</li><li>99.99% uptime SLA</li></ul><a href="#contact" class="btn-primary" style="background:#0F172A">Contact Sales</a></div>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<div class="container">
+<div class="center">
+<span class="section-tag">FAQ</span>
+<h2 class="section-title">Questions, Answered</h2>
+<p class="section-sub">Still wondering? Email {{location.email}} — we usually reply within an hour.</p>
+</div>
+<div class="faq-wrap">
+<details><summary>Is it really free forever?<span class="chevron">&#9662;</span></summary><p>Yes. Up to 5 users get full access to projects, docs, chat, and mobile/desktop apps forever. No credit card, no time limit. Upgrade to Pro only when you outgrow it.</p></details>
+<details><summary>What's included in the 14-day trial?<span class="chevron">&#9662;</summary><p>Everything in Pro: AI automation, advanced analytics, all 200+ integrations, priority support. No card required. If you don't upgrade, you automatically drop to the free Starter plan — nothing is deleted.</p></details>
+<details><summary>How does AI Automation work?<span class="chevron">&#9662;</summary><p>Built-in AI agents draft replies, summarize threads, extract action items from meetings, and trigger workflows. You can also build your own with our no-code automation builder. All data stays in your workspace — never used for training.</p></details>
+<details><summary>Can you import from our existing tools?<span class="chevron">&#9662;</summary><p>Yes — one-click importers for Asana, Notion, Slack, Jira, Trello, Monday, ClickUp, and Linear. Most migrations finish in under 10 minutes. Need help? Our team will migrate you free.</p></details>
+<details><summary>Is it secure enough for enterprise?<span class="chevron">&#9662;</summary><p>SOC 2 Type II certified, GDPR compliant, ISO 27001 in progress. SAML SSO, SCIM, role-based access, audit logs, custom data residency on Enterprise plan.</p></details>
+<details><summary>What if we need to cancel?<span class="chevron">&#9662;</summary><p>Cancel anytime, no questions. Your data is yours — export everything in standard formats (CSV, JSON, Markdown) with one click. Enterprise customers get a 60-day data retention SLA.</p></details>
+</div>
+</div>
+</section>
+
+<section class="cta-final">
+<div class="container">
+<div class="center">
+<h2>Start Your 14-Day Free Trial</h2>
+<p class="lead">No credit card required. Full feature access. Invite your whole team and ship faster within 24 hours.</p>
+</div>
+<form id="contact" method="post">
+<div class="form-title">Create Your Workspace</div>
+<div class="form-sub">Takes less than 60 seconds &middot; no card required</div>
+<div class="form-row">
+<input type="text" name="full_name" placeholder="Full Name" required>
+<input type="email" name="work_email" placeholder="Work Email" required>
+</div>
+<div class="form-row">
+<input type="tel" name="phone" placeholder="Phone (optional)">
+<input type="text" name="company" placeholder="Company" required>
+</div>
+<div class="form-row">
+<select name="team_size" required>
+<option value="">Team Size</option>
+<option>Just me</option>
+<option>2 – 10</option>
+<option>11 – 50</option>
+<option>51 – 200</option>
+<option>200+</option>
+</select>
+<select name="use_case" required>
+<option value="">Primary Use Case</option>
+<option>Project management</option>
+<option>Team communication</option>
+<option>Documentation / wiki</option>
+<option>Product development</option>
+<option>Operations &amp; HR</option>
+<option>Other</option>
+</select>
+</div>
+<button type="submit">Start Free Trial &rarr;</button>
+<div class="no-card-note">By signing up, you agree to our Terms. No credit card. Cancel anytime.</div>
+</form>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="logo" style="margin-bottom:14px"><span style="color:#fff">{{location.name}}</span></div>
+<p>The all-in-one workspace your team has been waiting for. Built in {{location.city}}. Loved worldwide.</p>
+<div class="social-row">
+<a href="#" aria-label="Twitter">TW</a>
+<a href="#" aria-label="LinkedIn">IN</a>
+<a href="#" aria-label="GitHub">GH</a>
+<a href="#" aria-label="YouTube">YT</a>
+</div>
+</div>
+<div>
+<h4>Product</h4>
+<a href="#">Features</a>
+<a href="#">Pricing</a>
+<a href="#">Integrations</a>
+<a href="#">Changelog</a>
+</div>
+<div>
+<h4>Resources</h4>
+<a href="#">Documentation</a>
+<a href="#">API Reference</a>
+<a href="#">Customer Stories</a>
+<a href="#">Status Page</a>
+</div>
+<div>
+<h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<p>{{location.fullAddress}}</p>
+</div>
+</div>
+<div class="copyright">
+<div>&copy; {{location.name}}. All rights reserved.</div>
+<div class="badges">
+<span>SOC 2</span><span>GDPR</span><span>ISO 27001</span>
+</div>
+</div>
+</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "appName": { "message": "Clone2GHL" },
+  "clonePage": { "message": "⚡ Clonar esta página" },
+  "openDashboard": { "message": "📊 Panel" },
+  "library": { "message": "📚 Biblioteca" },
+  "settings": { "message": "⚙️ Ajustes" },
+  "currentPage": { "message": "Página actual" },
+  "nicheIndustry": { "message": "Nicho / Industria" },
+  "aiOptimize": { "message": "Optimizar con IA" },
+  "aiOptimizeSub": { "message": "Reescribe el texto con IA" },
+  "signIn": { "message": "Iniciar sesión" },
+  "activatePlan": { "message": "Activar plan" },
+  "forgotPassword": { "message": "¿Olvidaste tu contraseña?" },
+  "upgradePlan": { "message": "Mejora o activa tu plan" },
+  "creditsRemaining": { "message": "$COUNT$ clones gratis restantes", "placeholders": { "count": { "content": "$1" } } },
+  "planActive": { "message": "Activo" },
+  "planExpired": { "message": "Plan vencido: renueva para reactivar" },
+  "accountSuspended": { "message": "Cuenta suspendida: contacta con soporte" },
+  "syncFunnels": { "message": "Sincronizar embudos" },
+  "pushToGhl": { "message": "Enviar a GoHighLevel" }
+}

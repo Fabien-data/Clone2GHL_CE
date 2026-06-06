@@ -98,7 +98,59 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     });
   }
 
+  // ── Invoice lifecycle ────────────────────────────────────────────────────────
+  // Persist every paid / failed invoice so we can show users their billing history
+  // and let the owner see the global revenue trail from the Admin tab.
+  if (event.type === 'invoice.payment_succeeded' || event.type === 'invoice.payment_failed') {
+    const invoice = event.data.object;
+    const customerId = invoice.customer;
+    const priceId = invoice.lines?.data?.[0]?.price?.id || null;
+    const plan = priceId ? planFromPriceId(priceId) : null;
+    const status = event.type === 'invoice.payment_succeeded' ? 'paid' : 'failed';
+
+    await writeDb((draft) => {
+      const user = draft.users.find(u => u.stripeCustomerId === customerId);
+      if (!user) return draft;
+
+      // Upsert by stripe invoice ID
+      const existing = draft.invoices.find(i => i.stripeInvoiceId === invoice.id);
+      const record = {
+        id: existing?.id || `inv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        userId: user.id,
+        userEmail: user.email,
+        stripeInvoiceId: invoice.id,
+        stripeCustomerId: customerId,
+        plan,
+        amount: typeof invoice.amount_paid === 'number' ? invoice.amount_paid : (invoice.amount_due || 0),
+        currency: invoice.currency || 'usd',
+        status,
+        periodStart: invoice.period_start ? new Date(invoice.period_start * 1000).toISOString() : null,
+        periodEnd: invoice.period_end ? new Date(invoice.period_end * 1000).toISOString() : null,
+        hostedInvoiceUrl: invoice.hosted_invoice_url || null,
+        invoicePdf: invoice.invoice_pdf || null,
+        number: invoice.number || null,
+        createdAt: existing?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      if (existing) Object.assign(existing, record);
+      else draft.invoices.unshift(record);
+
+      // Cap the audit list size
+      if (draft.invoices.length > 10000) draft.invoices.length = 10000;
+      return draft;
+    });
+  }
+
   return res.json({ received: true });
+});
+
+// ── GET /api/billing/invoices ── current user's invoice history ────────────────
+router.get('/invoices', authRequired, async (req, res) => {
+  const db = await readDb();
+  const mine = db.invoices
+    .filter(i => i.userId === req.user.userId)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return res.json({ invoices: mine });
 });
 
 export default router;

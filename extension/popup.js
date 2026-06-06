@@ -37,27 +37,23 @@ async function loadSettings() {
   try {
     const resp = await chrome.runtime.sendMessage({ action: 'GET_SETTINGS' });
     if (!resp?.success) return;
-    const s = resp.settings;
+    let s = resp.settings;
+
+    // Prefer a fresh sync so a purchase/expiry/trial change on clone2ghl.com is
+    // reflected the moment the popup opens. Falls back to cached settings offline.
+    if (s?.backendEnabled && s?.backendToken) {
+      const synced = await chrome.runtime.sendMessage({ action: 'BACKEND_GET_USAGE' }).catch(() => null);
+      if (synced?.success && synced.settings) s = synced.settings;
+    }
 
     // Plan badge
     const badge = document.getElementById('plan-badge');
     if (badge) {
-      badge.textContent = s.plan.toUpperCase();
+      badge.textContent = (s.plan || 'free').toUpperCase();
       badge.className = `plan-badge ${s.plan}`;
     }
 
-    // Credits bar
-    const bar = document.getElementById('credits-bar');
-    if (bar) {
-      if (s.plan === 'free') {
-        bar.innerHTML = `<span class="credits-num">${s.credits}</span> free clone${s.credits !== 1 ? 's' : ''} remaining &nbsp;·&nbsp; <button class="upgrade-link" id="upgrade-btn">Upgrade</button>`;
-        document.getElementById('upgrade-btn')?.addEventListener('click', () => {
-          chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') + '#pricing' });
-        });
-      } else {
-        bar.innerHTML = `<span class="credits-num">${s.plan.charAt(0).toUpperCase() + s.plan.slice(1)}</span> plan — unlimited clones`;
-      }
-    }
+    renderCreditsBar(s);
 
     // Disable AI toggle if no OpenAI key
     if (!s.openaiApiKey) {
@@ -71,6 +67,44 @@ async function loadSettings() {
   } catch (e) {
     console.warn('Failed to load settings', e);
   }
+}
+
+const openUrl = (url) => { chrome.tabs.create({ url }); };
+const dash = (hash) => chrome.runtime.getURL('dashboard.html') + (hash || '');
+
+// Renders the plan/trial/upgrade status strip with the right CTA.
+function renderCreditsBar(s) {
+  const bar = document.getElementById('credits-bar');
+  if (!bar) return;
+
+  if (s.plan && s.plan !== 'free') {
+    bar.innerHTML = `<span class="credits-num">${s.plan.charAt(0).toUpperCase() + s.plan.slice(1)}</span> plan — unlimited clones`;
+    return;
+  }
+
+  const upgradeTarget = () => openUrl(C2GUpgrade.appendRef(s.upgradeUrl, s.capturedRef) || dash('#pricing'));
+
+  // Must connect a GHL account before the trial unlocks.
+  if (s.trialActivationRequired) {
+    bar.innerHTML = `<span>🔗 Connect GoHighLevel to start your free trial</span> &nbsp;·&nbsp; <button class="upgrade-link" id="connect-ghl-btn">Connect</button>`;
+    document.getElementById('connect-ghl-btn')?.addEventListener('click', () => openUrl(dash('#settings')));
+    return;
+  }
+
+  // Trial/plan over → upgrade.
+  if (s.upgradeRequired) {
+    const why = s.state === 'trial_expired' ? 'Your free trial ended'
+      : s.state === 'plan_expired' ? 'Your plan expired'
+      : "You're out of free clones";
+    bar.innerHTML = `<span style="color:var(--gold-light,#e6b800);">${why}</span> &nbsp;·&nbsp; <button class="upgrade-link" id="upgrade-btn">Upgrade</button>`;
+    document.getElementById('upgrade-btn')?.addEventListener('click', upgradeTarget);
+    return;
+  }
+
+  // Active trial.
+  const days = typeof s.daysLeft === 'number' ? ` · ${s.daysLeft} day${s.daysLeft !== 1 ? 's' : ''} left` : '';
+  bar.innerHTML = `<span class="credits-num">${s.credits}</span> free clone${s.credits !== 1 ? 's' : ''} remaining${days} &nbsp;·&nbsp; <button class="upgrade-link" id="upgrade-btn">Upgrade</button>`;
+  document.getElementById('upgrade-btn')?.addEventListener('click', upgradeTarget);
 }
 
 async function startClone() {
@@ -105,7 +139,18 @@ async function startClone() {
       },
     });
 
-    if (!cloneResp?.success) throw new Error(cloneResp?.error || 'Clone failed');
+    if (!cloneResp?.success) {
+      // Route the failure: connect-GHL (start trial) vs upgrade vs generic error.
+      if (cloneResp?.data?.ghlRequired || cloneResp?.status === 403) {
+        showConnectGhl(cloneResp?.error);
+      } else if (cloneResp?.data?.upgradeRequired || /credit|limit|upgrade|trial|402/i.test(cloneResp?.error || '')) {
+        showPaywall(cloneResp?.error, cloneResp?.data?.upgrade?.checkoutUrl);
+      } else {
+        showStatus(`Error: ${cloneResp?.error || 'Clone failed'}`, 'error');
+      }
+      setLoading(false);
+      return;
+    }
 
     showStatus('✓ Saved to your dashboard!', 'success');
     btn.textContent = '✓ Done!';
@@ -119,9 +164,57 @@ async function startClone() {
     }, 1200);
 
   } catch (err) {
-    showStatus(`Error: ${err.message}`, 'error');
+    // Surface a clear upgrade path when the failure is a credit/quota limit.
+    if (/credit|limit|upgrade|trial|402/i.test(err.message || '')) {
+      showPaywall(err.message);
+    } else {
+      showStatus(`Error: ${err.message}`, 'error');
+    }
     setLoading(false);
   }
+}
+
+// Renders an inline call-to-action in the popup status area. `checkoutUrl` (the
+// GHL order page) is preferred; falls back to the in-app pricing tab.
+function showPaywall(reason, checkoutUrl) {
+  const el = document.getElementById('status-box');
+  if (!el) return;
+  el.className = 'status-box error';
+  el.style.display = 'block';
+  el.textContent = '';
+  const msg = document.createElement('div');
+  msg.style.marginBottom = '8px';
+  msg.textContent = reason || "You're out of free clones for now.";
+  const btn = document.createElement('button');
+  btn.className = 'upgrade-link';
+  btn.textContent = 'Upgrade your plan →';
+  btn.addEventListener('click', () => {
+    openUrl(checkoutUrl || dash('#pricing'));
+    window.close();
+  });
+  el.appendChild(msg);
+  el.appendChild(btn);
+}
+
+// Prompts the user to connect their GoHighLevel account so the trial can start.
+function showConnectGhl(reason) {
+  const el = document.getElementById('status-box');
+  if (!el) return;
+  el.className = 'status-box error';
+  el.style.display = 'block';
+  el.textContent = '';
+  const msg = document.createElement('div');
+  msg.style.marginBottom = '8px';
+  msg.textContent = reason || 'Connect your GoHighLevel account to start your free trial.';
+  const btn = document.createElement('button');
+  btn.className = 'upgrade-link';
+  btn.textContent = 'Connect GoHighLevel →';
+  btn.addEventListener('click', () => {
+    openUrl(dash('#settings'));
+    window.close();
+  });
+  el.appendChild(msg);
+  el.appendChild(btn);
 }
 
 function showStatus(text, type) {

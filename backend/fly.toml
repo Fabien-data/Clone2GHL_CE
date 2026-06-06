@@ -1,0 +1,43 @@
+# Fly.io config for the Clone2GHL backend. Deploy from the backend/ directory:
+#   flyctl deploy
+#
+# The JSON-file database (data/db.json) and rehosted assets live on a PERSISTENT
+# volume mounted at /app/data, so they survive restarts, redeploys, and machine
+# auto-stop. Create the volume once before the first deploy:
+#   flyctl volumes create clone2ghl_data --region iad --size 1
+#
+# NOTE: `app` must be globally unique on Fly — change it if "clone2ghl-api" is taken,
+# and keep the mount `source` in sync with the volume name you created.
+
+app = "clone2ghl-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  # Set to 1 during Chrome Web Store review to avoid any cold-start during testing.
+  min_machines_running = 0
+
+[[http_service.checks]]
+  grace_period = "15s"
+  interval = "30s"
+  method = "GET"
+  path = "/health"
+  timeout = "5s"
+
+[[mounts]]
+  source = "clone2ghl_data"
+  destination = "/app/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"   # bump to "512mb" if you see out-of-memory restarts under load

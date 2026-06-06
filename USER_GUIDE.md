@@ -1,8 +1,10 @@
 # Clone2GHL User Guide
-## Complete Setup & Usage Manual (v1.0.1)
+## Complete Setup & Usage Manual (v1.0.3)
 
-**Last Updated:** April 16, 2026  
-**Version:** 1.0.1  
+> **Note:** The canonical, formatted User Guide is **[USER_GUIDE.html](USER_GUIDE.html)**. This Markdown copy may lag behind the HTML version.
+
+**Last Updated:** June 4, 2026  
+**Version:** 1.0.3  
 **Status:** Production Ready
 
 ---

@@ -4,7 +4,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-  background: #0F0F1A;
+  background: #000000;
   color: white;
   width: 340px;
   min-height: 100px;
@@ -18,7 +18,7 @@ body {
 /* ─── Header ──────────────────────────────────────────────────────────────── */
 
 .popup-header {
-  background: linear-gradient(135deg, #7C3AED, #5B21B6);
+  background: linear-gradient(135deg, #D9A620, #4A3200);
   padding: 14px 16px;
   display: flex;
   align-items: center;
@@ -39,7 +39,14 @@ body {
   letter-spacing: -0.3px;
 }
 
-.brand-accent { color: #F97316; }
+.brand-accent { color: #F0BB2D; }
+
+.brand-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
 
 .plan-badge {
   background: rgba(255,255,255,0.2);
@@ -51,7 +58,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-.plan-badge.pro { background: rgba(249,115,22,0.3); border-color: rgba(249,115,22,0.5); color: #FED7AA; }
+.plan-badge.pro { background: rgba(240,187,45,0.3); border-color: rgba(240,187,45,0.5); color: #1A1405; }
 .plan-badge.agency { background: rgba(16,185,129,0.3); border-color: rgba(16,185,129,0.5); color: #6EE7B7; }
 
 /* ─── Page Card ───────────────────────────────────────────────────────────── */
@@ -117,8 +124,8 @@ body {
   transition: border-color 0.15s;
 }
 
-.field-select:focus { border-color: rgba(124,58,237,0.6); }
-.field-select option { background: #1A1A2E; }
+.field-select:focus { border-color: rgba(217,166,32,0.6); }
+.field-select option { background: #1F1F1F; }
 
 /* ─── Options ─────────────────────────────────────────────────────────────── */
 
@@ -179,7 +186,7 @@ body {
   transition: .2s;
 }
 
-.toggle input:checked + .toggle-slider { background: #7C3AED; }
+.toggle input:checked + .toggle-slider { background: #D9A620; }
 .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
 
 /* ─── Status ──────────────────────────────────────────────────────────────── */
@@ -192,7 +199,7 @@ body {
   line-height: 1.4;
 }
 
-.status-box.info    { background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); color: #C4B5FD; }
+.status-box.info    { background: rgba(217,166,32,0.15); border: 1px solid rgba(217,166,32,0.3); color: #F0BB2D; }
 .status-box.success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; }
 .status-box.error   { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.3);  color: #FCA5A5; }
 
@@ -202,7 +209,7 @@ body {
   display: block;
   width: calc(100% - 32px);
   margin: 12px 16px 0;
-  background: linear-gradient(135deg, #7C3AED, #5B21B6);
+  background: linear-gradient(135deg, #D9A620, #4A3200);
   color: white;
   border: none;
   padding: 12px;
@@ -241,9 +248,9 @@ body {
   padding: 8px 16px 4px;
 }
 
-.credits-bar .credits-num { color: #F59E0B; font-weight: 600; }
+.credits-bar .credits-num { color: #F0BB2D; font-weight: 600; }
 .credits-bar .upgrade-link {
-  color: #7C3AED;
+  color: #D9A620;
   cursor: pointer;
   text-decoration: underline;
   background: none;

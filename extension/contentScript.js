@@ -35,7 +35,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #7C3AED, #5B21B6);
+        background: linear-gradient(135deg, #D9A620, #4A3200);
         color: white;
         border: none;
         border-radius: 50px;
@@ -44,15 +44,15 @@
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.5);
+        box-shadow: 0 4px 20px rgba(217, 166, 32, 0.5);
         transition: all 0.2s ease;
         letter-spacing: 0.2px;
         user-select: none;
       }
       #${BUTTON_ID}:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 28px rgba(124, 58, 237, 0.6);
-        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        box-shadow: 0 8px 28px rgba(217, 166, 32, 0.6);
+        background: linear-gradient(135deg, #F0BB2D, #D9A620);
       }
       #${BUTTON_ID}:active {
         transform: translateY(0);
@@ -80,8 +80,8 @@
         right: 24px;
         z-index: 2147483647;
         width: 320px;
-        background: #1A1A2E;
-        border: 1px solid rgba(124, 58, 237, 0.3);
+        background: #1F1F1F;
+        border: 1px solid rgba(217, 166, 32, 0.3);
         border-radius: 16px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -94,7 +94,7 @@
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
       .c2ghl-panel-header {
-        background: linear-gradient(135deg, #7C3AED, #5B21B6);
+        background: linear-gradient(135deg, #D9A620, #4A3200);
         padding: 16px 20px;
         display: flex;
         align-items: center;
@@ -151,7 +151,7 @@
         cursor: pointer;
         appearance: auto;
       }
-      .c2ghl-select option { background: #1A1A2E; color: white; }
+      .c2ghl-select option { background: #1F1F1F; color: white; }
       .c2ghl-toggle-row {
         display: flex;
         align-items: center;
@@ -189,11 +189,11 @@
         border-radius: 50%;
         transition: .2s;
       }
-      .c2ghl-toggle input:checked + .c2ghl-toggle-slider { background: #7C3AED; }
+      .c2ghl-toggle input:checked + .c2ghl-toggle-slider { background: #D9A620; }
       .c2ghl-toggle input:checked + .c2ghl-toggle-slider::before { transform: translateX(18px); }
       .c2ghl-btn-primary {
         width: 100%;
-        background: linear-gradient(135deg, #7C3AED, #5B21B6);
+        background: linear-gradient(135deg, #D9A620, #4A3200);
         color: white;
         border: none;
         padding: 12px;
@@ -225,7 +225,7 @@
         margin-bottom: 12px;
         display: none;
       }
-      .c2ghl-status.info { background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3); color: #C4B5FD; }
+      .c2ghl-status.info { background: rgba(217,166,32,0.2); border: 1px solid rgba(217,166,32,0.3); color: #F0BB2D; }
       .c2ghl-status.success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; }
       .c2ghl-status.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; }
       .c2ghl-spinner {
@@ -255,10 +255,13 @@
   function createFloatingButton() {
     const btn = document.createElement('button');
     btn.id = BUTTON_ID;
+    btn.setAttribute('type', 'button');
+    btn.setAttribute('aria-label', 'Clone this page to GoHighLevel');
+    btn.setAttribute('aria-haspopup', 'dialog');
     btn.innerHTML = `
-      <span class="c2ghl-icon">⚡</span>
+      <span class="c2ghl-icon" aria-hidden="true">⚡</span>
       <span>Clone to GHL</span>
-      <span class="c2ghl-dismiss" id="c2ghl-dismiss-btn" title="Dismiss">×</span>
+      <span class="c2ghl-dismiss" id="c2ghl-dismiss-btn" role="button" aria-label="Dismiss Clone2GHL button" title="Dismiss">×</span>
     `;
 
     btn.addEventListener('click', (e) => {
@@ -470,6 +473,10 @@
         if (!document.getElementById(PANEL_ID)) createPanel();
         document.getElementById(PANEL_ID).style.display = 'block';
         panelVisible = true;
+        if (message.niche) {
+          const sel = document.getElementById('c2ghl-niche-select');
+          if (sel) sel.value = message.niche;
+        }
         sendResponse({ success: true });
       }
     });

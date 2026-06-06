@@ -4,6 +4,7 @@
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let funnelLibrary = [];
+let nicheWebsites = [];
 let myFunnels = [];
 let settings = {};
 let currentFunnelId = null;
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupLogoTab();
   setupAccountTab();
   setupSettingsTab();
+  setupDiscoverTab();
   setupModal();
   setupDevModeToggle();
   setupOwnerButtons();
@@ -51,17 +53,44 @@ async function loadAll() {
   const fr = await sendMsg({ action: 'GET_FUNNELS' });
   myFunnels = fr?.funnels || [];
 
-  // Load funnel library
+  // Load funnel library (metadata only; HTML loads lazily per template)
   try {
     const resp = await fetch(chrome.runtime.getURL('data/funnelLibrary.json'));
     funnelLibrary = await resp.json();
   } catch { funnelLibrary = []; }
 
+  // Load niche websites for discover tab
+  try {
+    const resp2 = await fetch(chrome.runtime.getURL('data/nicheWebsites.json'));
+    nicheWebsites = await resp2.json();
+  } catch { nicheWebsites = []; }
+
   // Load watchlist
   const wlResult = await sendMsg({ action: 'WATCHLIST_GET' });
   watchlist = wlResult?.watchlist || [];
 
+  // Resolve owner status so the Admin nav shows for Sadiq + other OWNER_EMAILS.
+  await refreshOwnerStatus();
+
+  // Capture an inbound affiliate ref code (e.g. dashboard.html?ref=CODE) so it can
+  // be attributed when this user later upgrades on the GHL checkout.
+  try {
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref && ref !== settings.capturedRef) {
+      await sendMsg({ action: 'SAVE_SETTINGS', data: { capturedRef: ref.slice(0, 80) } });
+      settings.capturedRef = ref.slice(0, 80);
+    }
+  } catch { /* no-op */ }
+
   updateSidebarPlanInfo();
+  applyFeatureGating();
+  showActivationBannerIfNeeded();
+  showUpgradeBannerIfNeeded();
+}
+
+// Append the captured affiliate ref to the configured GHL checkout URL.
+function ghlCheckoutUrl(extraRef) {
+  return C2GUpgrade.appendRef(settings.upgradeUrl || '', extraRef || settings.capturedRef);
 }
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
@@ -79,15 +108,87 @@ function setupNavigation() {
   });
 }
 
+// ─── Per-Plan Feature Gating ──────────────────────────────────────────────────
+// Local fallback when no backend / not signed in. Mirrors backend featureFlags.
+const LOCAL_FEATURE_DEFAULTS = {
+  free:    { library: false, adIntel: false, fullAiOptimize: false, team: false, dfyDiscount: false },
+  starter: { library: false, adIntel: false, fullAiOptimize: false, team: false, dfyDiscount: false },
+  pro:     { library: true,  adIntel: true,  fullAiOptimize: true,  team: false, dfyDiscount: false },
+  agency:  { library: true,  adIntel: true,  fullAiOptimize: true,  team: true,  dfyDiscount: true  },
+  owner:   { library: true,  adIntel: true,  fullAiOptimize: true,  team: true,  dfyDiscount: true  },
+};
+
+function hasFeature(name) {
+  if (settings?.devMode) return true;
+  if (settings?.plan === 'owner') return true;
+  const flags = settings?.featureFlags || LOCAL_FEATURE_DEFAULTS[settings?.plan] || LOCAL_FEATURE_DEFAULTS.free;
+  return Boolean(flags[name]);
+}
+
+// Map sidebar nav data-tab → required feature flag
+const TAB_FEATURE_GATE = {
+  library: 'library',
+  'ad-intel': 'adIntel',
+};
+
+function applyFeatureGating() {
+  document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+    const required = TAB_FEATURE_GATE[btn.dataset.tab];
+    const locked = required && !hasFeature(required);
+    btn.classList.toggle('nav-locked', Boolean(locked));
+    // Inject a 🔒 lock badge once
+    let badge = btn.querySelector('.nav-lock-badge');
+    if (locked && !badge) {
+      badge = document.createElement('span');
+      badge.className = 'nav-lock-badge';
+      badge.textContent = '🔒';
+      badge.title = 'Upgrade to unlock';
+      btn.appendChild(badge);
+    } else if (!locked && badge) {
+      badge.remove();
+    }
+  });
+
+  // Logo generator: gate the Generate button by quota
+  const logoBtn = document.getElementById('btn-gen-logo');
+  const logoNote = document.getElementById('logo-quota-note');
+  if (logoBtn) {
+    const limit = settings?.logosLimit ?? 0;
+    const remaining = settings?.logosRemaining ?? 0;
+    if (settings?.plan === 'owner' || settings?.devMode || limit < 0) {
+      logoBtn.disabled = false;
+      if (logoNote) logoNote.textContent = 'Unlimited logo generations';
+    } else if (limit === 0) {
+      logoBtn.disabled = true;
+      if (logoNote) logoNote.innerHTML = `Logo generation requires <a href="#" id="logo-upgrade-link" style="color:var(--gold-light);">Pro or Agency</a>.`;
+      document.getElementById('logo-upgrade-link')?.addEventListener('click', (e) => { e.preventDefault(); switchTab('pricing'); });
+    } else if (remaining <= 0) {
+      logoBtn.disabled = true;
+      if (logoNote) logoNote.textContent = `Monthly quota reached (${limit}/${limit}). Resets next month.`;
+    } else {
+      logoBtn.disabled = false;
+      if (logoNote) logoNote.textContent = `${remaining} of ${limit} logo generations left this month`;
+    }
+  }
+}
+
 function switchTab(tabName) {
   const tabMap = {
-    funnels: 'funnels', library: 'library', 'ai-tools': 'ai-tools',
+    funnels: 'funnels', library: 'library', discover: 'discover', 'ai-tools': 'ai-tools',
     watchlist: 'watchlist',
     'video-gen': 'video-gen', 'ad-intel': 'ad-intel', 'logo-gen': 'logo-gen',
     settings: 'settings', account: 'account',
     pricing: 'settings',
   };
   const tab = tabMap[tabName] || tabName;
+
+  // Gate locked tabs — bounce to Settings pricing block
+  const required = TAB_FEATURE_GATE[tab];
+  if (required && !hasFeature(required)) {
+    const planLabel = (settings?.plan || 'free');
+    alert(`This feature is locked on the ${planLabel} plan. Upgrade to Pro or Agency to unlock.`);
+    return switchTab('pricing');
+  }
 
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === tab);
@@ -109,6 +210,741 @@ function switchTab(tabName) {
   if (tab === 'account' && settings.backendToken) {
     loadBackendAccountData();
   }
+
+  if (tab === 'admin') {
+    setupAdminTab();
+  }
+}
+
+// ═══════════ Admin Dashboard (Phase 4) ═══════════
+let adminUsersState = { offset: 0, limit: 25, total: 0, plan: '', search: '', loading: false };
+let adminCurrentEditingUser = null;
+let adminChartInstance = null;
+let adminInitialized = false;
+
+async function refreshOwnerStatus() {
+  if (!settings?.backendToken) {
+    settings.isOwner = false;
+    showHideAdminNav(false);
+    return false;
+  }
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_WHOAMI' });
+    settings.isOwner = Boolean(res?.isOwner);
+    settings.ownerEmail = res?.email || null;
+    showHideAdminNav(settings.isOwner);
+    return settings.isOwner;
+  } catch {
+    settings.isOwner = false;
+    showHideAdminNav(false);
+    return false;
+  }
+}
+
+function showHideAdminNav(show) {
+  const nav = document.getElementById('nav-admin');
+  if (nav) nav.style.display = show ? 'flex' : 'none';
+}
+
+function setupAdminTab() {
+  if (!settings?.isOwner) {
+    // Defense in depth: even if user navigates here directly, redirect away
+    alert('Admin dashboard requires owner access.');
+    return switchTab('account');
+  }
+  if (adminInitialized) {
+    // Re-render the currently active subtab
+    const active = document.querySelector('.admin-subtab.active')?.dataset.admintab || 'overview';
+    showAdminSubtab(active);
+    return;
+  }
+  adminInitialized = true;
+  document.getElementById('admin-owner-email').textContent = settings.ownerEmail || 'owner';
+  document.getElementById('btn-admin-refresh')?.addEventListener('click', () => {
+    const active = document.querySelector('.admin-subtab.active')?.dataset.admintab || 'overview';
+    showAdminSubtab(active, true);
+  });
+  document.querySelectorAll('.admin-subtab').forEach(btn => {
+    btn.addEventListener('click', () => showAdminSubtab(btn.dataset.admintab));
+  });
+
+  // Users panel filter inputs
+  let adminSearchTimer = null;
+  document.getElementById('admin-users-search')?.addEventListener('input', (e) => {
+    clearTimeout(adminSearchTimer);
+    adminSearchTimer = setTimeout(() => {
+      adminUsersState.search = e.target.value.trim();
+      adminUsersState.offset = 0;
+      loadAdminUsers();
+    }, 300);
+  });
+  document.getElementById('admin-users-plan-filter')?.addEventListener('change', (e) => {
+    adminUsersState.plan = e.target.value;
+    adminUsersState.offset = 0;
+    loadAdminUsers();
+  });
+
+  // Analytics range
+  document.getElementById('admin-analytics-range')?.addEventListener('change', () => loadAdminAnalytics());
+
+  // Dev Mode toggle
+  const devCheckbox = document.getElementById('admin-devmode-checkbox');
+  if (devCheckbox) {
+    devCheckbox.checked = Boolean(settings.devMode);
+    devCheckbox.addEventListener('change', async () => {
+      const result = await sendMsg({ action: 'SAVE_SETTINGS', data: { devMode: devCheckbox.checked } });
+      settings = result?.settings || settings;
+      updateSidebarPlanInfo();
+      applyFeatureGating();
+    });
+  }
+  const ownerStatus = document.getElementById('admin-owner-status');
+  if (ownerStatus) ownerStatus.textContent = settings.isOwner ? `recognized (${settings.ownerEmail})` : 'NOT in OWNER_EMAILS';
+
+  // Plan edit modal
+  document.getElementById('admin-plan-modal-close')?.addEventListener('click', closeAdminPlanModal);
+  document.getElementById('admin-plan-modal-cancel')?.addEventListener('click', closeAdminPlanModal);
+  document.getElementById('admin-plan-modal-save')?.addEventListener('click', saveAdminPlanModal);
+  document.getElementById('admin-plan-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'admin-plan-modal') closeAdminPlanModal();
+  });
+
+  // Bulk actions + CSV export + drawer
+  document.getElementById('btn-admin-export-csv')?.addEventListener('click', exportAdminCsv);
+  document.getElementById('btn-admin-bulk-apply')?.addEventListener('click', applyAdminBulk);
+  document.getElementById('btn-admin-bulk-clear')?.addEventListener('click', () => { adminSelection.clear(); syncAdminSelectionUI(); });
+  document.getElementById('admin-users-select-all')?.addEventListener('change', (e) => {
+    document.querySelectorAll('.admin-user-cb').forEach(cb => { if (e.target.checked) adminSelection.add(cb.dataset.id); else adminSelection.delete(cb.dataset.id); });
+    syncAdminSelectionUI();
+  });
+  document.getElementById('admin-drawer-close')?.addEventListener('click', closeUserDrawer);
+
+  showAdminSubtab('overview', true);
+}
+
+// ── Admin: Business (renewals + AI spend) ────────────────────────────────────
+async function loadAdminBusiness() {
+  try {
+    const [ren, ai] = await Promise.all([
+      sendMsg({ action: 'BACKEND_ADMIN_RENEWALS', days: 7 }),
+      sendMsg({ action: 'BACKEND_ADMIN_AI_COSTS' }),
+    ]);
+    if (ren?.success !== false) {
+      document.getElementById('biz-mrr').textContent = `$${ren.mrr ?? 0}`;
+      document.getElementById('biz-expiring').textContent = ren.counts?.expiringSoon ?? 0;
+      document.getElementById('biz-lapsed').textContent = ren.counts?.lapsed ?? 0;
+      const tb = document.getElementById('biz-expiring-tbody');
+      const rows = ren.expiringSoon || [];
+      tb.innerHTML = rows.length ? rows.map(r => `
+        <tr><td>${escHtml(r.email)}</td><td><span class="admin-plan-chip ${escHtml(r.plan)}">${escHtml(r.plan)}</span></td>
+        <td style="font-size:12px;color:var(--text3);">${r.currentPeriodEnd ? new Date(r.currentPeriodEnd).toLocaleDateString() : '—'}</td>
+        <td>${escHtml(r.subscriptionStatus || '—')}</td></tr>`).join('')
+        : `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text3);">No renewals due in 7 days.</td></tr>`;
+    }
+    if (ai?.success !== false) {
+      document.getElementById('biz-aicost').textContent = `$${ai.totalCost ?? 0}`;
+      const tb = document.getElementById('biz-aicost-tbody');
+      const rows = ai.topUsers || [];
+      tb.innerHTML = rows.length ? rows.map(r => `
+        <tr><td>${escHtml(r.email || r.userId || '—')}</td><td><span class="admin-plan-chip ${escHtml(r.plan)}">${escHtml(r.plan)}</span></td>
+        <td>${r.calls}</td><td>$${r.cost}</td></tr>`).join('')
+        : `<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--text3);">No AI usage this month.</td></tr>`;
+    }
+  } catch (err) {
+    console.warn('loadAdminBusiness failed', err);
+  }
+}
+
+// ── Admin: Audit log ─────────────────────────────────────────────────────────
+async function loadAdminAudit() {
+  const tbody = document.getElementById('admin-audit-tbody');
+  const countEl = document.getElementById('admin-audit-count');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3);">Loading…</td></tr>`;
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_AUDIT', limit: 200 });
+    const rows = res.entries || [];
+    if (countEl) countEl.textContent = `${res.total || 0} action${(res.total || 0) !== 1 ? 's' : ''}`;
+    tbody.innerHTML = rows.length ? rows.map(a => `
+      <tr>
+        <td style="font-size:12px;color:var(--text3);">${a.createdAt ? new Date(a.createdAt).toLocaleString() : '—'}</td>
+        <td>${escHtml(a.actorEmail || '—')}</td>
+        <td><code>${escHtml(a.action || '')}</code></td>
+        <td style="font-size:12px;">${escHtml(a.resourceId || '—')}</td>
+        <td style="font-size:12px;color:var(--text3);">${escHtml(JSON.stringify(a.metadata || {}))}</td>
+      </tr>`).join('')
+      : `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text3);">No admin actions recorded yet.</td></tr>`;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--red);">Load failed: ${escHtml(err.message || String(err))}</td></tr>`;
+  }
+}
+
+// ── Admin: user detail drawer ────────────────────────────────────────────────
+async function openUserDrawer(userId) {
+  const drawer = document.getElementById('admin-user-drawer');
+  const body = document.getElementById('admin-drawer-body');
+  if (!drawer || !body) return;
+  drawer.style.display = 'block';
+  setTimeout(() => drawer.focus(), 0);
+  drawer.onkeydown = (e) => { if (e.key === 'Escape') closeUserDrawer(); };
+  body.innerHTML = '<p style="color:var(--text3);">Loading…</p>';
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_USER_DETAIL', userId });
+    if (res?.success === false) throw new Error(res.error || 'Failed');
+    const u = res.user || {};
+    const usage = res.usage || {};
+    const row = (k, v) => `<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--border,#2a3350);"><span style="color:var(--text3);font-size:12px;">${escHtml(k)}</span><span style="font-size:12px;text-align:right;">${escHtml(String(v ?? '—'))}</span></div>`;
+    body.innerHTML = `
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:600;">${escHtml(u.email || '')}</div>
+        <div style="color:var(--text3);font-size:12px;">${escHtml(u.profile?.displayName || '')}</div>
+      </div>
+      ${row('Plan (effective)', `${u.plan} → ${u.effectivePlan}`)}
+      ${row('Status', u.status)}
+      ${row('Subscription', `${u.subscriptionSource || '—'} / ${u.subscriptionStatus || '—'}`)}
+      ${row('Renews', u.currentPeriodEnd ? new Date(u.currentPeriodEnd).toLocaleString() : '—')}
+      ${row('GHL contact', u.ghlContactId)}
+      ${row('Activated', u.activatedAt ? new Date(u.activatedAt).toLocaleDateString() : 'no')}
+      ${row('Clones (mo)', `${usage.clonesUsed}/${usage.clonesLimit}`)}
+      ${row('AI calls (mo)', `${usage.aiUsed}/${usage.aiLimit}`)}
+      ${row('Funnels', res.funnelCount)}
+      ${row('Joined', u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—')}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;">
+        <button class="btn-secondary" data-drawer-act="${u.status === 'suspended' ? 'unsuspend' : 'suspend'}">${u.status === 'suspended' ? 'Unsuspend' : 'Suspend'}</button>
+        <button class="btn-secondary" data-drawer-act="extend">+31 days</button>
+        <button class="btn-secondary" data-drawer-act="activation-code">Re-issue code</button>
+        <button class="btn-secondary" data-drawer-act="reset-ai-usage">Reset AI</button>
+        <button class="btn-primary" data-drawer-act="impersonate">Impersonate</button>
+      </div>
+      <div id="admin-drawer-msg" style="margin-top:10px;font-size:12px;color:var(--text3);"></div>`;
+
+    body.querySelectorAll('button[data-drawer-act]').forEach(btn => {
+      btn.addEventListener('click', () => handleDrawerAction(userId, btn.dataset.drawerAct, u));
+    });
+  } catch (err) {
+    body.innerHTML = `<p style="color:var(--red);">${escHtml(err.message || String(err))}</p>`;
+  }
+}
+
+async function handleDrawerAction(userId, op, user) {
+  const msg = document.getElementById('admin-drawer-msg');
+  const setMsg = (t) => { if (msg) msg.textContent = t; };
+  try {
+    if (op === 'impersonate') { await impersonateUser({ id: userId, email: user.email }); return; }
+    const body = op === 'extend' ? { days: 31 } : undefined;
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_USER_ACTION', userId, op, body });
+    if (res?.success === false) throw new Error(res.error || 'Action failed');
+    if (op === 'activation-code') setMsg(`New activation code: ${res.activationCode}`);
+    else setMsg('✓ Done.');
+    if (op !== 'activation-code') { openUserDrawer(userId); loadAdminUsers(); }
+  } catch (err) { setMsg(`✗ ${err.message || err}`); }
+}
+
+function closeUserDrawer() {
+  const drawer = document.getElementById('admin-user-drawer');
+  if (drawer) drawer.style.display = 'none';
+}
+
+function showAdminSubtab(name, forceReload = false) {
+  document.querySelectorAll('.admin-subtab').forEach(b => b.classList.toggle('active', b.dataset.admintab === name));
+  ['overview', 'users', 'business', 'analytics', 'invoices', 'audit', 'devmode'].forEach(p => {
+    const el = document.getElementById(`admin-panel-${p}`);
+    if (el) el.style.display = p === name ? 'block' : 'none';
+  });
+  if (name === 'overview') loadAdminStats(forceReload);
+  if (name === 'users') loadAdminUsers();
+  if (name === 'business') loadAdminBusiness();
+  if (name === 'analytics') loadAdminAnalytics();
+  if (name === 'invoices') loadAdminInvoices();
+  if (name === 'audit') loadAdminAudit();
+}
+
+// ── Admin Invoices ───────────────────────────────────────────────────────────
+let adminInvoicesState = { offset: 0, limit: 50, total: 0, status: '', search: '' };
+
+function formatMoney(amountInCents, currency = 'usd') {
+  if (typeof amountInCents !== 'number') return '—';
+  const dollars = amountInCents / 100;
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency.toUpperCase() }).format(dollars);
+  } catch {
+    return `$${dollars.toFixed(2)}`;
+  }
+}
+
+function setupAdminInvoiceToolbar() {
+  if (setupAdminInvoiceToolbar._wired) return;
+  setupAdminInvoiceToolbar._wired = true;
+  let timer = null;
+  document.getElementById('admin-invoices-search')?.addEventListener('input', (e) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      adminInvoicesState.search = e.target.value.trim();
+      adminInvoicesState.offset = 0;
+      loadAdminInvoices();
+    }, 300);
+  });
+  document.getElementById('admin-invoices-status-filter')?.addEventListener('change', (e) => {
+    adminInvoicesState.status = e.target.value;
+    adminInvoicesState.offset = 0;
+    loadAdminInvoices();
+  });
+}
+
+async function loadAdminInvoices() {
+  setupAdminInvoiceToolbar();
+  const tbody = document.getElementById('admin-invoices-tbody');
+  const countEl = document.getElementById('admin-invoices-count');
+  const totalEl = document.getElementById('admin-invoices-total');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text3);">Loading…</td></tr>`;
+  try {
+    const res = await sendMsg({
+      action: 'BACKEND_ADMIN_INVOICES',
+      limit: adminInvoicesState.limit,
+      offset: adminInvoicesState.offset,
+      status: adminInvoicesState.status,
+      search: adminInvoicesState.search,
+    });
+    adminInvoicesState.total = res.total || 0;
+    const invoices = res.invoices || [];
+    if (countEl) countEl.textContent = `${adminInvoicesState.total} invoice${adminInvoicesState.total !== 1 ? 's' : ''}`;
+    if (totalEl) totalEl.textContent = `Paid total: ${formatMoney(res.totalAmount || 0)}`;
+
+    if (!invoices.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text3);">No invoices match these filters.</td></tr>`;
+      renderAdminInvoicesPager();
+      return;
+    }
+    tbody.innerHTML = invoices.map(inv => {
+      const receiptHtml = inv.hostedInvoiceUrl
+        ? `<a href="${escHtml(inv.hostedInvoiceUrl)}" target="_blank" rel="noopener" class="invoice-link">View</a>`
+        : '<span style="color:var(--text4);">—</span>';
+      const statusChip = `<span class="invoice-status ${inv.status === 'paid' ? 'paid' : 'failed'}">${escHtml(inv.status || '')}</span>`;
+      return `<tr>
+        <td style="font-size:12px; color:var(--text3);">${inv.createdAt ? new Date(inv.createdAt).toLocaleString() : '—'}</td>
+        <td>${escHtml(inv.userEmail || '—')}</td>
+        <td style="font-family:monospace; font-size:12px;">${escHtml(inv.number || inv.stripeInvoiceId || '—')}</td>
+        <td><span class="admin-plan-chip ${escHtml(inv.plan || 'free')}">${escHtml(inv.plan || '—')}</span></td>
+        <td style="font-weight:700;">${formatMoney(inv.amount, inv.currency)}</td>
+        <td>${statusChip}</td>
+        <td>${receiptHtml}</td>
+      </tr>`;
+    }).join('');
+    renderAdminInvoicesPager();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--red);">Load failed: ${escHtml(err.message || String(err))}</td></tr>`;
+  }
+}
+
+function renderAdminInvoicesPager() {
+  const pager = document.getElementById('admin-invoices-pager');
+  if (!pager) return;
+  const totalPages = Math.max(1, Math.ceil(adminInvoicesState.total / adminInvoicesState.limit));
+  const currentPage = Math.floor(adminInvoicesState.offset / adminInvoicesState.limit) + 1;
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  pager.innerHTML = `
+    <button class="discover-pager-btn" data-act="prev" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+    <span class="discover-pager-info">Page ${currentPage} of ${totalPages}</span>
+    <button class="discover-pager-btn" data-act="next" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+  `;
+  pager.querySelectorAll('button[data-act]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.disabled) return;
+      const delta = b.dataset.act === 'next' ? adminInvoicesState.limit : -adminInvoicesState.limit;
+      adminInvoicesState.offset = Math.max(0, adminInvoicesState.offset + delta);
+      loadAdminInvoices();
+    });
+  });
+}
+
+// ── Customer Sparkline ──────────────────────────────────────────────────────
+async function drawAccountSparkline() {
+  const canvas = document.getElementById('acct-sparkline');
+  if (!canvas) return;
+  // Activity comes from BACKEND_GET_ACTIVITY — already in use by Analytics & Activity section.
+  let activity = [];
+  try {
+    const res = await sendMsg({ action: 'BACKEND_GET_ACTIVITY', limit: 500 });
+    activity = res?.activity || [];
+  } catch { /* leave empty */ }
+
+  // Bucket clone events by day (last 30)
+  const today = new Date();
+  const buckets = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today.getTime() - i * 86400000).toISOString().slice(0, 10);
+    buckets[d] = 0;
+  }
+  activity.forEach(a => {
+    const day = String(a.createdAt || '').slice(0, 10);
+    if (day in buckets && (a.action === 'usage.consumed' || a.action === 'clone.created')) {
+      buckets[day]++;
+    }
+  });
+  const values = Object.values(buckets);
+  const maxVal = Math.max(1, ...values);
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 600;
+  const h = 90;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.height = `${h}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const padX = 4, padY = 6;
+  const chartW = w - padX * 2;
+  const chartH = h - padY * 2;
+
+  // Filled area
+  ctx.fillStyle = 'rgba(217, 166, 32, 0.18)';
+  ctx.beginPath();
+  ctx.moveTo(padX, padY + chartH);
+  values.forEach((v, i) => {
+    const x = padX + (i / Math.max(1, values.length - 1)) * chartW;
+    const y = padY + (1 - v / maxVal) * chartH;
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(padX + chartW, padY + chartH);
+  ctx.closePath();
+  ctx.fill();
+
+  // Line
+  ctx.strokeStyle = '#D9A620';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  values.forEach((v, i) => {
+    const x = padX + (i / Math.max(1, values.length - 1)) * chartW;
+    const y = padY + (1 - v / maxVal) * chartH;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+// ── Customer Billing & Invoices ─────────────────────────────────────────────
+async function loadMyInvoices() {
+  const tbody = document.getElementById('invoice-tbody');
+  const badge = document.getElementById('invoices-status-badge');
+  if (!tbody) return;
+  if (!settings?.backendToken) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text3);">Sign in to your Clone2GHL account to see invoices.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text3);">Loading…</td></tr>`;
+  try {
+    const res = await sendMsg({ action: 'BACKEND_INVOICES_LIST' });
+    const invoices = res?.invoices || [];
+    if (badge) badge.innerHTML = '';
+    if (!invoices.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text3);">No invoices yet. Subscribe to a paid plan to see your billing history here.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = invoices.map(inv => {
+      const pdfLink = inv.invoicePdf || inv.hostedInvoiceUrl;
+      const downloadHtml = pdfLink
+        ? `<a class="invoice-link" href="${escHtml(pdfLink)}" target="_blank" rel="noopener">⬇ PDF</a>`
+        : '<span style="color:var(--text4);">—</span>';
+      return `<tr>
+        <td style="font-size:12px; color:var(--text3);">${inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '—'}</td>
+        <td style="font-family:monospace; font-size:12px;">${escHtml(inv.number || inv.stripeInvoiceId || '—')}</td>
+        <td style="text-transform:capitalize;">${escHtml(inv.plan || '—')}</td>
+        <td style="font-weight:700;">${formatMoney(inv.amount, inv.currency)}</td>
+        <td><span class="invoice-status ${inv.status === 'paid' ? 'paid' : 'failed'}">${escHtml(inv.status || '')}</span></td>
+        <td>${downloadHtml}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    if (badge) badge.innerHTML = `<div style="color:var(--red); font-size:12px;">Load failed: ${escHtml(err.message || String(err))}</div>`;
+  }
+}
+
+async function loadAdminStats(force = false) {
+  try {
+    const stats = await sendMsg({ action: 'BACKEND_ADMIN_STATS' });
+    document.getElementById('kpi-users').textContent = stats.totalUsers ?? 0;
+    document.getElementById('kpi-subs').textContent = stats.activeSubscriptions ?? 0;
+    document.getElementById('kpi-mrr').textContent = `$${(stats.revenueEstimate ?? 0).toLocaleString()}`;
+    document.getElementById('kpi-clones').textContent = stats.totalClones ?? 0;
+    document.getElementById('kpi-funnels').textContent = stats.totalFunnels ?? 0;
+    document.getElementById('kpi-videos').textContent = stats.totalVideos ?? 0;
+
+    const breakdown = stats.planBreakdown || {};
+    const breakdownEl = document.getElementById('admin-plan-breakdown');
+    if (breakdownEl) {
+      breakdownEl.innerHTML = ['free', 'starter', 'pro', 'agency', 'owner']
+        .map(p => `<div class="admin-plan-pill"><span class="admin-plan-pill-name">${p}</span><span class="admin-plan-pill-count">${breakdown[p] ?? 0}</span></div>`)
+        .join('');
+    }
+  } catch (err) {
+    document.getElementById('kpi-users').textContent = '!';
+    console.error('admin stats', err);
+  }
+}
+
+async function loadAdminUsers() {
+  const tbody = document.getElementById('admin-users-tbody');
+  const countEl = document.getElementById('admin-users-count');
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text3);">Loading…</td></tr>`;
+  try {
+    const res = await sendMsg({
+      action: 'BACKEND_ADMIN_USERS',
+      limit: adminUsersState.limit,
+      offset: adminUsersState.offset,
+      plan: adminUsersState.plan,
+      search: adminUsersState.search,
+    });
+    adminUsersState.total = res.total || 0;
+    const users = res.users || [];
+    if (countEl) countEl.textContent = `${adminUsersState.total} user${adminUsersState.total !== 1 ? 's' : ''}`;
+
+    if (!users.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text3);">No users match these filters.</td></tr>`;
+      renderAdminUsersPager();
+      return;
+    }
+    tbody.innerHTML = users.map(u => `
+      <tr data-id="${escHtml(u.id)}">
+        <td><input type="checkbox" class="admin-user-cb" data-id="${escHtml(u.id)}" aria-label="Select ${escHtml(u.email || '')}"></td>
+        <td><button class="admin-user-link" data-act="detail" style="background:none;border:0;color:#6ea8ff;cursor:pointer;padding:0;">${escHtml(u.email || '')}</button></td>
+        <td>${escHtml(u.displayName || '—')}</td>
+        <td><span class="admin-plan-chip ${escHtml(u.plan)}">${escHtml(u.plan)}</span></td>
+        <td>${u.clonesThisMonth || 0}</td>
+        <td>${u.totalFunnels || 0}</td>
+        <td style="color:var(--text3); font-size:12px;">${u.lastActivity ? new Date(u.lastActivity).toLocaleDateString() : '—'}</td>
+        <td>
+          <div class="admin-user-actions">
+            <button data-act="detail">Detail</button>
+            <button data-act="plan">Plan</button>
+            <button data-act="impersonate">Impersonate</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('tr[data-id]').forEach(tr => {
+      const id = tr.dataset.id;
+      const user = users.find(x => x.id === id);
+      const cb = tr.querySelector('.admin-user-cb');
+      if (cb) cb.addEventListener('change', () => { toggleAdminSelection(id, cb.checked); });
+      tr.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-act]');
+        if (!btn) return;
+        const act = btn.dataset.act;
+        if (act === 'detail') openUserDrawer(id);
+        else if (act === 'plan') openAdminPlanModal(user);
+        else if (act === 'impersonate') impersonateUser(user);
+      });
+    });
+    // Reflect any already-selected ids after a reload.
+    syncAdminSelectionUI();
+    renderAdminUsersPager();
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--red);">Load failed: ${escHtml(err.message || String(err))}</td></tr>`;
+  }
+}
+
+// ── Admin: selection + bulk actions ──────────────────────────────────────────
+const adminSelection = new Set();
+
+function toggleAdminSelection(id, on) {
+  if (on) adminSelection.add(id); else adminSelection.delete(id);
+  syncAdminSelectionUI();
+}
+
+function syncAdminSelectionUI() {
+  document.querySelectorAll('.admin-user-cb').forEach(cb => { cb.checked = adminSelection.has(cb.dataset.id); });
+  const bar = document.getElementById('admin-bulk-bar');
+  const count = document.getElementById('admin-bulk-count');
+  if (bar) bar.style.display = adminSelection.size ? 'flex' : 'none';
+  if (count) count.textContent = `${adminSelection.size} selected`;
+}
+
+async function applyAdminBulk() {
+  if (!adminSelection.size) return;
+  const raw = document.getElementById('admin-bulk-action').value;
+  const ids = [...adminSelection];
+  let payload;
+  if (raw.startsWith('plan:')) payload = { bulkAction: 'plan', ids, plan: raw.split(':')[1] };
+  else if (raw === 'extend') payload = { bulkAction: 'extend', ids, days: 31 };
+  else payload = { bulkAction: raw, ids };
+  if (!confirm(`Apply "${raw}" to ${ids.length} user(s)?`)) return;
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_BULK', ...payload });
+    if (!res?.success) throw new Error(res?.error || 'Bulk action failed');
+    adminSelection.clear();
+    syncAdminSelectionUI();
+    loadAdminUsers();
+    showSaveToast(`Applied to ${res.affected} user(s).`);
+  } catch (err) { alert(`Bulk action failed: ${err.message || err}`); }
+}
+
+async function impersonateUser(user) {
+  if (!confirm(`Open a 15-minute support session as ${user.email}? Your owner session token will be replaced — sign back in afterward.`)) return;
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_IMPERSONATE', userId: user.id });
+    if (!res?.success || !res.token) throw new Error(res?.error || 'Impersonation failed');
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { backendToken: res.token, impersonating: user.email } });
+    showSaveToast(`Now impersonating ${user.email} (15 min). Reload account views to see their data.`);
+  } catch (err) { alert(`Impersonation failed: ${err.message || err}`); }
+}
+
+async function exportAdminCsv() {
+  try {
+    const res = await sendMsg({ action: 'BACKEND_ADMIN_EXPORT_CSV' });
+    if (!res?.success || res.csv == null) throw new Error(res?.error || 'Export failed');
+    const blob = new Blob([res.csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'clone2ghl-users.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) { alert(`Export failed: ${err.message || err}`); }
+}
+
+function renderAdminUsersPager() {
+  const pager = document.getElementById('admin-users-pager');
+  if (!pager) return;
+  const totalPages = Math.max(1, Math.ceil(adminUsersState.total / adminUsersState.limit));
+  const currentPage = Math.floor(adminUsersState.offset / adminUsersState.limit) + 1;
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  pager.innerHTML = `
+    <button class="discover-pager-btn" data-act="prev" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>
+    <span class="discover-pager-info">Page ${currentPage} of ${totalPages}</span>
+    <button class="discover-pager-btn" data-act="next" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>
+  `;
+  pager.querySelectorAll('button[data-act]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.disabled) return;
+      const delta = b.dataset.act === 'next' ? adminUsersState.limit : -adminUsersState.limit;
+      adminUsersState.offset = Math.max(0, adminUsersState.offset + delta);
+      loadAdminUsers();
+    });
+  });
+}
+
+function openAdminPlanModal(user) {
+  adminCurrentEditingUser = user;
+  document.getElementById('admin-plan-modal-user').textContent = `${user.email} — currently ${user.plan}`;
+  document.getElementById('admin-plan-modal-select').value = user.plan || 'free';
+  document.getElementById('admin-plan-modal').style.display = 'flex';
+}
+
+function closeAdminPlanModal() {
+  document.getElementById('admin-plan-modal').style.display = 'none';
+  adminCurrentEditingUser = null;
+}
+
+async function saveAdminPlanModal() {
+  if (!adminCurrentEditingUser) return;
+  const newPlan = document.getElementById('admin-plan-modal-select').value;
+  const btn = document.getElementById('admin-plan-modal-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await sendMsg({
+      action: 'BACKEND_ADMIN_USER_SET_PLAN',
+      userId: adminCurrentEditingUser.id,
+      plan: newPlan,
+    });
+    closeAdminPlanModal();
+    loadAdminUsers();
+  } catch (err) {
+    alert(`Failed: ${err.message || err}`);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save';
+  }
+}
+
+async function loadAdminAnalytics() {
+  const days = Number(document.getElementById('admin-analytics-range')?.value || 30);
+  try {
+    const data = await sendMsg({ action: 'BACKEND_ADMIN_ANALYTICS', days });
+    drawAdminChart(data);
+  } catch (err) {
+    console.error('admin analytics', err);
+  }
+}
+
+function drawAdminChart(data) {
+  const canvas = document.getElementById('admin-chart-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 800;
+  const h = 320;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  canvas.style.height = `${h}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const days = Object.keys(data.clonesByDay || {});
+  if (!days.length) {
+    ctx.fillStyle = '#B8B8B8';
+    ctx.font = '14px -apple-system, BlinkMacSystemFont, Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('No activity in this range yet.', w / 2, h / 2);
+    return;
+  }
+
+  const series = [
+    { name: 'Clones', values: days.map(d => data.clonesByDay[d] || 0), color: '#D9A620' },
+    { name: 'Videos', values: days.map(d => data.videosByDay[d] || 0), color: '#1E4DFF' },
+    { name: 'Signups', values: days.map(d => data.signupsByDay[d] || 0), color: '#10B981' },
+  ];
+  const maxVal = Math.max(1, ...series.flatMap(s => s.values));
+
+  // Chart area
+  const padLeft = 44, padBottom = 36, padTop = 28, padRight = 16;
+  const chartW = w - padLeft - padRight;
+  const chartH = h - padTop - padBottom;
+
+  // Axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padTop + chartH * (i / 4);
+    ctx.beginPath(); ctx.moveTo(padLeft, y); ctx.lineTo(padLeft + chartW, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(Math.round(maxVal - (maxVal * i / 4))), padLeft - 6, y + 3);
+  }
+
+  // X-axis labels (first, middle, last)
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '10px -apple-system, BlinkMacSystemFont, Arial';
+  ctx.textAlign = 'center';
+  const formatLabel = d => d.slice(5);
+  ctx.fillText(formatLabel(days[0]), padLeft, h - 16);
+  ctx.fillText(formatLabel(days[Math.floor(days.length / 2)]), padLeft + chartW / 2, h - 16);
+  ctx.fillText(formatLabel(days[days.length - 1]), padLeft + chartW, h - 16);
+
+  // Lines + filled area
+  series.forEach(s => {
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    s.values.forEach((v, i) => {
+      const x = padLeft + (i / Math.max(1, days.length - 1)) * chartW;
+      const y = padTop + (1 - v / maxVal) * chartH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+
+  // Legend
+  let legendX = padLeft;
+  series.forEach(s => {
+    ctx.fillStyle = s.color;
+    ctx.fillRect(legendX, 8, 10, 10);
+    ctx.fillStyle = '#F5F5F5';
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText(s.name, legendX + 14, 17);
+    legendX += 80;
+  });
 }
 
 // ─── Sidebar Plan Info ────────────────────────────────────────────────────────
@@ -136,6 +972,10 @@ function updateSidebarPlanInfo() {
       credEl.textContent = 'Unlimited clones';
     }
   }
+
+  // Subscription status line (lapsed/expiring/active) — surfaced so users aren't
+  // silently downgraded without knowing why their tools changed.
+  renderSubscriptionStatus();
 
   // Owner entry / badge visibility
   const ownerEntry = document.getElementById('owner-entry');
@@ -165,6 +1005,7 @@ function setupDevModeToggle() {
     settings = result?.settings || settings;
     settings.devMode = toggle.checked;
     updateSidebarPlanInfo();
+    applyFeatureGating();
   });
 }
 
@@ -178,6 +1019,7 @@ function setupOwnerButtons() {
     const result = await sendMsg({ action: 'OWNER_LOCK' });
     settings = result?.settings || settings;
     updateSidebarPlanInfo();
+    applyFeatureGating();
   });
 }
 
@@ -198,22 +1040,174 @@ function setupFunnelsTab() {
   });
 }
 
+let funnelFilter = { q: '', niche: '', status: '' };
+
+function applyFunnelFilter(list) {
+  const q = funnelFilter.q.trim().toLowerCase();
+  return list.filter(f =>
+    (!q
+      || (f.name || '').toLowerCase().includes(q)
+      || (f.sourceUrl || '').toLowerCase().includes(q)
+      || (f.niche || '').toLowerCase().includes(q)
+      || (Array.isArray(f.tags) ? f.tags.join(' ') : '').toLowerCase().includes(q))
+    && (!funnelFilter.niche || f.niche === funnelFilter.niche)
+    && (!funnelFilter.status || (f.status || 'draft') === funnelFilter.status)
+  );
+}
+
+// Builds (once) the search/filter toolbar above the funnel grid.
+function ensureFunnelToolbar() {
+  if (document.getElementById('funnels-toolbar')) return;
+  const grid = document.getElementById('funnels-grid');
+  if (!grid) return;
+  const bar = document.createElement('div');
+  bar.id = 'funnels-toolbar';
+  bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;';
+  bar.innerHTML = `
+    <input type="search" id="funnels-search" class="field-input" placeholder="Search funnels, URLs, tags…" style="max-width:280px;" aria-label="Search funnels">
+    <select id="funnels-niche" class="field-input" style="max-width:160px;" aria-label="Filter by niche"><option value="">All niches</option></select>
+    <select id="funnels-status" class="field-input" style="max-width:160px;" aria-label="Filter by status">
+      <option value="">All statuses</option>
+      <option value="draft">Draft</option>
+      <option value="optimized">AI Optimized</option>
+      <option value="exported">Exported</option>
+    </select>
+    <span id="funnels-result-count" style="font-size:12px;color:var(--text3);"></span>
+    <button id="btn-batch-clone" class="btn-primary" style="margin-left:auto;padding:7px 14px;">⚡ Batch clone</button>`;
+  grid.parentNode.insertBefore(bar, grid);
+
+  document.getElementById('funnels-search').addEventListener('input', (e) => { funnelFilter.q = e.target.value; renderFunnels(); });
+  document.getElementById('funnels-niche').addEventListener('change', (e) => { funnelFilter.niche = e.target.value; renderFunnels(); });
+  document.getElementById('funnels-status').addEventListener('change', (e) => { funnelFilter.status = e.target.value; renderFunnels(); });
+  document.getElementById('btn-batch-clone').addEventListener('click', openBatchClone);
+}
+
+// ─── M4: Batch cloning (multi-URL, 2 parallel workers, live progress) ─────────
+async function runBatchClone(urls, niche, optimize, onProgress) {
+  const results = new Array(urls.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < urls.length) {
+      const i = next++;
+      onProgress(i, 'cloning');
+      try {
+        const r = await sendMsg({ action: 'CLONE_FROM_URL_SILENT', url: urls[i], niche, optimize });
+        if (r?.error || r?.success === false) throw new Error(r.error || 'Clone failed');
+        results[i] = { url: urls[i], ok: true };
+        onProgress(i, 'done');
+      } catch (e) {
+        results[i] = { url: urls[i], ok: false, error: e.message };
+        onProgress(i, 'error', e.message);
+      }
+    }
+  };
+  await Promise.all([worker(), worker()]); // concurrency = 2
+  return results;
+}
+
+function openBatchClone() {
+  let modal = document.getElementById('batch-clone-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'batch-clone-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;';
+  modal.innerHTML = `
+    <div style="background:#0f1426;border:1px solid #2a3350;border-radius:12px;width:min(620px,95vw);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #2a3350;">
+        <strong style="flex:1;">⚡ Batch clone</strong>
+        <button id="bc-close" class="btn-secondary" aria-label="Close" style="padding:5px 10px;">✕</button>
+      </div>
+      <div style="padding:14px 16px;overflow-y:auto;">
+        <label class="field-label">URLs (one per line, max 20)</label>
+        <textarea id="bc-urls" class="field-input" rows="6" placeholder="https://example.com/page-1&#10;https://example.com/page-2" style="width:100%;font-family:monospace;font-size:12px;"></textarea>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+          <input id="bc-niche" class="field-input" placeholder="Niche (e.g. plumber)" style="max-width:200px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="bc-optimize"> AI-optimize each</label>
+          <button id="bc-start" class="btn-primary" style="margin-left:auto;">Start</button>
+        </div>
+        <div id="bc-progress" style="margin-top:14px;"></div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  a11yModal(modal, 'Batch clone');
+  const close = () => modal.remove();
+  document.getElementById('bc-close').addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  document.getElementById('bc-start').addEventListener('click', async () => {
+    const urls = document.getElementById('bc-urls').value.split('\n').map(s => s.trim())
+      .filter(s => /^https?:\/\//i.test(s)).slice(0, 20);
+    const niche = document.getElementById('bc-niche').value.trim() || 'general';
+    const optimize = document.getElementById('bc-optimize').checked && Boolean(settings.backendToken);
+    if (!urls.length) { alert('Enter at least one valid http(s) URL.'); return; }
+
+    const startBtn = document.getElementById('bc-start');
+    startBtn.disabled = true; startBtn.textContent = 'Cloning…';
+    const prog = document.getElementById('bc-progress');
+    prog.innerHTML = urls.map((u, i) => `<div id="bc-row-${i}" style="display:flex;gap:8px;padding:4px 0;font-size:12px;"><span style="width:18px;">⏳</span><span style="flex:1;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(u)}</span></div>`).join('');
+
+    const setRow = (i, icon, color) => {
+      const row = document.getElementById(`bc-row-${i}`);
+      if (row) row.querySelector('span').textContent = icon;
+      if (row && color) row.style.color = color;
+    };
+    const results = await runBatchClone(urls, niche, optimize, (i, state, err) => {
+      if (state === 'cloning') setRow(i, '⏳');
+      else if (state === 'done') setRow(i, '✅');
+      else if (state === 'error') { setRow(i, '❌'); const r = document.getElementById(`bc-row-${i}`); if (r) r.title = err || 'failed'; }
+    });
+
+    const ok = results.filter(r => r?.ok).length;
+    startBtn.disabled = false; startBtn.textContent = 'Start';
+    showSaveToast(`Batch complete: ${ok}/${urls.length} cloned.`);
+    const fr = await sendMsg({ action: 'GET_FUNNELS' });
+    myFunnels = fr?.funnels || myFunnels;
+    renderFunnels();
+    updateFunnelSelects();
+  });
+}
+
 function renderFunnels() {
   const grid = document.getElementById('funnels-grid');
   const empty = document.getElementById('funnels-empty');
   if (!grid || !empty) return;
 
   if (myFunnels.length === 0) {
+    const bar = document.getElementById('funnels-toolbar');
+    if (bar) bar.style.display = 'none';
     grid.style.display = 'none';
     empty.style.display = 'block';
     return;
   }
 
+  ensureFunnelToolbar();
+  const bar = document.getElementById('funnels-toolbar');
+  if (bar) bar.style.display = 'flex';
+
+  // Refresh niche options from the current set, preserving selection.
+  const nicheSel = document.getElementById('funnels-niche');
+  if (nicheSel) {
+    const niches = [...new Set(myFunnels.map(f => f.niche).filter(Boolean))].sort();
+    const cur = funnelFilter.niche;
+    nicheSel.innerHTML = '<option value="">All niches</option>' + niches.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
+    nicheSel.value = cur;
+  }
+
+  const filtered = applyFunnelFilter(myFunnels);
+  const countEl = document.getElementById('funnels-result-count');
+  if (countEl) countEl.textContent = `${filtered.length} of ${myFunnels.length}`;
+
   empty.style.display = 'none';
   grid.style.display = 'grid';
   grid.innerHTML = '';
 
-  myFunnels.forEach(funnel => {
+  if (!filtered.length) {
+    grid.style.display = 'block';
+    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);">No funnels match your search/filters.</div>`;
+    return;
+  }
+  filtered.forEach(funnel => {
     grid.appendChild(buildFunnelCard(funnel));
   });
 }
@@ -228,9 +1222,18 @@ function buildFunnelCard(funnel) {
   const nicheEmoji = nicheToEmoji(funnel.niche);
   const date = funnel.createdAt ? new Date(funnel.createdAt).toLocaleDateString() : '';
 
+  // Clone fidelity badge — colour-coded so users see capture quality at a glance.
+  const fid = funnel.fidelity;
+  const fidColor = fid ? (fid.score >= 70 ? '#2ecc71' : fid.score >= 55 ? '#f1c40f' : '#ff6b6b') : '';
+  const fidTitle = fid ? (fid.issues || []).map(i => i.text).join(' • ') || 'No fidelity issues detected' : '';
+  const fidBadge = fid
+    ? `<span class="fidelity-badge" title="${escHtml(fidTitle)}" style="position:absolute;top:8px;left:8px;background:${fidColor};color:#0d1020;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;">Fidelity ${escHtml(fid.grade)} · ${fid.score}</span>`
+    : '';
+
   card.innerHTML = `
-    <div class="funnel-card-preview">
+    <div class="funnel-card-preview" style="position:relative;">
       ${nicheEmoji}
+      ${fidBadge}
       <span class="funnel-status-badge status-${funnel.status || 'draft'}">${statusLabel}</span>
     </div>
     <div class="funnel-card-body">
@@ -246,12 +1249,38 @@ function buildFunnelCard(funnel) {
       </div>` : ''}
       <div class="funnel-card-actions">
         <button class="btn-primary btn-view" data-id="${funnel.id}">View</button>
+        <button class="btn-secondary btn-preview" data-id="${funnel.id}">👁 Preview</button>
+        ${!fid ? `<button class="btn-secondary btn-analyze" data-id="${funnel.id}" title="Compute clone fidelity">📊 Analyze</button>` : ''}
         <button class="btn-secondary btn-customize" data-id="${funnel.id}">✏️ Edit</button>
+        <button class="btn-secondary btn-history" data-id="${funnel.id}" title="Version history">🕘</button>
         <button class="btn-primary btn-push" data-id="${funnel.id}">→ GHL</button>
         <button class="btn-danger btn-delete" data-id="${funnel.id}">🗑</button>
       </div>
     </div>
   `;
+
+  card.querySelector('.btn-preview').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openClonePreview(funnel);
+  });
+
+  card.querySelector('.btn-history').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openVersionHistory(funnel);
+  });
+
+  card.querySelector('.btn-analyze')?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      const res = await sendMsg({ action: 'ANALYZE_FIDELITY', funnelId: funnel.id });
+      if (!res?.success) throw new Error(res?.error || 'Analyze failed');
+      const fr = await sendMsg({ action: 'GET_FUNNELS' });
+      myFunnels = fr?.funnels || myFunnels;
+      renderFunnels();
+    } catch (err) { btn.disabled = false; btn.textContent = '📊 Analyze'; alert(`Analyze failed: ${err.message || err}`); }
+  });
 
   card.querySelector('.btn-view').addEventListener('click', (e) => {
     e.stopPropagation();
@@ -295,66 +1324,120 @@ async function cloneFromUrl() {
 }
 
 async function pushFunnelToGHL(funnelId, btnEl) {
-  // Always refresh from storage so stale in-memory state can't cause a false pass.
+  // Always refresh from storage
   const sr = await sendMsg({ action: 'GET_SETTINGS' });
   settings = sr?.settings || settings;
 
   if (!settings.ghlApiKey || !settings.ghlLocationId) {
-    alert('Please configure your GHL API key and Location ID in Settings first.');
-    switchTab('settings');
+    if (confirm('GHL API key or Location ID is not configured.\n\nClick OK to open Settings and add your credentials.')) {
+      switchTab('settings');
+    }
     return;
   }
 
-  const originalText = btnEl.textContent;
-  btnEl.innerHTML = '<span class="spinner"></span> Exporting…';
-  btnEl.disabled = true;
+  const originalText = btnEl?.textContent || '→ GHL';
+  if (btnEl) {
+    btnEl.innerHTML = '<span class="spinner"></span> Pushing…';
+    btnEl.disabled = true;
+  }
 
   const result = await sendMsg({ action: 'PUSH_TO_GHL', data: { funnelId, useOptimized: true } });
 
-  btnEl.disabled = false;
+  if (btnEl) btnEl.disabled = false;
 
-  if (!result?.success) {
-    alert(buildPushErrorMessage(result?.error || 'Unknown error'));
-    btnEl.textContent = originalText;
+  // ── Error ──────────────────────────────────────────────────────────────────
+  if (result?.error || (!result?.success && !result?.funnelId)) {
+    const errMsg = buildPushErrorMessage(result?.error || 'Unknown error occurred.');
+    alert(errMsg);
+    if (btnEl) btnEl.textContent = originalText;
+
+    // Offer download fallback
+    const funnel = myFunnels.find(f => f.id === funnelId);
+    if (funnel && confirm('Would you like to download the HTML instead so you can paste it manually in GHL?')) {
+      const html = funnel.optimizedHtml || funnel.html || '';
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(funnel.name || 'funnel').replace(/\s+/g, '-')}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
     return;
   }
 
-  if (result.success === 'html_only' || result.success === 'partial') {
-    btnEl.textContent = '⚠ Check GHL';
-    const msg = (result.warning || 'Partial export.') +
-      '\n\nClick OK to open the GHL builder. You can also Download HTML from "View" to paste it in manually.';
-    if (confirm(msg)) chrome.tabs.create({ url: result.ghlBuilderUrl });
-  } else {
-    btnEl.textContent = '✓ Exported!';
-    const label = result.funnelName ? ` to funnel "${result.funnelName}"` : '';
-    if (confirm(`Page exported${label}! Open in GHL builder?`)) {
-      chrome.tabs.create({ url: result.ghlBuilderUrl });
-    }
-  }
-
+  // ── Refresh funnel list ────────────────────────────────────────────────────
   const fr = await sendMsg({ action: 'GET_FUNNELS' });
   myFunnels = fr?.funnels || [];
   renderFunnels();
+
+  // ── Partial success (page created, content upload failed) ─────────────────
+  if (result.success === 'partial' || result.success === 'html_only') {
+    if (btnEl) btnEl.textContent = '⚠ Partial';
+    const details = result.warning || 'Page was created but content could not be uploaded automatically.';
+    const action = confirm(
+      `⚠️ Partial Export\n\n${details}\n\n` +
+      `Funnel: "${result.funnelName || 'Unknown'}"\n\n` +
+      `Click OK to open GHL and paste the HTML manually.\n` +
+      `Click Cancel to download the HTML file instead.`
+    );
+    if (action) {
+      chrome.tabs.create({ url: result.ghlBuilderUrl });
+    } else {
+      const funnel = myFunnels.find(f => f.id === funnelId);
+      if (funnel) {
+        const html = funnel.optimizedHtml || funnel.html || '';
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(funnel.name || 'funnel').replace(/\s+/g, '-')}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+    return;
+  }
+
+  // ── Full success ──────────────────────────────────────────────────────────
+  if (btnEl) btnEl.textContent = '✓ Exported!';
+  const funnelLabel = result.funnelName ? ` "${result.funnelName}"` : '';
+  if (confirm(
+    `✅ Successfully pushed to GHL funnel${funnelLabel}!\n\n` +
+    `The page is now live in your GHL account.\n` +
+    `All content is editable directly in GHL Builder.\n\n` +
+    `Open GHL Builder now?`
+  )) {
+    chrome.tabs.create({ url: result.ghlBuilderUrl });
+  }
 }
 
 function buildPushErrorMessage(rawError) {
   const err = String(rawError || '').toLowerCase();
   let advice = 'Try again in a few seconds.';
 
-  if (err.includes('location id')) {
-    advice = 'Open Settings and verify your GHL Location ID exactly matches your GHL account.';
-  } else if (err.includes('invalid private integration') || err.includes('api key') || err.includes('401') || err.includes('invalid') || err.includes('unauthorized')) {
-    advice = 'Your GHL Private Integration Token is invalid or expired. Go to GHL → Settings → Integrations → API Keys, create a new Private Integration Token with Funnels scope, paste it in Settings here, then click Test Connection before exporting.';
-  } else if (err.includes('timed out') || err.includes('network')) {
-    advice = 'Check your internet connection, then retry export. If this continues, use Download HTML as fallback.';
-  } else if (err.includes('no funnels found')) {
-    advice = 'Create at least one funnel in GoHighLevel first, then retry export.';
-  } else if (err.includes('quota') || err.includes('storage limit')) {
-    advice = 'Delete older saved funnels in My Funnels to free storage, then retry.';
+  if (err.includes('location id') || err.includes('location not found') || err.includes('404')) {
+    advice = 'Your Location ID is incorrect. Go to GHL → Settings → Business Profile → copy the Location ID and paste it in Clone2GHL Settings.';
+  } else if (
+    err.includes('invalid private integration') || err.includes('api key') ||
+    err.includes('401') || err.includes('unauthorized') || err.includes('forbidden') || err.includes('403')
+  ) {
+    advice = 'Your GHL API key is invalid or missing permissions.\n\nFix: GHL → Settings → Integrations → Private Integrations → Create new key with Funnels + Websites scope → paste in Clone2GHL Settings → Test Connection.';
+  } else if (err.includes('scope') || err.includes('permission')) {
+    advice = 'Your API key is missing the Funnels scope. Edit your Private Integration in GHL and enable Funnels & Websites permissions.';
+  } else if (err.includes('timed out') || err.includes('network') || err.includes('abort')) {
+    advice = 'Connection timed out. Check your internet connection and retry. If GHL is slow, try again in 30 seconds.';
+  } else if (err.includes('no funnels found') || err.includes('create at least one')) {
+    advice = 'Go to GoHighLevel → Funnels & Websites → New Funnel → create any funnel → then retry the export here.';
+  } else if (err.includes('quota') || err.includes('storage')) {
+    advice = 'Delete older funnels in My Funnels to free storage, then retry.';
+  } else if (err.includes('empty') || err.includes('invalid html')) {
+    advice = 'The funnel HTML appears to be empty. Try re-cloning the site first.';
   }
 
-  return `Export failed:\n${rawError}\n\nNext step:\n${advice}`;
+  return `❌ Export Failed\n\n${rawError}\n\n💡 How to fix:\n${advice}`;
 }
+
 
 // ─── Funnel Modal ─────────────────────────────────────────────────────────────
 function setupModal() {
@@ -568,15 +1651,38 @@ function renderLibrary() {
   });
 }
 
+// Lazy-loads a template's HTML from data/templates/{file}.html (or returns inline tpl.html for legacy entries).
+async function loadTemplateHtml(tpl) {
+  if (tpl?.html) return tpl.html;
+  if (!tpl?.htmlFile) return '';
+  loadTemplateHtml._cache = loadTemplateHtml._cache || {};
+  if (loadTemplateHtml._cache[tpl.htmlFile]) return loadTemplateHtml._cache[tpl.htmlFile];
+  try {
+    const resp = await fetch(chrome.runtime.getURL(`data/${tpl.htmlFile}`));
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const html = await resp.text();
+    loadTemplateHtml._cache[tpl.htmlFile] = html;
+    return html;
+  } catch (e) {
+    console.warn('[funnel-library] Failed to load template HTML', tpl.htmlFile, e);
+    return '';
+  }
+}
+
 async function cloneFromLibrary(tpl) {
   // Save the library template as a funnel in the user's "My Funnels"
+  const html = await loadTemplateHtml(tpl);
+  if (!html) {
+    showSaveToast('Could not load template');
+    return;
+  }
   const funnel = {
     id: `lib_${tpl.id}_${Date.now()}`,
     name: tpl.name,
     sourceUrl: 'Library Template',
     niche: tpl.niche,
     status: 'draft',
-    html: tpl.html,
+    html,
     optimizedHtml: null,
     analysis: null,
     meta: { title: tpl.name, url: '', capturedAt: new Date().toISOString() },
@@ -590,10 +1696,886 @@ async function cloneFromLibrary(tpl) {
   switchTab('funnels');
 }
 
-function previewTemplate(tpl) {
-  const blob = new Blob([tpl.html], { type: 'text/html' });
+async function previewTemplate(tpl) {
+  const html = await loadTemplateHtml(tpl);
+  if (!html) return;
+  const blob = new Blob([html], { type: 'text/html' });
   window.open(URL.createObjectURL(blob), '_blank');
 }
+
+// ─── Discover Sites Tab ───────────────────────────────────────────────────────
+
+const DISCOVER_NICHES = [
+  ['plumber',          '🔧', 'Plumber'],
+  ['electrician',      '⚡', 'Electrician'],
+  ['hvac',             '❄️', 'HVAC'],
+  ['roofing',          '🏠', 'Roofing'],
+  ['cleaning',         '🧹', 'Cleaning'],
+  ['landscaping',      '🌿', 'Landscaping'],
+  ['solar',            '☀️', 'Solar'],
+  ['real_estate',      '🏢', 'Real Estate'],
+  ['gym',              '💪', 'Gym / Fitness'],
+  ['dental',           '🦷', 'Dental'],
+  ['coaching',         '🎯', 'Coaching'],
+  ['insurance',        '🛡️', 'Insurance'],
+  ['legal',            '⚖️', 'Legal'],
+  ['marketing_agency', '📈', 'Marketing Agency'],
+  ['weight_loss',      '🏃', 'Weight Loss'],
+];
+
+// Map niche → icon for quick lookup
+const NICHE_ICON_MAP = Object.fromEntries(DISCOVER_NICHES.map(([v, icon]) => [v, icon]));
+
+let discoverActiveNiche = '';
+let discoverLiveResults = [];
+let discoverSearchTimer = null;
+let discoverCloneTabId = null;     // track the silent background tab for cancel
+let discoverCurrentCloneSite = null; // {url, niche, name}
+let discoverCurrentPage = 1;
+const DISCOVER_PAGE_SIZE = 24;
+let discoverImgObserver = null;    // IntersectionObserver for lazy mshots
+let discoverSuggestTimer = null;   // debounce for typeahead dropdown
+let discoverSuggestCache = new Map(); // query → suggestion array (session cache)
+
+// ── Build screenshot URL using WordPress mshots (free, no key needed) ─────────
+function buildScreenshotUrl(url) {
+  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=400`;
+}
+
+// ── Conversion elements derived from tags/highlights ─────────────────────────
+const CONVERSION_ELEMENT_MAP = {
+  'lead gen':     'Lead Form',
+  'form':         'Lead Form',
+  'quiz':         'Quiz Funnel',
+  'booking':      'Online Booking',
+  'guarantee':    'Guarantee',
+  'video':        'Video Hero',
+  'calculator':   'Calculator',
+  'comparison':   'Comparison Table',
+  'testimonials': 'Testimonials',
+  'reviews':      'Star Reviews',
+  'financing':    'Financing',
+  'free':         'Free Offer',
+  'urgent':       'Urgency CTA',
+  'countdown':    'Countdown Timer',
+  'chat':         'Live Chat',
+  'appointment':  'Appointment CTA',
+};
+
+function deriveConversionElements(site) {
+  const tags = [...(site.tags || []), ...(site.highlights || [])].map(t => t.toLowerCase());
+  const found = [];
+  for (const [key, label] of Object.entries(CONVERSION_ELEMENT_MAP)) {
+    if (tags.some(t => t.includes(key)) && !found.includes(label)) {
+      found.push(label);
+    }
+  }
+  return found.slice(0, 3);
+}
+
+function setupDiscoverTab() {
+  const pillsContainer = document.getElementById('discover-niche-pills');
+  if (!pillsContainer) return;
+
+  // ── Build niche pills ─────────────────────────────────────────────────────
+  const allPill = document.createElement('button');
+  allPill.className = 'discover-niche-pill active';
+  allPill.innerHTML = '<span class="discover-niche-pill-icon">🌐</span> All';
+  allPill.dataset.niche = '';
+  pillsContainer.appendChild(allPill);
+
+  DISCOVER_NICHES.forEach(([value, icon, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'discover-niche-pill';
+    btn.innerHTML = `<span class="discover-niche-pill-icon">${icon}</span> ${label}`;
+    btn.dataset.niche = value;
+    pillsContainer.appendChild(btn);
+  });
+
+  pillsContainer.addEventListener('click', (e) => {
+    const pill = e.target.closest('.discover-niche-pill');
+    if (!pill) return;
+    pillsContainer.querySelectorAll('.discover-niche-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    discoverActiveNiche = pill.dataset.niche;
+    discoverLiveResults = [];
+    discoverCurrentPage = 1;
+    renderDiscoverGrid();
+  });
+
+  // ── Search input with debounce + typeahead suggestions ──────────────────
+  const searchInput = document.getElementById('discover-search-input');
+  searchInput?.addEventListener('input', () => {
+    clearTimeout(discoverSearchTimer);
+    discoverSearchTimer = setTimeout(() => {
+      discoverCurrentPage = 1;
+      renderDiscoverGrid();
+    }, 300);
+    // Typeahead suggestions (Google CSE) — only if user has keys
+    clearTimeout(discoverSuggestTimer);
+    discoverSuggestTimer = setTimeout(() => updateDiscoverSuggestions(searchInput.value.trim()), 350);
+  });
+  searchInput?.addEventListener('focus', () => updateDiscoverSuggestions(searchInput.value.trim()));
+  // Hide suggestions when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.discover-search-row') && !e.target.closest('#discover-suggest-dropdown')) {
+      hideDiscoverSuggestions();
+    }
+  });
+
+  // ── Live search button ────────────────────────────────────────────────────
+  document.getElementById('btn-discover-live-search')?.addEventListener('click', () => {
+    if (!settings.discoverApiKey || !settings.discoverCx) {
+      const status = document.getElementById('discover-live-status');
+      status.style.display = 'block';
+      status.innerHTML = '🔑 Add a Google Custom Search API Key + Search Engine ID in <button class="btn-secondary" id="discover-goto-settings" style="font-size:11px;padding:4px 10px;">Settings</button> to enable live search.';
+      document.getElementById('discover-goto-settings')?.addEventListener('click', () => switchTab('settings'));
+      return;
+    }
+    const query = document.getElementById('discover-search-input')?.value?.trim() || discoverActiveNiche;
+    liveSearchDiscover(discoverActiveNiche, query);
+  });
+
+  // ── Subtab switching (Featured vs My Sites) ─────────────────────────────
+  document.querySelectorAll('.discover-subtab').forEach(btn => {
+    btn.addEventListener('click', () => switchDiscoverSubtab(btn.dataset.subtab));
+  });
+
+  // ── My Sites: add/edit modal ────────────────────────────────────────────
+  setupMySitesModal();
+
+  // ── Render all on first load ──────────────────────────────────────────────
+  renderDiscoverGrid();
+  setupDiscoverGridClickHandler();
+  setupCloneProgressModal();
+  setupSitePreviewModal();
+  setupDiscoverBackgroundMessageListener();
+}
+
+// ── My Sites (custom user-saved sites with CRUD) ───────────────────────────
+let mySites = [];
+let mySiteEditingId = null;
+
+function switchDiscoverSubtab(subtab) {
+  document.querySelectorAll('.discover-subtab').forEach(b => {
+    const active = b.dataset.subtab === subtab;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  const featured = document.getElementById('discover-featured-panel');
+  const mine = document.getElementById('discover-mysites-panel');
+  if (subtab === 'mine') {
+    featured.style.display = 'none';
+    mine.style.display = 'block';
+    loadMySites();
+  } else {
+    mine.style.display = 'none';
+    featured.style.display = 'block';
+  }
+}
+
+async function loadMySites() {
+  const list = document.getElementById('mysites-list');
+  const empty = document.getElementById('mysites-empty');
+  const count = document.getElementById('mysites-count');
+  if (!list) return;
+
+  if (!settings.backendToken) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('.mysites-empty-title').textContent = 'Sign in to use My Sites';
+    empty.querySelector('.mysites-empty-sub').textContent = 'My Sites syncs your saved websites across devices. Sign in from the My Account tab to enable it.';
+    count.textContent = '';
+    return;
+  }
+
+  list.innerHTML = '<div class="mysites-empty"><span class="spinner"></span> Loading…</div>';
+  try {
+    const res = await sendMsg({ action: 'BACKEND_SITES_LIST' });
+    mySites = res?.sites || [];
+    renderMySites();
+  } catch (err) {
+    list.innerHTML = `<div class="mysite-modal-error" style="display:block;">Failed to load: ${escHtml(err.message || String(err))}</div>`;
+  }
+}
+
+function renderMySites() {
+  const list = document.getElementById('mysites-list');
+  const empty = document.getElementById('mysites-empty');
+  const count = document.getElementById('mysites-count');
+  if (!list) return;
+
+  count.textContent = `${mySites.length} site${mySites.length !== 1 ? 's' : ''}`;
+
+  if (!mySites.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('.mysites-empty-title').textContent = 'No saved sites yet';
+    empty.querySelector('.mysites-empty-sub').textContent = "Add any website you want to clone. Sites stay synced across your devices when you're signed in.";
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = mySites.map(s => `
+    <div class="mysite-row" data-id="${escHtml(s.id)}">
+      <img class="mysite-favicon" src="https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(s.domain || '')}" alt="" onerror="this.style.visibility='hidden'">
+      <div class="mysite-info">
+        <div class="mysite-name">${escHtml(s.name || s.domain)}</div>
+        <div class="mysite-meta">
+          <span>${escHtml(s.domain || '')}</span>
+          <span class="pill">${escHtml((s.niche || 'general').replace(/_/g, ' '))}</span>
+          ${s.tags ? `<span>${escHtml(s.tags)}</span>` : ''}
+        </div>
+      </div>
+      <div class="mysite-actions">
+        <button class="mysite-btn mysite-btn-clone" data-act="clone">⚡ Clone</button>
+        <button class="mysite-btn" data-act="edit">Edit</button>
+        <button class="mysite-btn mysite-btn-danger" data-act="delete">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.mysite-row').forEach(row => {
+    const id = row.dataset.id;
+    row.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-act]');
+      if (!btn) return;
+      const site = mySites.find(s => s.id === id);
+      if (!site) return;
+      const act = btn.dataset.act;
+      if (act === 'clone') {
+        startSilentClone({ url: site.url, name: site.name, niche: site.niche }, btn);
+      } else if (act === 'edit') {
+        openMySiteModal(site);
+      } else if (act === 'delete') {
+        if (!confirm(`Delete "${site.name || site.domain}"?`)) return;
+        btn.disabled = true;
+        try {
+          await sendMsg({ action: 'BACKEND_SITES_DELETE', id });
+          mySites = mySites.filter(s => s.id !== id);
+          renderMySites();
+        } catch (err) {
+          alert(`Delete failed: ${err.message || err}`);
+          btn.disabled = false;
+        }
+      }
+    });
+  });
+}
+
+function setupMySitesModal() {
+  document.getElementById('btn-mysite-add')?.addEventListener('click', () => openMySiteModal(null));
+  document.getElementById('mysite-modal-close')?.addEventListener('click', closeMySiteModal);
+  document.getElementById('mysite-modal-cancel')?.addEventListener('click', closeMySiteModal);
+  document.getElementById('mysite-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'mysite-modal') closeMySiteModal();
+  });
+  document.getElementById('mysite-modal-save')?.addEventListener('click', saveMySite);
+}
+
+function openMySiteModal(site) {
+  mySiteEditingId = site?.id || null;
+  document.getElementById('mysite-modal-title').textContent = site ? 'Edit Site' : 'Add Site';
+  document.getElementById('mysite-input-url').value = site?.url || '';
+  document.getElementById('mysite-input-name').value = site?.name || '';
+  document.getElementById('mysite-input-niche').value = site?.niche || 'general';
+  document.getElementById('mysite-input-tags').value = site?.tags || '';
+  document.getElementById('mysite-input-notes').value = site?.notes || '';
+  document.getElementById('mysite-modal-error').style.display = 'none';
+  document.getElementById('mysite-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('mysite-input-url')?.focus(), 50);
+}
+
+function closeMySiteModal() {
+  document.getElementById('mysite-modal').style.display = 'none';
+  mySiteEditingId = null;
+}
+
+async function saveMySite() {
+  const url = document.getElementById('mysite-input-url').value.trim();
+  const name = document.getElementById('mysite-input-name').value.trim();
+  const niche = document.getElementById('mysite-input-niche').value;
+  const tags = document.getElementById('mysite-input-tags').value.trim();
+  const notes = document.getElementById('mysite-input-notes').value.trim();
+  const errEl = document.getElementById('mysite-modal-error');
+  errEl.style.display = 'none';
+
+  if (!url) {
+    errEl.textContent = 'URL is required';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const saveBtn = document.getElementById('mysite-modal-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
+
+  try {
+    if (mySiteEditingId) {
+      const res = await sendMsg({
+        action: 'BACKEND_SITES_UPDATE',
+        id: mySiteEditingId,
+        patch: { url, name, niche, tags, notes },
+      });
+      const idx = mySites.findIndex(s => s.id === mySiteEditingId);
+      if (idx >= 0 && res?.site) mySites[idx] = res.site;
+    } else {
+      const res = await sendMsg({
+        action: 'BACKEND_SITES_CREATE',
+        site: { url, name, niche, tags, notes },
+      });
+      if (res?.site) mySites.unshift(res.site);
+    }
+    renderMySites();
+    closeMySiteModal();
+  } catch (err) {
+    errEl.textContent = err.message || String(err);
+    errEl.style.display = 'block';
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
+  }
+}
+
+// ── Render the discover grid with new premium cards ────────────────────────────
+function renderDiscoverGrid() {
+  const grid = document.getElementById('discover-grid');
+  if (!grid) return;
+
+  const query = (document.getElementById('discover-search-input')?.value || '').toLowerCase().trim();
+  const niche = discoverActiveNiche;
+
+  let results = nicheWebsites.filter(site => {
+    if (niche && site.niche !== niche) return false;
+    if (query) {
+      return site.name.toLowerCase().includes(query)
+        || site.domain.toLowerCase().includes(query)
+        || (site.description || '').toLowerCase().includes(query);
+    }
+    return true;
+  });
+
+  const merged = [...results, ...discoverLiveResults.filter(lr =>
+    !results.some(r => r.domain === lr.domain)
+  )];
+
+  // Update site count pill
+  const countEl = document.getElementById('discover-site-count');
+  const statsEl = document.getElementById('discover-stats');
+  if (countEl && merged.length > 0) {
+    countEl.textContent = `${merged.length} site${merged.length !== 1 ? 's' : ''}`;
+    if (statsEl) statsEl.style.display = 'flex';
+  } else if (statsEl) {
+    statsEl.style.display = 'none';
+  }
+
+  grid.innerHTML = '';
+
+  if (!niche && !query && merged.length === 0) {
+    grid.innerHTML = `
+      <div class="discover-empty" id="discover-empty">
+        <div class="discover-empty-icon">🌐</div>
+        <div class="discover-empty-title">Select a niche to browse websites</div>
+        <div class="discover-empty-sub">Pick a category above to see curated high-converting sites you can clone into GHL</div>
+        <div class="discover-niche-hint">
+          <span>🏠 Roofing</span><span>⚡ Electrician</span><span>🔧 Plumbing</span><span>🌿 Landscaping</span><span>🦷 Dental</span>
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (merged.length === 0) {
+    grid.innerHTML = `<div class="discover-empty">
+      <div class="discover-empty-icon">🔍</div>
+      <div class="discover-empty-title">No sites found</div>
+      <div class="discover-empty-sub">Try a different search or niche, or click "Search Online" to find more.</div>
+    </div>`;
+    return;
+  }
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(merged.length / DISCOVER_PAGE_SIZE));
+  if (discoverCurrentPage > totalPages) discoverCurrentPage = totalPages;
+  if (discoverCurrentPage < 1) discoverCurrentPage = 1;
+  const startIdx = (discoverCurrentPage - 1) * DISCOVER_PAGE_SIZE;
+  const pageSlice = merged.slice(startIdx, startIdx + DISCOVER_PAGE_SIZE);
+
+  // Init / reset image observer for this render pass
+  if (discoverImgObserver) discoverImgObserver.disconnect();
+  discoverImgObserver = new IntersectionObserver((entries, obs) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        if (src) { img.src = src; img.removeAttribute('data-src'); }
+        obs.unobserve(img);
+      }
+    }
+  }, { rootMargin: '200px' });
+
+  pageSlice.forEach(site => {
+    const card = buildDiscoverCard(site, niche);
+    grid.appendChild(card);
+    const img = card.querySelector('img.discover-card-thumb-img[data-src]');
+    if (img) discoverImgObserver.observe(img);
+  });
+
+  // Render pagination controls
+  if (totalPages > 1) {
+    const pager = document.createElement('div');
+    pager.className = 'discover-pager';
+    pager.innerHTML = `
+      <button class="discover-pager-btn" data-page="prev" ${discoverCurrentPage === 1 ? 'disabled' : ''}>← Prev</button>
+      <span class="discover-pager-info">Page ${discoverCurrentPage} of ${totalPages} · ${merged.length} sites</span>
+      <button class="discover-pager-btn" data-page="next" ${discoverCurrentPage === totalPages ? 'disabled' : ''}>Next →</button>
+    `;
+    grid.appendChild(pager);
+    pager.addEventListener('click', (e) => {
+      const btn = e.target.closest('.discover-pager-btn');
+      if (!btn || btn.disabled) return;
+      discoverCurrentPage += (btn.dataset.page === 'next' ? 1 : -1);
+      renderDiscoverGrid();
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+}
+
+function buildDiscoverCard(site, activeNiche) {
+  const card = document.createElement('div');
+  card.className = 'discover-card';
+  card.dataset.niche = site.niche || activeNiche || '';
+
+  const conversionEls = deriveConversionElements(site);
+  const screenshotUrl = buildScreenshotUrl(site.url);
+  const niche = site.niche || activeNiche || 'general';
+  const nicheIcon = NICHE_ICON_MAP[niche] || '🌐';
+  const nicheLabel = (DISCOVER_NICHES.find(n => n[0] === niche)?.[2] || niche).replace(/_/g, ' ');
+
+  const highlights = (site.highlights || [])
+    .map(h => `<span class="discover-highlight-chip">${escHtml(h)}</span>`).join('');
+  const convChips = conversionEls
+    .map(el => `<span class="discover-conversion-chip">✓ ${escHtml(el)}</span>`).join('');
+
+  card.innerHTML = `
+    <div class="discover-card-thumb">
+      <div class="discover-card-thumb-bg">
+        <div class="discover-card-thumb-placeholder">
+          <div class="discover-card-niche-icon">${nicheIcon}</div>
+          <div class="discover-card-thumb-domain">${escHtml(site.domain)}</div>
+        </div>
+        <img class="discover-card-thumb-img" data-src="${screenshotUrl}"
+             alt="${escHtml(site.name)} preview"
+             loading="lazy"
+             onerror="this.style.display='none'">
+      </div>
+      <div class="discover-card-badges">
+        <span class="discover-niche-badge">${escHtml(nicheLabel)}</span>
+        ${site.isLive ? '<span class="discover-live-badge">Live</span>' : ''}
+      </div>
+    </div>
+    <div class="discover-card-body">
+      <div class="discover-card-header-row">
+        <span class="discover-card-domain">🌐 ${escHtml(site.domain)}</span>
+      </div>
+      <div class="discover-card-name">${escHtml(site.name)}</div>
+      <div class="discover-card-desc">${escHtml(site.description)}</div>
+      ${conversionEls.length ? `<div class="discover-conversion-chips">${convChips}</div>` : ''}
+      ${highlights ? `<div class="discover-highlights">${highlights}</div>` : ''}
+      <div class="discover-card-actions">
+        <button class="btn-preview-site" data-preview-url="${escHtml(site.url)}" data-preview-name="${escHtml(site.name)}" title="Preview site">👁 Preview</button>
+        <button class="btn-clone-site" data-clone-url="${escHtml(site.url)}" data-clone-niche="${escHtml(niche)}" data-clone-name="${escHtml(site.name)}">⚡ Clone to GHL</button>
+      </div>
+    </div>`;
+
+  return card;
+}
+
+// ── Grid click delegation ──────────────────────────────────────────────────────
+function setupDiscoverGridClickHandler() {
+  const grid = document.getElementById('discover-grid');
+  if (!grid) return;
+
+  grid.addEventListener('click', (e) => {
+    // Preview button
+    const previewBtn = e.target.closest('.btn-preview-site');
+    if (previewBtn) {
+      openSitePreviewModal({
+        url: previewBtn.dataset.previewUrl,
+        name: previewBtn.dataset.previewName,
+      });
+      return;
+    }
+
+    // Clone button
+    const cloneBtn = e.target.closest('.btn-clone-site');
+    if (cloneBtn) {
+      const site = {
+        url: cloneBtn.dataset.cloneUrl,
+        niche: cloneBtn.dataset.cloneNiche,
+        name: cloneBtn.dataset.cloneName,
+      };
+      startSilentClone(site, cloneBtn);
+    }
+  });
+}
+
+// ── Clone Progress Modal ──────────────────────────────────────────────────────
+let cppCurrentFunnelId = null;
+
+function setupCloneProgressModal() {
+  document.getElementById('cpp-cancel')?.addEventListener('click', () => {
+    closeCloneProgressModal();
+  });
+
+  document.getElementById('cpp-error-close')?.addEventListener('click', () => {
+    closeCloneProgressModal();
+  });
+
+  document.getElementById('cpp-view-funnel')?.addEventListener('click', () => {
+    closeCloneProgressModal();
+    switchTab('funnels');
+  });
+
+  document.getElementById('cpp-push-ghl')?.addEventListener('click', async () => {
+    closeCloneProgressModal();
+    if (cppCurrentFunnelId) {
+      const funnel = myFunnels.find(f => f.id === cppCurrentFunnelId);
+      if (funnel) {
+        switchTab('funnels');
+        setTimeout(() => {
+          const btn = document.querySelector(`[data-id="${cppCurrentFunnelId}"].btn-push`);
+          if (btn) pushFunnelToGHL(cppCurrentFunnelId, btn);
+        }, 300);
+      }
+    }
+  });
+
+  // Close on overlay click
+  document.getElementById('clone-progress-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'clone-progress-modal') closeCloneProgressModal();
+  });
+}
+
+function openCloneProgressModal(site) {
+  const modal = document.getElementById('clone-progress-modal');
+  if (!modal) return;
+
+  // Reset state
+  document.getElementById('cpp-url').textContent = site.url;
+  document.getElementById('cpp-progress-fill').style.width = '0%';
+  document.getElementById('cpp-progress-label').textContent = 'Starting…';
+  document.getElementById('cpp-success').style.display = 'none';
+  document.getElementById('cpp-error').style.display = 'none';
+  document.getElementById('cpp-steps').style.display = 'flex';
+  document.getElementById('cpp-progress-track').style.display = 'block';
+  document.getElementById('cpp-cancel').style.display = 'flex';
+  cppCurrentFunnelId = null;
+
+  // Reset steps
+  for (let i = 1; i <= 7; i++) {
+    const step = document.getElementById(`cpp-step-${i}`);
+    if (step) { step.classList.remove('active', 'done'); }
+  }
+
+  modal.style.display = 'flex';
+  discoverCurrentCloneSite = site;
+}
+
+function closeCloneProgressModal() {
+  const modal = document.getElementById('clone-progress-modal');
+  if (modal) modal.style.display = 'none';
+  discoverCurrentCloneSite = null;
+}
+
+function updateCloneProgress(step, total, msg) {
+  const pct = Math.round((step / total) * 100);
+  document.getElementById('cpp-progress-fill').style.width = `${pct}%`;
+  document.getElementById('cpp-progress-label').textContent = msg;
+
+  for (let i = 1; i <= total; i++) {
+    const el = document.getElementById(`cpp-step-${i}`);
+    if (!el) continue;
+    el.classList.remove('active', 'done');
+    if (i < step) el.classList.add('done');
+    else if (i === step) el.classList.add('active');
+  }
+}
+
+function showCloneSuccess(funnelId, siteName, opts = {}) {
+  const { pushed = false, pushSkipped = false, pushError = null } = opts;
+  cppCurrentFunnelId = funnelId;
+  document.getElementById('cpp-steps').style.display = 'none';
+  document.getElementById('cpp-progress-track').style.display = 'none';
+  document.getElementById('cpp-progress-label').style.display = 'none';
+  document.getElementById('cpp-cancel').style.display = 'none';
+
+  let msg;
+  if (pushed) {
+    msg = `"${siteName}" cloned and pushed to your GHL account.`;
+  } else if (pushSkipped) {
+    msg = `"${siteName}" saved to My Funnels. Add your GHL API key + Location ID in Settings, then click "Push to GHL" from My Funnels.`;
+  } else if (pushError) {
+    msg = `"${siteName}" saved to My Funnels. GHL push failed: ${pushError}. You can retry from My Funnels.`;
+  } else {
+    msg = `"${siteName}" saved to My Funnels`;
+  }
+  document.getElementById('cpp-success-sub').textContent = msg;
+  document.getElementById('cpp-success').style.display = 'block';
+}
+
+function showCloneError(errMsg) {
+  document.getElementById('cpp-steps').style.display = 'none';
+  document.getElementById('cpp-progress-track').style.display = 'none';
+  document.getElementById('cpp-cancel').style.display = 'none';
+  document.getElementById('cpp-error-msg').textContent = errMsg;
+  document.getElementById('cpp-error').style.display = 'block';
+}
+
+// ── Site Preview Modal ────────────────────────────────────────────────────────
+let previewCurrentSite = null;
+
+function setupSitePreviewModal() {
+  document.getElementById('spp-close')?.addEventListener('click', closeSitePreviewModal);
+  document.getElementById('site-preview-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'site-preview-modal') closeSitePreviewModal();
+  });
+
+  document.getElementById('spp-open-btn')?.addEventListener('click', () => {
+    if (previewCurrentSite?.url) chrome.tabs.create({ url: previewCurrentSite.url });
+  });
+
+  document.getElementById('spp-clone-btn')?.addEventListener('click', () => {
+    if (previewCurrentSite) {
+      closeSitePreviewModal();
+      startSilentClone(previewCurrentSite, null);
+    }
+  });
+
+  document.getElementById('spp-iframe')?.addEventListener('load', () => {
+    document.getElementById('spp-loading').style.opacity = '0';
+    setTimeout(() => {
+      const loading = document.getElementById('spp-loading');
+      if (loading) loading.style.display = 'none';
+    }, 300);
+  });
+}
+
+function openSitePreviewModal(site) {
+  previewCurrentSite = site;
+  const modal = document.getElementById('site-preview-modal');
+  if (!modal) return;
+
+  document.getElementById('spp-title').textContent = site.name || site.url;
+  document.getElementById('spp-url').textContent = site.url;
+  document.getElementById('spp-loading').style.display = 'flex';
+  document.getElementById('spp-loading').style.opacity = '1';
+
+  const iframe = document.getElementById('spp-iframe');
+  iframe.src = site.url;
+
+  modal.style.display = 'flex';
+}
+
+function closeSitePreviewModal() {
+  document.getElementById('site-preview-modal').style.display = 'none';
+  const iframe = document.getElementById('spp-iframe');
+  if (iframe) iframe.src = '';
+  previewCurrentSite = null;
+}
+
+// ── Silent One-Click Clone ────────────────────────────────────────────────────
+async function startSilentClone(site, btnEl) {
+  // Disable the card button during clone
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="spinner"></span>';
+  }
+
+  openCloneProgressModal(site);
+  updateCloneProgress(1, 5, 'Opening website…');
+
+  try {
+    const result = await sendMsg({
+      action: 'CLONE_FROM_URL_SILENT',
+      url: site.url,
+      niche: site.niche,
+      optimize: Boolean(settings.backendToken),
+    });
+
+    if (result?.error) throw new Error(result.error);
+
+    // Refresh funnels list
+    const fr = await sendMsg({ action: 'GET_FUNNELS' });
+    myFunnels = fr?.funnels || [];
+    renderFunnels();
+    updateFunnelSelects();
+
+    showCloneSuccess(result?.funnel?.id, site.name || site.url, {
+      pushed: Boolean(result?.ghlFunnelId),
+      pushSkipped: Boolean(result?.pushSkipped),
+      pushError: result?.pushError || null,
+    });
+  } catch (err) {
+    showCloneError(err.message || 'Clone failed. Please try again.');
+  } finally {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.innerHTML = '⚡ Clone to GHL';
+    }
+  }
+}
+
+// ── Listen for progress broadcasts from background.js ────────────────────────
+function setupDiscoverBackgroundMessageListener() {
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.action === 'DISCOVER_CLONE_PROGRESS') {
+      updateCloneProgress(msg.step, msg.total, msg.message);
+    }
+    if (msg.action === 'DISCOVER_CLONE_COMPLETE') {
+      // Handled by the sendMsg resolution above; this is a belt-and-suspenders fallback
+    }
+  });
+}
+
+// ── Typeahead dropdown for Discover search ────────────────────────────────
+function classifyQuery(raw) {
+  const q = (raw || '').trim();
+  if (!q) return { type: 'empty', query: '', domain: '' };
+  // Full URL
+  try {
+    const u = new URL(q.startsWith('http') ? q : `https://${q}`);
+    if (u.hostname && u.hostname.includes('.')) {
+      // If the user typed a full URL with path, search site-restricted
+      if (u.pathname && u.pathname !== '/') return { type: 'url', query: q, domain: u.hostname };
+      return { type: 'domain', query: q, domain: u.hostname };
+    }
+  } catch { /* not a URL */ }
+  // Bare domain (foo.com / sub.foo.com)
+  if (/^[\w-]+(\.[\w-]+)+$/.test(q)) return { type: 'domain', query: q, domain: q };
+  return { type: 'keyword', query: q, domain: '' };
+}
+
+function buildCseQuery(classified, niche) {
+  const { type, query, domain } = classified;
+  if (type === 'url') return `site:${domain}`;
+  if (type === 'domain') return `site:${domain}`;
+  // keyword: bias by active niche when present
+  return niche ? `${query} ${niche.replace(/_/g, ' ')} business website` : `${query} business website`;
+}
+
+function hideDiscoverSuggestions() {
+  const dd = document.getElementById('discover-suggest-dropdown');
+  if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; }
+}
+
+function renderDiscoverSuggestions(items) {
+  const dd = document.getElementById('discover-suggest-dropdown');
+  if (!dd) return;
+  if (!items || !items.length) {
+    dd.innerHTML = `<div class="discover-suggest-empty">No matches. Try a different keyword.</div>`;
+    dd.classList.add('open');
+    return;
+  }
+  dd.innerHTML = items.map(it => `
+    <div class="discover-suggest-item" data-url="${escHtml(it.url)}" data-name="${escHtml(it.title)}" data-niche="${escHtml(it.niche || discoverActiveNiche || 'general')}">
+      <img class="discover-suggest-favicon" src="https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(it.domain)}" alt="" onerror="this.style.visibility='hidden'">
+      <div class="discover-suggest-body">
+        <div class="discover-suggest-title">${escHtml(it.title)}</div>
+        <div class="discover-suggest-domain">${escHtml(it.domain)}</div>
+      </div>
+      <button class="discover-suggest-clone" data-action="clone">⚡ Clone</button>
+    </div>
+  `).join('');
+  dd.classList.add('open');
+
+  // Wire row clicks
+  dd.querySelectorAll('.discover-suggest-item').forEach(row => {
+    row.addEventListener('click', (e) => {
+      const cloneBtn = e.target.closest('[data-action="clone"]');
+      const site = { url: row.dataset.url, name: row.dataset.name, niche: row.dataset.niche };
+      hideDiscoverSuggestions();
+      if (cloneBtn) {
+        startSilentClone(site, null);
+      } else {
+        // Open preview modal instead
+        previewCurrentSite = site;
+        const modal = document.getElementById('site-preview-modal');
+        const iframe = document.getElementById('spp-iframe');
+        const title = document.getElementById('spp-title');
+        if (title) title.textContent = site.name;
+        if (iframe) iframe.src = site.url;
+        if (modal) modal.style.display = 'flex';
+      }
+    });
+  });
+}
+
+async function updateDiscoverSuggestions(rawQuery) {
+  const classified = classifyQuery(rawQuery);
+  if (classified.type === 'empty') return hideDiscoverSuggestions();
+  if (!settings.discoverApiKey || !settings.discoverCx) return hideDiscoverSuggestions();
+
+  const cseQ = buildCseQuery(classified, discoverActiveNiche);
+  const cacheKey = `${discoverActiveNiche}::${cseQ}`;
+  if (discoverSuggestCache.has(cacheKey)) {
+    renderDiscoverSuggestions(discoverSuggestCache.get(cacheKey));
+    return;
+  }
+  try {
+    const url = `https://www.googleapis.com/customsearch/v1?key=${settings.discoverApiKey}&cx=${settings.discoverCx}&q=${encodeURIComponent(cseQ)}&num=6`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!resp.ok || data.error) {
+      renderDiscoverSuggestions([]);
+      return;
+    }
+    const items = (data.items || []).map(item => ({
+      title: item.title || item.link,
+      url: item.link,
+      domain: (() => { try { return new URL(item.link).hostname.replace(/^www\./, ''); } catch { return item.link; } })(),
+      niche: discoverActiveNiche || 'general',
+    }));
+    discoverSuggestCache.set(cacheKey, items);
+    renderDiscoverSuggestions(items);
+  } catch {
+    hideDiscoverSuggestions();
+  }
+}
+
+async function liveSearchDiscover(niche, query) {
+  const status = document.getElementById('discover-live-status');
+  status.style.display = 'block';
+  status.textContent = 'Searching online…';
+
+  const classified = classifyQuery(query || niche);
+  const cseQ = buildCseQuery(classified, niche);
+  const url = `https://www.googleapis.com/customsearch/v1?key=${settings.discoverApiKey}&cx=${settings.discoverCx}&q=${encodeURIComponent(cseQ)}&num=8`;
+
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error?.message || 'Search failed');
+
+    discoverLiveResults = (data.items || []).map(item => ({
+      id: `live-${item.link}`,
+      niche: niche || 'general',
+      name: item.title,
+      url: item.link,
+      domain: (() => { try { return new URL(item.link).hostname.replace('www.', ''); } catch { return item.link; } })(),
+      description: item.snippet || '',
+      highlights: [],
+      tags: [],
+      isLive: true,
+    }));
+
+    status.textContent = `Found ${discoverLiveResults.length} live results`;
+    renderDiscoverGrid();
+  } catch (err) {
+    status.textContent = `Search error: ${err.message}`;
+  }
+}
+
+
+
 
 // ─── AI Tools Tab ─────────────────────────────────────────────────────────────
 function setupAiToolsTab() {
@@ -1262,6 +3244,24 @@ function setupSettingsTab() {
       settings.ghlApiKey = apiKey;
       settings.ghlLocationId = locationId;
       setStatus(badge, `✓ Connected to: ${result.locationName} — Settings saved!`, 'connected');
+
+      // If signed in and still on the free tier, this validated connection starts
+      // the one-time free trial (the backend re-validates and binds the location).
+      if (settings.backendToken && settings.plan === 'free' && !settings.ghlValidated) {
+        const trialResp = await sendMsg({ action: 'GHL_START_TRIAL', apiKey, locationId });
+        if (trialResp?.success) {
+          if (trialResp.settings) settings = { ...settings, ...trialResp.settings };
+          const t = trialResp.trial || {};
+          setStatus(badge, t.alreadyStarted
+            ? `✓ Connected to: ${result.locationName} — trial active (${t.clonesRemaining ?? ''} clones left)`
+            : `✓ Connected to: ${result.locationName} — free trial started! ${t.clonesRemaining ?? 6} clones · ${t.daysLeft ?? 30} days`, 'connected');
+          updateSidebarPlanInfo();
+          showUpgradeBannerIfNeeded();
+        } else if (trialResp?.data?.code === 'location_already_trialed') {
+          setStatus(badge, '✗ This GoHighLevel location has already used a free trial. Upgrade to continue.', 'error');
+        }
+        // Any other trial error: keep the "connected" status — they can still upgrade.
+      }
     } else {
       setStatus(badge, `✗ ${result?.error || 'Connection failed'}`, 'error');
     }
@@ -1276,6 +3276,39 @@ function setupSettingsTab() {
     settings.ghlApiKey = apiKey;
     settings.ghlLocationId = locationId;
     showSaveToast('GHL settings saved!');
+  });
+
+  // ── Affiliate / referral link ─────────────────────────────────────────────
+  // Prefill from saved preferences when signed in.
+  (async () => {
+    const input = document.getElementById('affiliate-url');
+    if (!input || !settings.backendToken) return;
+    const r = await sendMsg({ action: 'BACKEND_GET_PREFERENCES' });
+    if (r?.success && r.preferences?.affiliateUrl) input.value = r.preferences.affiliateUrl;
+  })();
+
+  document.getElementById('btn-save-affiliate')?.addEventListener('click', async () => {
+    const badge = document.getElementById('affiliate-status-badge');
+    const affiliateUrl = document.getElementById('affiliate-url').value.trim();
+    if (affiliateUrl && !/^https?:\/\//i.test(affiliateUrl)) {
+      setStatus(badge, '⚠ Enter a valid http(s) URL.', 'error');
+      return;
+    }
+    if (!settings.backendToken) {
+      setStatus(badge, '⚠ Sign in under Cloud Backend to save your referral link.', 'error');
+      return;
+    }
+    const r = await sendMsg({ action: 'BACKEND_SAVE_PREFERENCES', preferences: { affiliateUrl } });
+    if (r?.success) setStatus(badge, '✓ Referral link saved.', 'connected');
+    else setStatus(badge, `✗ ${r?.error || 'Could not save.'}`, 'error');
+  });
+
+  document.getElementById('btn-copy-affiliate')?.addEventListener('click', async () => {
+    const badge = document.getElementById('affiliate-status-badge');
+    const url = document.getElementById('affiliate-url').value.trim();
+    if (!url) { setStatus(badge, '⚠ Add your referral link first.', 'error'); return; }
+    try { await navigator.clipboard.writeText(url); setStatus(badge, '✓ Referral link copied!', 'connected'); }
+    catch { setStatus(badge, '⚠ Copy failed — select and copy manually.', 'error'); }
   });
 
   // Backend save base URL on blur
@@ -1310,7 +3343,9 @@ function setupSettingsTab() {
     }
 
     settings = result.settings || settings;
+    await refreshOwnerStatus();
     updateSidebarPlanInfo();
+    applyFeatureGating();
     refreshPlanLabel();
     await loadBackendAccountData();
     setStatus(badge, `✓ Signed in as ${result.user?.email || email}`, 'connected');
@@ -1341,11 +3376,106 @@ function setupSettingsTab() {
     }
 
     settings = result.settings || settings;
+    await refreshOwnerStatus();
     updateSidebarPlanInfo();
+    applyFeatureGating();
     refreshPlanLabel();
     await loadBackendAccountData();
     setStatus(badge, `✓ Signed in as ${result.user?.email || email}`, 'connected');
     showSaveToast('Backend sign-in successful.');
+  });
+
+  // Forgot password — reveal the reset panel
+  document.getElementById('btn-forgot-password')?.addEventListener('click', () => {
+    const panel = document.getElementById('forgot-password-panel');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Send a reset code to the entered email
+  document.getElementById('btn-send-reset-code')?.addEventListener('click', async () => {
+    const email = document.getElementById('backend-auth-email').value.trim();
+    const backendApiBase = document.getElementById('backend-api-base').value.trim();
+    const badge = document.getElementById('backend-status-badge');
+    if (!email || !backendApiBase) {
+      setStatus(badge, '⚠ Enter the backend URL and your email first.', 'error');
+      return;
+    }
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { backendApiBase, backendEnabled: true } });
+    settings.backendApiBase = backendApiBase;
+    setStatus(badge, '<span class="spinner"></span> Sending reset code…', 'connected');
+    const result = await sendMsg({ action: 'BACKEND_FORGOT_PASSWORD', email });
+    if (!result?.success) {
+      setStatus(badge, `✗ ${result?.error || 'Could not send reset code'}`, 'error');
+      return;
+    }
+    setStatus(badge, '✓ If that email is registered, a reset code was sent. Check your inbox.', 'connected');
+  });
+
+  // Complete the reset with the emailed code + new password
+  document.getElementById('btn-reset-password')?.addEventListener('click', async () => {
+    const email = document.getElementById('backend-auth-email').value.trim();
+    const code = document.getElementById('reset-code').value.trim();
+    const newPassword = document.getElementById('reset-new-password').value;
+    const badge = document.getElementById('backend-status-badge');
+    if (!email || !code || !newPassword) {
+      setStatus(badge, '⚠ Enter your email, the reset code, and a new password.', 'error');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setStatus(badge, '⚠ New password must be at least 8 characters.', 'error');
+      return;
+    }
+    setStatus(badge, '<span class="spinner"></span> Resetting password…', 'connected');
+    const result = await sendMsg({ action: 'BACKEND_RESET_PASSWORD', email, code, newPassword });
+    if (!result?.success) {
+      setStatus(badge, `✗ ${result?.error || 'Reset failed'}`, 'error');
+      return;
+    }
+    setStatus(badge, '✓ Password reset. You can now sign in with your new password.', 'connected');
+    document.getElementById('forgot-password-panel').style.display = 'none';
+    document.getElementById('backend-auth-password').value = newPassword;
+  });
+
+  // Activate a GHL-purchased plan with the emailed code
+  document.getElementById('btn-ghl-activate')?.addEventListener('click', async () => {
+    const email = document.getElementById('ghl-activate-email').value.trim();
+    const code = document.getElementById('ghl-activate-code').value.trim();
+    const password = document.getElementById('ghl-activate-password').value;
+    const backendApiBase = document.getElementById('backend-api-base').value.trim();
+    const badge = document.getElementById('backend-status-badge');
+
+    if (!email || !code) {
+      setStatus(badge, '⚠ Enter your purchase email and activation code.', 'error');
+      return;
+    }
+    if (!backendApiBase) {
+      setStatus(badge, '⚠ Enter the backend URL first.', 'error');
+      return;
+    }
+    if (password && password.length < 8) {
+      setStatus(badge, '⚠ Password must be at least 8 characters (or leave it blank).', 'error');
+      return;
+    }
+
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { backendApiBase, backendEnabled: true } });
+    settings.backendApiBase = backendApiBase;
+    settings.backendEnabled = true;
+
+    setStatus(badge, '<span class="spinner"></span> Activating…', 'connected');
+    const result = await sendMsg({ action: 'GHL_ACTIVATE', email, code, password });
+    if (!result?.success) {
+      setStatus(badge, `✗ ${result?.error || 'Activation failed'}`, 'error');
+      return;
+    }
+
+    settings = result.settings || settings;
+    await refreshOwnerStatus();
+    updateSidebarPlanInfo();
+    applyFeatureGating();
+    refreshPlanLabel();
+    await loadBackendAccountData();
+    setStatus(badge, `✓ Activated — plan: ${result.user?.plan || 'updated'}`, 'connected');
+    showSaveToast('Plan activated! Welcome aboard.');
   });
 
   // Backend logout
@@ -1357,6 +3487,8 @@ function setupSettingsTab() {
       return;
     }
     settings = result.settings || settings;
+    settings.isOwner = false;
+    showHideAdminNav(false);
     refreshPlanLabel();
     clearDashboardAccountPanels();
     setStatus(badge, '● Signed out from backend.', 'connected');
@@ -1376,6 +3508,7 @@ function setupSettingsTab() {
     const sr = await sendMsg({ action: 'GET_SETTINGS' });
     settings = sr?.settings || settings;
     updateSidebarPlanInfo();
+    applyFeatureGating();
     refreshPlanLabel();
     const remaining = result.usage?.clonesRemaining;
     setStatus(badge, `✓ Usage synced${remaining >= 0 ? ` · ${remaining} clones remaining` : ' · unlimited'}`, 'connected');
@@ -1413,6 +3546,7 @@ function setupSettingsTab() {
     settings.credits = 999;
     refreshPlanLabel();
     updateSidebarPlanInfo();
+    applyFeatureGating();
     showSaveToast('Credits reset to 999!');
   });
 
@@ -1420,6 +3554,7 @@ function setupSettingsTab() {
 
 // ─── My Account Tab ───────────────────────────────────────────────────────────
 function setupAccountTab() {
+  document.getElementById('btn-load-invoices')?.addEventListener('click', () => loadMyInvoices());
   document.getElementById('btn-refresh-profile')?.addEventListener('click', async () => {
     await loadBackendAccountData(true);
   });
@@ -1470,6 +3605,31 @@ function setupAccountTab() {
     setStatus(badge, '✓ Password updated.', 'connected');
   });
 
+  document.getElementById('btn-delete-account')?.addEventListener('click', async () => {
+    const badge = document.getElementById('profile-status-badge');
+    if (!requireBackendAuth(badge)) return;
+
+    const password = document.getElementById('profile-delete-password')?.value || '';
+    if (!password) {
+      setStatus(badge, '⚠ Enter your password to confirm deletion.', 'error');
+      return;
+    }
+    if (!confirm('Permanently delete your Clone2GHL account and all associated server-side data? This cannot be undone.')) return;
+
+    setStatus(badge, '<span class="spinner"></span> Deleting account…', 'connected');
+    const result = await sendMsg({ action: 'BACKEND_DELETE_ACCOUNT', password });
+
+    if (!result?.success) {
+      setStatus(badge, `✗ ${result?.error || 'Unable to delete account'}`, 'error');
+      return;
+    }
+
+    const pwField = document.getElementById('profile-delete-password');
+    if (pwField) pwField.value = '';
+    setStatus(badge, '✓ Account deleted. You have been signed out.', 'connected');
+    setTimeout(() => location.reload(), 1500);
+  });
+
   document.getElementById('btn-save-preferences')?.addEventListener('click', async () => {
     const badge = document.getElementById('profile-status-badge');
     if (!requireBackendAuth(badge)) return;
@@ -1492,6 +3652,19 @@ function setupAccountTab() {
     setStatus(badge, '✓ Preferences saved.', 'connected');
   });
 
+  document.getElementById('toggle-discover-key')?.addEventListener('click', () => togglePasswordField('discover-api-key'));
+
+  document.getElementById('btn-save-discover')?.addEventListener('click', async () => {
+    const discoverApiKey = document.getElementById('discover-api-key')?.value.trim();
+    const discoverCx = document.getElementById('discover-cx')?.value.trim();
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { discoverApiKey, discoverCx } });
+    settings.discoverApiKey = discoverApiKey;
+    settings.discoverCx = discoverCx;
+    const btn = document.getElementById('btn-save-discover');
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = 'Save'; }, 2000);
+  });
+
   document.getElementById('btn-load-analytics')?.addEventListener('click', async () => {
     await loadAnalytics();
   });
@@ -1505,6 +3678,8 @@ function loadSettingsFields() {
   if (settings.ghlApiKey) document.getElementById('ghl-api-key').value = settings.ghlApiKey;
   if (settings.ghlLocationId) document.getElementById('ghl-location-id').value = settings.ghlLocationId;
   if (settings.backendApiBase) document.getElementById('backend-api-base').value = settings.backendApiBase;
+  if (settings.discoverApiKey) document.getElementById('discover-api-key').value = settings.discoverApiKey;
+  if (settings.discoverCx) document.getElementById('discover-cx').value = settings.discoverCx;
 
   if (settings.ghlApiKey && settings.ghlLocationId) {
     setStatus(document.getElementById('ghl-status-badge'), '● GHL credentials saved. Click "Test Connection" to verify.', 'connected');
@@ -1564,6 +3739,10 @@ async function loadBackendAccountData(showToast = false) {
     const completedCount = (jobsResult?.jobs || []).filter(j => j.status === 'completed').length;
     vidEl.textContent = String(completedCount);
   }
+
+  // Invoice history + sparkline polish
+  loadMyInvoices();
+  drawAccountSparkline();
 
   await loadAnalytics(false);
   await loadActivity(false);
@@ -1675,6 +3854,14 @@ function refreshPlanLabel() {
 }
 
 async function startCheckout(plan) {
+  // Plans are sold via GoHighLevel. If a GHL checkout URL is configured, deep-link
+  // to it (carrying the captured affiliate ref) instead of the Stripe fallback.
+  const ghlUrl = ghlCheckoutUrl();
+  if (ghlUrl) {
+    chrome.tabs.create({ url: ghlUrl });
+    return;
+  }
+
   if (!settings.backendApiBase) {
     alert('Checkout is unavailable: set Backend API URL in Settings first.');
     switchTab('settings');
@@ -1736,15 +3923,329 @@ function escHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Apply standard dialog a11y to a modal overlay: role, aria-modal, label, and
+// move focus into it so keyboard/screen-reader users land on the dialog.
+function a11yModal(modal, label) {
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  if (label) modal.setAttribute('aria-label', label);
+  modal.tabIndex = -1;
+  // Focus the first interactive control, falling back to the dialog itself.
+  const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  setTimeout(() => (focusable || modal).focus(), 0);
+}
+
+// Render untrusted/cloned HTML in an isolated, script-disabled sandbox iframe —
+// NEVER inject cloned page markup into the dashboard DOM via innerHTML. The
+// extension page CSP already blocks inline scripts; the sandbox (no allow-scripts)
+// is defense-in-depth and also prevents the cloned page from touching our DOM.
+function mountIsolatedHtml(container, html) {
+  if (!container) return null;
+  container.textContent = '';
+  const frame = document.createElement('iframe');
+  frame.setAttribute('sandbox', ''); // no allow-scripts → scripts/handlers inert
+  frame.style.cssText = 'width:100%;height:100%;border:0;background:#fff;';
+  frame.srcdoc = String(html || '');
+  container.appendChild(frame);
+  return frame;
+}
+
+// ─── M2: Clone preview modal (sandboxed) ──────────────────────────────────────
+// Renders the GHL-converted HTML in an isolated iframe so users can review the
+// clone (forms→placeholders, token swaps) BEFORE pushing to GHL.
+function openClonePreview(funnel) {
+  let modal = document.getElementById('clone-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'clone-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;';
+
+  const fid = funnel.fidelity;
+  const issuesHtml = fid && fid.issues?.length
+    ? `<ul style="margin:6px 0 0;padding-left:18px;font-size:12px;color:#cdd6f4;">${fid.issues.map(i => `<li style="color:${i.level === 'warn' ? '#ffb020' : '#9aa'}">${escHtml(i.text)}</li>`).join('')}</ul>`
+    : '<div style="font-size:12px;color:#9aa;">No fidelity issues detected.</div>';
+
+  modal.innerHTML = `
+    <div style="background:#0f1426;border:1px solid #2a3350;border-radius:12px;width:min(1000px,95vw);height:88vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #2a3350;">
+        <strong style="flex:1;">${escHtml(funnel.name || 'Clone preview')}</strong>
+        ${fid ? `<span style="font-size:12px;color:#9aa;">Fidelity ${escHtml(fid.grade)} · ${fid.score}/100</span>` : ''}
+        <button id="clone-preview-source" class="btn-secondary" style="padding:5px 10px;font-size:12px;">Toggle source/converted</button>
+        ${(fid && fid.stats?.hotlinkedImages > 0) ? `<button id="clone-preview-rehost" class="btn-secondary" style="padding:5px 10px;font-size:12px;" title="Pro/Agency">⬇ Rehost ${fid.stats.hotlinkedImages} image(s)</button>` : ''}
+        <button id="clone-preview-close" class="btn-secondary" aria-label="Close" style="padding:5px 10px;">✕</button>
+      </div>
+      <div style="padding:8px 16px;border-bottom:1px solid #2a3350;background:#11172b;">${issuesHtml}</div>
+      <div id="clone-preview-frame" style="flex:1;background:#fff;"></div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  a11yModal(modal, 'Clone preview');
+  const converted = funnel.optimizedHtml || funnel.html || '';
+  let showingConverted = true;
+  mountIsolatedHtml(document.getElementById('clone-preview-frame'), converted);
+
+  const close = () => modal.remove();
+  document.getElementById('clone-preview-close').addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  document.getElementById('clone-preview-source').addEventListener('click', () => {
+    showingConverted = !showingConverted;
+    mountIsolatedHtml(document.getElementById('clone-preview-frame'), showingConverted ? converted : (funnel.html || converted));
+  });
+
+  document.getElementById('clone-preview-rehost')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true; btn.textContent = 'Rehosting…';
+    try {
+      const res = await sendMsg({ action: 'REHOST_FUNNEL_ASSETS', funnelId: funnel.id });
+      if (!res?.success) throw new Error(res?.error || 'Rehost failed');
+      showSaveToast(`Rehosted ${res.rehosted}/${res.total} image(s).`);
+      // Refresh local funnels + preview with the rewritten HTML.
+      const fr = await sendMsg({ action: 'GET_FUNNELS' });
+      myFunnels = fr?.funnels || myFunnels;
+      const updated = myFunnels.find(f => f.id === funnel.id) || funnel;
+      mountIsolatedHtml(document.getElementById('clone-preview-frame'), updated.optimizedHtml || updated.html || '');
+      btn.textContent = `✓ Rehosted ${res.rehosted}`;
+    } catch (err) {
+      btn.disabled = false; btn.textContent = '⬇ Rehost images';
+      alert(`Rehost failed: ${err.message || err}`);
+    }
+  });
+}
+
+// ─── M4: Version history + restore ────────────────────────────────────────────
+async function openVersionHistory(funnel) {
+  let modal = document.getElementById('version-history-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'version-history-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px;';
+  modal.innerHTML = `
+    <div style="background:#0f1426;border:1px solid #2a3350;border-radius:12px;width:min(560px,95vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #2a3350;">
+        <strong style="flex:1;">🕘 Version history — ${escHtml(funnel.name || 'funnel')}</strong>
+        <button id="vh-close" class="btn-secondary" aria-label="Close" style="padding:5px 10px;">✕</button>
+      </div>
+      <div id="vh-body" style="padding:14px 16px;overflow-y:auto;">Loading…</div>
+    </div>`;
+  document.body.appendChild(modal);
+  a11yModal(modal, 'Version history');
+  const close = () => modal.remove();
+  document.getElementById('vh-close').addEventListener('click', close);
+  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+  const body = document.getElementById('vh-body');
+  try {
+    const res = await sendMsg({ action: 'BACKEND_FUNNEL_VERSIONS', funnelId: funnel.id });
+    if (res?.success === false) throw new Error(res.error || 'Failed');
+    const versions = res.versions || [];
+    if (!versions.length) {
+      body.innerHTML = `<p style="color:var(--text3);">No saved versions yet. Versions are captured automatically each time an edited funnel syncs to the cloud. Enable cloud sync in Settings to keep history.</p>`;
+      return;
+    }
+    body.innerHTML = versions.map(v => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border,#2a3350);">
+        <div style="flex:1;">
+          <div style="font-size:13px;">${escHtml(v.name || 'Snapshot')}</div>
+          <div style="font-size:11px;color:var(--text3);">${v.snapshotAt ? new Date(v.snapshotAt).toLocaleString() : ''} · ${(v.bytes || 0).toLocaleString()} bytes</div>
+        </div>
+        <button class="btn-secondary vh-restore" data-vid="${escHtml(v.id)}" style="padding:5px 12px;font-size:12px;">Restore</button>
+      </div>`).join('');
+
+    body.querySelectorAll('.vh-restore').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Restore this version? The current content is snapshotted first, so this is reversible.')) return;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const r = await sendMsg({ action: 'BACKEND_FUNNEL_RESTORE', funnelId: funnel.id, versionId: btn.dataset.vid });
+          if (!r?.success) throw new Error(r?.error || 'Restore failed');
+          const fr = await sendMsg({ action: 'GET_FUNNELS' });
+          myFunnels = fr?.funnels || myFunnels;
+          renderFunnels();
+          showSaveToast('Version restored.');
+          close();
+        } catch (err) { btn.disabled = false; btn.textContent = 'Restore'; alert(`Restore failed: ${err.message || err}`); }
+      });
+    });
+  } catch (err) {
+    body.innerHTML = `<p style="color:var(--red);">${escHtml(err.message || String(err))}</p><p style="color:var(--text3);font-size:12px;">Version history requires cloud sign-in.</p>`;
+  }
+}
+
+// ─── M1: Subscription status + activation banner ──────────────────────────────
+
+function daysUntil(iso) {
+  if (!iso) return null;
+  const ms = Date.parse(iso) - Date.now();
+  if (!Number.isFinite(ms)) return null;
+  return Math.ceil(ms / 86400000);
+}
+
+// Shows an at-a-glance subscription state under the sidebar credits so a lapsed
+// or soon-to-expire plan never surprises the user.
+function renderSubscriptionStatus() {
+  const credEl = document.getElementById('sidebar-credits');
+  if (!credEl || !settings) return;
+  let el = document.getElementById('sidebar-sub-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sidebar-sub-status';
+    el.style.cssText = 'font-size:11px;margin-top:4px;line-height:1.4;';
+    credEl.insertAdjacentElement('afterend', el);
+  }
+
+  const signedIn = Boolean(settings.backendToken);
+  if (!signedIn || settings.plan === 'owner' || settings.devMode) { el.style.display = 'none'; return; }
+
+  if (settings.suspended) {
+    el.style.display = 'block';
+    el.style.color = '#ff6b6b';
+    el.textContent = '⚠ Account suspended — contact support';
+    return;
+  }
+
+  // Free / trial tier: surface the trial countdown, connect-GHL prompt, or the
+  // "trial ended → upgrade" state so users are never silently blocked.
+  if (settings.plan === 'free') {
+    el.style.display = 'block';
+    if (settings.trialActivationRequired) {
+      el.style.color = '#ffb020';
+      el.textContent = '🔗 Connect GoHighLevel to start your free trial';
+    } else if (settings.state === 'trial_expired') {
+      el.style.color = '#ff6b6b';
+      el.textContent = '⚠ Free trial ended — upgrade to keep cloning';
+    } else if (settings.state === 'plan_expired') {
+      el.style.color = '#ff6b6b';
+      el.textContent = '⚠ Plan expired — upgrade to keep cloning';
+    } else if (settings.upgradeRequired) {
+      el.style.color = '#ffb020';
+      el.textContent = "⚠ You're out of free clones — upgrade to keep cloning";
+    } else if (typeof settings.daysLeft === 'number') {
+      const d = settings.daysLeft;
+      el.style.color = d <= 3 ? '#ffb020' : '#9aa';
+      el.textContent = `⏳ Trial: ${settings.credits ?? 0} clone${settings.credits !== 1 ? 's' : ''} · ${d} day${d !== 1 ? 's' : ''} left`;
+    } else {
+      el.style.display = 'none';
+    }
+    return;
+  }
+
+  const left = daysUntil(settings.currentPeriodEnd);
+  if (settings.plan !== 'free' && left != null) {
+    el.style.display = 'block';
+    if (left < 0) { el.style.color = '#ff6b6b'; el.textContent = '⚠ Plan expired — renew to reactivate'; }
+    else if (left <= 5) { el.style.color = '#ffb020'; el.textContent = `⏳ Renews in ${left} day${left !== 1 ? 's' : ''}`; }
+    else { el.style.color = '#9aa'; el.textContent = `✓ Active · renews ${new Date(settings.currentPeriodEnd).toLocaleDateString()}`; }
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// Top-of-page banner when the user must upgrade (trial clones used, trial expired,
+// or plan lapsed) or must connect GHL to start the trial. Mirrors the activation
+// banner pattern. CTA opens the GHL checkout (with ref) or the connect-GHL flow.
+function showUpgradeBannerIfNeeded() {
+  if (!settings || settings.plan === 'owner' || settings.devMode) return;
+  const existing = document.getElementById('upgrade-banner');
+
+  const needsGhl = settings.trialActivationRequired;
+  if (!C2GUpgrade.shouldShowUpgradeBanner(settings)) { existing?.remove(); return; }
+  if (existing) return;
+
+  const main = document.querySelector('.dashboard-main') || document.querySelector('main') || document.body;
+  const banner = document.createElement('div');
+  banner.id = 'upgrade-banner';
+  banner.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 16px;margin:0 0 16px;border-radius:10px;background:linear-gradient(90deg,#3a2a12,#4a3416);color:#ffe9c7;font-size:13px;';
+
+  const text = document.createElement('div');
+  text.style.flex = '1';
+  const goBtn = document.createElement('button');
+  goBtn.className = 'btn-primary';
+  goBtn.style.cssText = 'padding:7px 14px;font-size:12px;';
+
+  if (needsGhl) {
+    text.textContent = 'Connect your GoHighLevel account to start your free 30-day trial (6 clones).';
+    goBtn.textContent = 'Connect GoHighLevel';
+    goBtn.addEventListener('click', () => { switchTab('settings'); document.getElementById('ghl-api-key')?.focus(); });
+  } else {
+    text.textContent = settings.state === 'trial_expired'
+      ? 'Your 30-day free trial has ended. Upgrade to keep cloning funnels into GoHighLevel.'
+      : settings.state === 'plan_expired'
+        ? 'Your plan has expired. Upgrade to keep cloning funnels into GoHighLevel.'
+        : "You've used all your free trial clones. Upgrade to keep cloning.";
+    goBtn.textContent = 'Upgrade now';
+    goBtn.addEventListener('click', () => {
+      const url = ghlCheckoutUrl();
+      if (url) chrome.tabs.create({ url });
+      else switchTab('pricing');
+    });
+  }
+
+  banner.appendChild(text);
+  banner.appendChild(goBtn);
+  main.insertBefore(banner, main.firstChild);
+}
+
+// First-run nudge: if the user hasn't connected a backend account, show a
+// dismissible banner pointing them to sign in or activate a purchased code.
+function showActivationBannerIfNeeded() {
+  if (!settings || settings.backendToken || settings.plan === 'owner') return;
+  if (settings.activationBannerDismissed) return;
+  if (document.getElementById('activation-banner')) return;
+
+  const main = document.querySelector('.dashboard-main') || document.querySelector('main') || document.body;
+  const banner = document.createElement('div');
+  banner.id = 'activation-banner';
+  banner.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 16px;margin:0 0 16px;border-radius:10px;background:linear-gradient(90deg,#1f2a44,#27314f);color:#e6ecff;font-size:13px;';
+
+  const text = document.createElement('div');
+  text.style.flex = '1';
+  text.textContent = 'Activate your plan to unlock cloud sync, higher limits, and AI tools — sign in or paste your purchase code.';
+
+  const goBtn = document.createElement('button');
+  goBtn.className = 'btn-primary';
+  goBtn.style.cssText = 'padding:7px 14px;font-size:12px;';
+  goBtn.textContent = 'Activate / Sign in';
+  goBtn.addEventListener('click', () => { location.hash = '#settings'; document.getElementById('backend-auth-email')?.focus(); });
+
+  const dismiss = document.createElement('button');
+  dismiss.className = 'btn-secondary';
+  dismiss.style.cssText = 'padding:7px 10px;font-size:12px;';
+  dismiss.textContent = '✕';
+  dismiss.title = 'Dismiss';
+  dismiss.addEventListener('click', async () => {
+    banner.remove();
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { activationBannerDismissed: true } });
+    if (settings) settings.activationBannerDismissed = true;
+  });
+
+  banner.appendChild(text);
+  banner.appendChild(goBtn);
+  banner.appendChild(dismiss);
+  main.insertBefore(banner, main.firstChild);
 }
 
 function nicheToEmoji(niche) {
   const map = {
+    // Legacy niches (kept for backward compatibility with existing user funnels)
     plumber: '🔧', electrician: '⚡', hvac: '❄️', roofing: '🏠', cleaning: '🧹',
     landscaping: '🌱', solar: '☀️', real_estate: '🏡', gym: '💪', dental: '🦷',
     coaching: '🚀', insurance: '🛡️', legal: '⚖️', marketing_agency: '📈',
-    weight_loss: '🥗', general: '📄',
+    weight_loss: '🥗',
+    // Funnel Library v2 niches
+    chiropractor: '🦴', medspa: '💆', salon: '💇', restaurant: '🍽️',
+    auto_detailing: '🚗', pest_control: '🐛', mortgage_broker: '🏦',
+    financial_advisor: '📊', plastic_surgery: '✨', photography: '📸',
+    wedding_planner: '💍', pool_service: '🏊', moving_company: '📦',
+    tutoring: '📚', veterinary: '🐾', accounting: '🧾', ecommerce: '🛒',
+    saas: '💻', interior_design: '🛋️', painter: '🎨',
+    general: '📄',
   };
   return map[niche] || '📄';
 }
@@ -1906,8 +4407,8 @@ function injectEditorBridge(iframeDoc) {
   style.id = 'c2ghl-editor-styles';
   style.textContent = `
     [data-c2ghl-id] { cursor:pointer !important; }
-    .c2ghl-hover { outline:2px solid #7C3AED !important; outline-offset:2px !important; }
-    .c2ghl-selected { outline:2px solid #F97316 !important; }
+    .c2ghl-hover { outline:2px solid #D9A620 !important; outline-offset:2px !important; }
+    .c2ghl-selected { outline:2px solid #F0BB2D !important; }
     .c2ghl-risk { outline:2px solid #EF4444 !important; background:rgba(239,68,68,0.12) !important; }
   `;
   iframeDoc.head.appendChild(style);
@@ -3183,7 +5684,7 @@ function renderFontsPanel(content) {
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
         <button class="editor-btn-apply" id="ep-apply-heading" style="flex:1;">Apply</button>
-        <button class="editor-btn-apply" id="ep-smart-apply-heading" style="flex:1;background:var(--purple-faint);border:1px solid rgba(124,58,237,0.4);color:#C4B5FD;">✨ Smart Apply</button>
+        <button class="editor-btn-apply" id="ep-smart-apply-heading" style="flex:1;background:var(--purple-faint);border:1px solid rgba(217,166,32,0.4);color:#F0BB2D;">✨ Smart Apply</button>
       </div>
     </div>
 
@@ -3197,7 +5698,7 @@ function renderFontsPanel(content) {
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
         <button class="editor-btn-apply" id="ep-apply-body" style="flex:1;">Apply</button>
-        <button class="editor-btn-apply" id="ep-smart-apply-body" style="flex:1;background:var(--purple-faint);border:1px solid rgba(124,58,237,0.4);color:#C4B5FD;">✨ Smart Apply</button>
+        <button class="editor-btn-apply" id="ep-smart-apply-body" style="flex:1;background:var(--purple-faint);border:1px solid rgba(217,166,32,0.4);color:#F0BB2D;">✨ Smart Apply</button>
       </div>
     </div>
 

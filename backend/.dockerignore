@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.env
+.env.*
+data/db.json
+data/db.json.bak
+data/db.json.tmp
+data/assets
+*.md

@@ -312,7 +312,60 @@ const FunnelAnalyzer = (() => {
     return lines.join(' ');
   }
 
-  return { analyze, detectNiche };
+  // ─── Clone fidelity score ─────────────────────────────────────────────────
+  // Distinct from the conversion score above: this rates how faithfully the page
+  // was *captured* (CSS, assets, responsiveness, fonts, forms) so the user knows
+  // whether they got a high- or low-fidelity clone before pushing to GHL.
+  function scoreFidelity(captured = {}) {
+    const html = String(captured.html || '');
+    const styles = Array.isArray(captured.styles) ? captured.styles.join('\n') : String(captured.styles || '');
+    const css = styles || html; // styles may already be inlined into html
+    const issues = [];
+    let score = 0;
+
+    // CSS coverage (30)
+    const cssLen = css.length;
+    if (cssLen > 20000) score += 30;
+    else if (cssLen > 4000) { score += 20; issues.push({ level: 'info', text: 'Moderate CSS captured — verify styling in GHL.' }); }
+    else { score += 6; issues.push({ level: 'warn', text: 'Little CSS captured — the clone may look unstyled.' }); }
+
+    // Responsive (15)
+    if (/@media[^{]*\(/.test(css)) score += 15;
+    else issues.push({ level: 'warn', text: 'No @media queries detected — responsive layout may not be preserved.' });
+
+    // Fonts (10)
+    if (/@font-face|font-family\s*:/.test(css)) score += 10;
+    else issues.push({ level: 'info', text: 'No custom fonts detected.' });
+
+    // Assets / images (25) — flag hot-linked external images (break if source blocks hotlinking)
+    const imgs = (html.match(/<img\b[^>]*>/gi) || []);
+    const srcs = imgs.map(t => (t.match(/\bsrc\s*=\s*["']([^"']+)["']/i) || [])[1]).filter(Boolean);
+    const external = srcs.filter(s => /^https?:\/\//i.test(s));
+    if (imgs.length === 0) { score += 18; }
+    else {
+      const hotlinkRatio = external.length / imgs.length;
+      if (hotlinkRatio === 0) score += 25;
+      else if (hotlinkRatio < 0.5) { score += 18; issues.push({ level: 'info', text: `${external.length} image(s) hot-linked to the source — consider asset rehosting.` }); }
+      else { score += 10; issues.push({ level: 'warn', text: `${external.length}/${imgs.length} images hot-linked — they may break if the source blocks hotlinking.` }); }
+    }
+
+    // Forms (20) — currently converted to GHL placeholders
+    const forms = captured.structure?.forms || (html.match(/<form\b/gi) || []);
+    const formCount = Array.isArray(forms) ? forms.length : forms;
+    if (!formCount) score += 20;
+    else { score += 10; issues.push({ level: 'warn', text: `${formCount} form(s) become GHL placeholders — re-map fields in GHL after import.` }); }
+
+    score = Math.max(0, Math.min(100, Math.round(score)));
+    return {
+      score,
+      grade: score >= 85 ? 'A' : score >= 70 ? 'B' : score >= 55 ? 'C' : score >= 40 ? 'D' : 'F',
+      issues,
+      stats: { cssBytes: cssLen, images: imgs.length, hotlinkedImages: external.length, forms: formCount, responsive: /@media[^{]*\(/.test(css) },
+      scoredAt: new Date().toISOString(),
+    };
+  }
+
+  return { analyze, detectNiche, scoreFidelity };
 })();
 
 if (typeof module !== 'undefined') module.exports = FunnelAnalyzer;

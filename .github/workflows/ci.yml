@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        working-directory: backend
+        run: npm ci || npm install
+      - name: Unit tests
+        working-directory: backend
+        run: npm test
+      - name: Integration — trial → upgrade → GHL purchase
+        working-directory: backend
+        run: node test/run-integration.mjs trial.integration.mjs
+      - name: Integration — GHL-account trial gate
+        working-directory: backend
+        env:
+          TRIAL_REQUIRE_GHL: 'true'
+          PORT: '8901'
+        run: node test/run-integration.mjs gate.integration.mjs
+
+  extension:
+    name: Extension tests + build guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pure-logic tests
+        working-directory: extension
+        run: node test/logic.test.cjs
+      - name: Build guard must REJECT a localhost API base
+        working-directory: extension
+        run: |
+          if C2G_API_BASE=http://localhost:8080 node build.mjs; then
+            echo "::error::build.mjs accepted a localhost base — guard is broken"; exit 1
+          else
+            echo "ok: localhost base rejected"
+          fi
+      - name: Build guard must REJECT a missing API base
+        working-directory: extension
+        run: |
+          if node build.mjs; then
+            echo "::error::build.mjs accepted an empty base — guard is broken"; exit 1
+          else
+            echo "ok: empty base rejected"
+          fi
+      - name: Production build succeeds with an https base
+        working-directory: extension
+        run: C2G_API_BASE=https://api.clone2ghl.com node build.mjs

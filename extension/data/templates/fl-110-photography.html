@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Editorial Wedding & Portrait Photography</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:#1F2937;background:#FFFBEB;line-height:1.7;font-weight:300}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;font-weight:500;line-height:1.1;color:#451A03;letter-spacing:.005em}
+.container{max-width:1180px;margin:0 auto;padding:0 28px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes drawLine{from{width:0}to{width:60px}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+/* NAV */
+nav{position:sticky;top:0;background:rgba(255,251,235,.96);backdrop-filter:blur(8px);z-index:100;padding:22px 0;border-bottom:1px solid rgba(69,26,3,.08)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:28px;color:#451A03}
+.logo small{font-family:'Inter';font-size:9px;letter-spacing:6px;text-transform:uppercase;display:block;color:#92400E;margin-top:-4px;font-style:normal;font-weight:400}
+.nav-cta{color:#451A03;padding:11px 26px;text-decoration:none;font-weight:500;font-size:13px;transition:all .3s;letter-spacing:3px;text-transform:uppercase;border:1px solid #451A03}
+.nav-cta:hover{background:#451A03;color:#FDE68A}
+/* HERO */
+.hero{background:linear-gradient(135deg,#1C0701 0%,#451A03 50%,#78350F 100%);background-size:200% 200%;animation:gradient 18s ease infinite;color:#FFFBEB;padding:140px 0 130px;position:relative;overflow:hidden;text-align:center}
+.hero::before{content:"";position:absolute;inset:30px;border:1px solid rgba(253,230,138,.2);pointer-events:none}
+.hero::after{content:"";position:absolute;top:50%;left:50%;width:700px;height:700px;background:radial-gradient(circle,rgba(253,230,138,.08),transparent 70%);transform:translate(-50%,-50%);animation:float 10s ease-in-out infinite}
+.hero-inner{position:relative;z-index:2;max-width:900px;margin:0 auto}
+.eyebrow{display:inline-block;color:#FDE68A;font-size:11px;text-transform:uppercase;letter-spacing:6px;font-weight:400;margin-bottom:32px;opacity:0;animation:fadeInUp .6s ease forwards}
+.eyebrow::before,.eyebrow::after{content:"";display:inline-block;width:30px;height:1px;background:#FDE68A;vertical-align:middle;margin:0 16px}
+.hero h1{font-size:88px;font-weight:400;color:#FFFBEB;margin-bottom:28px;opacity:0;animation:fadeInUp 1s .15s ease forwards;font-style:italic;line-height:1}
+.hero h1 .amp{color:#FDE68A;font-weight:500}
+.hero p.sub{font-size:18px;color:#FDE68A;margin-bottom:42px;opacity:0;animation:fadeInUp .8s .25s ease forwards;max-width:620px;margin-left:auto;margin-right:auto;font-family:'Cormorant Garamond';font-style:italic;font-size:22px;letter-spacing:.5px}
+.hero-ctas{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeInUp .8s .35s ease forwards}
+.btn-primary{background:#FDE68A;color:#451A03;padding:18px 38px;text-decoration:none;font-weight:500;display:inline-block;transition:all .4s;letter-spacing:4px;text-transform:uppercase;font-size:12px;font-family:'Inter';border:1px solid #FDE68A}
+.btn-primary:hover{background:transparent;color:#FDE68A}
+.btn-secondary{background:transparent;color:#FFFBEB;padding:18px 38px;text-decoration:none;font-weight:500;border:1px solid rgba(253,230,138,.4);transition:all .4s;letter-spacing:4px;text-transform:uppercase;font-size:12px;font-family:'Inter'}
+.btn-secondary:hover{border-color:#FDE68A;color:#FDE68A}
+.hero-awards{margin-top:60px;display:flex;gap:30px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeInUp .8s .45s ease forwards;padding-top:40px;border-top:1px solid rgba(253,230,138,.15)}
+.award{font-family:'Cormorant Garamond';font-style:italic;color:#FDE68A;font-size:14px;letter-spacing:2px}
+.award strong{display:block;color:#FFFBEB;font-style:normal;font-weight:400;font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;font-family:'Inter'}
+/* TRUST BAR */
+.trust-bar{background:#FFFBEB;padding:50px 0;text-align:center}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.tcell{padding:20px}
+.tcell .big{font-family:'Cormorant Garamond';font-style:italic;font-size:48px;color:#451A03;line-height:1}
+.tcell .label{font-size:11px;color:#92400E;text-transform:uppercase;letter-spacing:4px;margin-top:8px}
+/* SECTIONS */
+section{padding:120px 0}
+.section-head{text-align:center;max-width:760px;margin:0 auto 70px}
+.section-head .kicker{color:#92400E;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:20px;display:inline-block}
+.section-head h2{font-size:54px;margin-bottom:20px;font-style:italic;font-weight:500}
+.section-head h2 .em{font-style:normal;font-weight:600;color:#92400E}
+.section-head p{color:#6B4423;font-size:18px;font-family:'Cormorant Garamond';font-style:italic;font-size:22px}
+.gold-rule{width:60px;height:1px;background:#92400E;margin:0 auto 28px}
+/* PORTFOLIO TEASER */
+.portfolio{background:#FFFBEB;padding:90px 0}
+.portfolio-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:520px}
+.frame{position:relative;border:8px solid #FFFBEB;outline:1px solid rgba(69,26,3,.1);overflow:hidden;transition:all .5s}
+.frame:hover{transform:scale(1.03);outline-color:#92400E;z-index:2}
+.frame::after{content:attr(data-cap);position:absolute;bottom:14px;left:14px;right:14px;color:#FFFBEB;font-family:'Cormorant Garamond';font-style:italic;font-size:14px;letter-spacing:2px;opacity:0;transition:opacity .4s}
+.frame:hover::after{opacity:1}
+.f1{grid-column:span 2;grid-row:span 2;background:linear-gradient(135deg,#451A03,#78350F)}
+.f2{grid-column:span 2;background:linear-gradient(135deg,#92400E,#FDE68A)}
+.f3{grid-column:span 2;background:linear-gradient(135deg,#1C0701,#451A03)}
+.f4{grid-column:span 2;background:linear-gradient(135deg,#FDE68A,#FBBF24)}
+.f5{grid-column:span 2;grid-row:span 2;background:linear-gradient(135deg,#78350F,#FDE68A)}
+.f6{grid-column:span 2;background:linear-gradient(135deg,#1C0701,#78350F)}
+.f7{grid-column:span 2;background:linear-gradient(135deg,#451A03,#1C0701)}
+/* PROBLEM */
+.problems{background:linear-gradient(180deg,#FFFBEB,#FEF3C7)}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.problem-card{background:#FFFBEB;padding:48px 36px;border:1px solid rgba(69,26,3,.08);transition:all .4s;text-align:center;position:relative}
+.problem-card::before{content:"";position:absolute;inset:8px;border:1px solid transparent;transition:border-color .4s;pointer-events:none}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(69,26,3,.1)}
+.problem-card:hover::before{border-color:rgba(146,64,14,.3)}
+.problem-card .icon{font-size:38px;margin-bottom:20px;font-family:'Cormorant Garamond';font-style:italic;color:#92400E}
+.problem-card h3{font-size:26px;margin-bottom:14px;font-style:italic}
+.problem-card p{color:#6B4423;font-size:15px}
+/* SOLUTION */
+.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.solution-text .kicker{color:#92400E;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:20px;display:inline-block}
+.solution-text h2{font-size:48px;margin-bottom:24px;font-style:italic;font-weight:500;line-height:1.1}
+.solution-text>p{color:#6B4423;margin-bottom:30px;font-size:17px}
+.solution-text>p.lead{font-family:'Cormorant Garamond';font-style:italic;font-size:22px;color:#451A03}
+.benefit-list{list-style:none}
+.benefit-list li{padding:16px 0;display:flex;gap:18px;align-items:flex-start;font-size:16px;color:#451A03;border-bottom:1px solid rgba(146,64,14,.1)}
+.benefit-list li:last-child{border:none}
+.benefit-list li::before{content:"❋";color:#92400E;font-size:20px;flex-shrink:0;line-height:1.3}
+.solution-visual{position:relative;padding:30px}
+.solution-visual::before{content:"";position:absolute;top:0;left:0;right:60px;bottom:60px;background:linear-gradient(135deg,#78350F,#FDE68A);z-index:1}
+.solution-visual::after{content:"";position:absolute;top:60px;left:60px;right:0;bottom:0;background:linear-gradient(135deg,#451A03,#92400E);z-index:0}
+.visual-quote{position:relative;z-index:2;background:#FFFBEB;margin-top:80px;margin-left:80px;padding:40px;border:1px solid rgba(69,26,3,.1)}
+.visual-quote .mark{font-family:'Cormorant Garamond';font-size:80px;color:#92400E;line-height:.5;font-style:italic}
+.visual-quote p{font-family:'Cormorant Garamond';font-style:italic;font-size:22px;color:#451A03;margin:16px 0}
+.visual-quote .who{font-size:12px;color:#92400E;text-transform:uppercase;letter-spacing:3px}
+/* PACKAGES */
+.packages{background:#451A03;color:#FFFBEB}
+.packages .section-head h2,.packages .section-head h2 .em{color:#FFFBEB}
+.packages .section-head p{color:#FDE68A}
+.packages .section-head .kicker{color:#FDE68A}
+.packages .gold-rule{background:#FDE68A}
+.pack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;align-items:stretch}
+.pack-card{background:#1C0701;padding:50px 40px;border:1px solid rgba(253,230,138,.15);transition:all .4s;display:flex;flex-direction:column;position:relative}
+.pack-card::before{content:"";position:absolute;top:14px;left:14px;right:14px;bottom:14px;border:1px solid transparent;transition:border-color .4s;pointer-events:none}
+.pack-card:hover{transform:translateY(-8px);background:#0A0301}
+.pack-card:hover::before{border-color:rgba(253,230,138,.2)}
+.pack-card.featured{background:linear-gradient(180deg,#0A0301,#1C0701);border:1px solid #FDE68A;transform:scale(1.05)}
+.pack-card.featured::before{border-color:rgba(253,230,138,.25)}
+.pack-tag{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:#FDE68A;color:#451A03;padding:7px 22px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:4px}
+.pack-card h3{font-size:30px;color:#FFFBEB;margin-bottom:6px;font-style:italic;font-weight:400;text-align:center}
+.pack-card .sub{text-align:center;color:#FDE68A;font-family:'Cormorant Garamond';font-style:italic;font-size:16px;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid rgba(253,230,138,.15)}
+.pack-card .price{font-family:'Cormorant Garamond';font-size:48px;color:#FDE68A;font-style:italic;text-align:center;margin:0 0 8px}
+.pack-card .price span{font-size:14px;color:#FDE68A;font-style:normal;opacity:.6;display:block;text-transform:uppercase;letter-spacing:3px;margin-top:4px}
+.pack-features{list-style:none;margin:28px 0;flex-grow:1}
+.pack-features li{padding:10px 0;color:#FDE68A;font-size:14px;text-align:center;border-bottom:1px dotted rgba(253,230,138,.15)}
+.pack-features li:last-child{border:none}
+.pack-card .btn-primary{text-align:center;margin-top:auto;background:transparent;color:#FDE68A;border-color:#FDE68A}
+.pack-card .btn-primary:hover{background:#FDE68A;color:#451A03}
+/* HOW */
+.how{background:#FFFBEB}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:60px;position:relative}
+.step{text-align:center;padding:0 10px}
+.step-num{font-family:'Cormorant Garamond';font-size:96px;font-weight:500;color:#92400E;line-height:1;font-style:italic;margin-bottom:8px;opacity:.4}
+.step h3{font-size:26px;margin-bottom:14px;font-style:italic}
+.step p{color:#6B4423;font-size:15px}
+/* TESTIMONIALS */
+.testimonials{background:linear-gradient(180deg,#FEF3C7,#FFFBEB)}
+.t-scroll{display:flex;gap:32px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 4px 24px;scrollbar-width:thin}
+.t-card{flex:0 0 420px;scroll-snap-align:start;background:#FFFBEB;padding:42px;border:1px solid rgba(69,26,3,.08);position:relative}
+.t-card::after{content:"";position:absolute;inset:10px;border:1px solid transparent;transition:border-color .4s;pointer-events:none}
+.t-card:hover::after{border-color:rgba(146,64,14,.2)}
+.qmark{font-family:'Cormorant Garamond';font-style:italic;font-size:80px;color:#FDE68A;line-height:.4;margin-bottom:14px}
+.t-card blockquote{font-family:'Cormorant Garamond';font-style:italic;font-size:20px;color:#451A03;margin-bottom:28px;line-height:1.5}
+.t-author{display:flex;align-items:center;gap:14px;padding-top:20px;border-top:1px solid rgba(146,64,14,.15)}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#92400E,#FDE68A);color:#FFFBEB;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-style:italic;font-size:20px}
+.t-author strong{display:block;font-size:15px;color:#451A03;font-family:'Cormorant Garamond';font-style:italic;font-size:18px;font-weight:500}
+.t-author span{color:#92400E;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+/* RESULTS */
+.results{background:#FFFBEB}
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.r-card{padding:30px}
+.r-num{font-family:'Cormorant Garamond';font-style:italic;font-size:64px;color:#451A03;line-height:1;font-weight:500}
+.r-label{color:#92400E;font-size:11px;margin-top:12px;text-transform:uppercase;letter-spacing:4px}
+/* FAQ */
+.faq{background:#FFFBEB}
+.faq-list{max-width:820px;margin:0 auto}
+details{background:transparent;border-bottom:1px solid rgba(69,26,3,.15);margin-bottom:0;padding:8px 0}
+summary{padding:24px 0;cursor:pointer;font-family:'Cormorant Garamond';font-weight:500;font-size:22px;color:#451A03;font-style:italic;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .4s;color:#92400E;font-family:'Cormorant Garamond';font-style:italic;font-size:24px}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 0 24px;color:#6B4423;font-size:15px;max-width:90%}
+/* CTA */
+.cta-section{background:linear-gradient(135deg,#1C0701,#451A03,#78350F,#451A03);background-size:300% 300%;animation:gradient 18s ease infinite;color:#FFFBEB;padding:130px 0;position:relative}
+.cta-section::before{content:"";position:absolute;inset:30px;border:1px solid rgba(253,230,138,.15);pointer-events:none}
+.cta-wrap{max-width:680px;margin:0 auto;text-align:center;position:relative;z-index:2}
+.cta-section .gold-rule{background:#FDE68A;margin-bottom:24px}
+.cta-section .kicker{color:#FDE68A;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:20px;display:inline-block}
+.cta-section h2{font-size:60px;color:#FFFBEB;margin-bottom:18px;font-style:italic;font-weight:500;line-height:1.1}
+.cta-section h2 .em{color:#FDE68A;font-weight:600}
+.cta-section>.cta-wrap>p{color:#FDE68A;font-size:22px;margin-bottom:44px;font-family:'Cormorant Garamond';font-style:italic}
+form{background:#FFFBEB;padding:54px 44px;text-align:left;box-shadow:0 30px 80px rgba(28,7,1,.5);position:relative}
+form::before{content:"";position:absolute;inset:14px;border:1px solid rgba(146,64,14,.15);pointer-events:none}
+form h3{color:#451A03;font-size:34px;margin-bottom:8px;font-family:'Cormorant Garamond';font-style:italic;font-weight:500;text-align:center}
+form>p{color:#92400E;font-size:13px;margin-bottom:28px;text-align:center;text-transform:uppercase;letter-spacing:3px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;position:relative;z-index:2}
+input,select{width:100%;padding:14px 16px;border:none;border-bottom:1px solid #92400E;font-family:'Inter';font-size:14px;color:#451A03;background:transparent;transition:all .3s;letter-spacing:.5px;font-weight:400}
+input:focus,select:focus{outline:none;border-bottom-color:#451A03;background:rgba(253,230,138,.1)}
+input::placeholder{color:#92400E;opacity:.7}
+.form-full{margin-bottom:16px;position:relative;z-index:2}
+button[type=submit]{width:100%;background:#451A03;color:#FDE68A;padding:18px;border:none;font-weight:500;font-size:12px;cursor:pointer;font-family:'Inter';letter-spacing:5px;text-transform:uppercase;transition:all .4s;margin-top:18px;position:relative;z-index:2}
+button[type=submit]:hover{background:#FDE68A;color:#451A03}
+.form-foot{text-align:center;color:#92400E;font-size:11px;margin-top:18px;font-family:'Cormorant Garamond';font-style:italic;letter-spacing:1px;font-size:14px;position:relative;z-index:2}
+/* FOOTER */
+footer{background:#1C0701;color:#FDE68A;padding:70px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:50px;margin-bottom:40px}
+.footer-grid h4{color:#FFFBEB;font-size:12px;margin-bottom:20px;text-transform:uppercase;letter-spacing:5px;font-family:'Inter';font-weight:500}
+.footer-grid a{color:#FDE68A;text-decoration:none;display:block;padding:5px 0;font-size:14px;font-family:'Cormorant Garamond';font-style:italic;font-size:16px;transition:color .3s}
+.footer-grid a:hover{color:#FFFBEB}
+.social-row{display:flex;gap:14px;margin-top:18px}
+.social-row a{width:40px;height:40px;background:transparent;border:1px solid rgba(253,230,138,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;font-family:'Cormorant Garamond';font-style:italic}
+.social-row a:hover{background:#FDE68A;color:#451A03;border-color:#FDE68A}
+.copyright{border-top:1px solid rgba(253,230,138,.15);padding-top:24px;text-align:center;font-size:13px;font-family:'Cormorant Garamond';font-style:italic;font-size:15px}
+@media (max-width:768px){
+.solution-grid,.footer-grid{grid-template-columns:1fr}
+.problem-grid,.pack-grid,.how-grid,.trust-grid,.results-grid{grid-template-columns:1fr 1fr}
+.portfolio-grid{grid-template-columns:repeat(2,1fr);height:auto}
+.frame{height:200px}
+.f1,.f5{grid-column:span 2;grid-row:auto}
+.hero h1{font-size:52px}
+.section-head h2,.cta-section h2{font-size:38px}
+.form-row{grid-template-columns:1fr}
+.pack-card.featured{transform:none}
+}
+</style>
+</head>
+<body>
+<nav><div class="container nav-inner"><div class="logo">{{location.name}}<small>Photography Studio</small></div><a href="#contact" class="nav-cta">Inquire</a></div></nav>
+
+<section class="hero"><div class="container"><div class="hero-inner">
+<div class="eyebrow">Editorial Photography</div>
+<h1><em>Your Story.</em><br>Told <span class="amp">Beautifully.</span></h1>
+<p class="sub">Editorial wedding, portrait, and brand photography. 200+ weddings captured. Awarded by The Knot 2020–2024.</p>
+<div class="hero-ctas"><a href="#contact" class="btn-primary">View Pricing & Availability</a><a href="#portfolio" class="btn-secondary">See The Work</a></div>
+<div class="hero-awards">
+<div class="award"><strong>The Knot</strong>Best of Weddings '20–'24</div>
+<div class="award"><strong>WeddingWire</strong>Couples' Choice 5x</div>
+<div class="award"><strong>Featured</strong>Brides · Style Me Pretty</div>
+</div>
+</div></div></section>
+
+<section class="trust-bar"><div class="container"><div class="trust-grid">
+<div class="tcell"><div class="big">200+</div><div class="label">Weddings Captured</div></div>
+<div class="tcell"><div class="big">12 yrs</div><div class="label">Behind The Lens</div></div>
+<div class="tcell"><div class="big">5★</div><div class="label">100% Reviews</div></div>
+<div class="tcell"><div class="big">5x</div><div class="label">Award Winner</div></div>
+</div></div></section>
+
+<section id="portfolio" class="portfolio"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">Selected Work</span><h2>A glimpse into <span class="em">forever</span></h2><p>Every frame, an heirloom.</p></div>
+<div class="portfolio-grid">
+<div class="frame f1" data-cap="Vermont, October"></div>
+<div class="frame f2" data-cap="First Look"></div>
+<div class="frame f3" data-cap="Tuscany Elopement"></div>
+<div class="frame f4" data-cap="Engagement, Big Sur"></div>
+<div class="frame f5" data-cap="The Vows"></div>
+<div class="frame f6" data-cap="Brand Editorial"></div>
+<div class="frame f7" data-cap="Mother & Daughter"></div>
+</div></div></section>
+
+<section class="problems"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">Why It Matters</span><h2>You only get <span class="em">one chance</span> at this day</h2><p>Three quiet regrets every couple shares — and how we make sure you won't.</p></div>
+<div class="problem-grid">
+<div class="problem-card"><div class="icon">i.</div><h3>Stiff, posed photos</h3><p>Cliché shot lists leave you with magazine-cover-perfect images that don't feel like you. The day comes and goes, but the photos feel borrowed.</p></div>
+<div class="problem-card"><div class="icon">ii.</div><h3>Missed quiet moments</h3><p>The grandmother's tear. The flower girl's giggle. The bride's first private breath. The unrehearsed moments are the ones you'll cry over in twenty years.</p></div>
+<div class="problem-card"><div class="icon">iii.</div><h3>Months of silence</h3><p>You finally see your gallery 8-12 months after the wedding. The magic has faded. The story is lost to time. Delivery should match the emotion of the day.</p></div>
+</div></div></section>
+
+<section><div class="container"><div class="solution-grid">
+<div class="solution-text">
+<span class="kicker">The Approach</span>
+<h2>Cinematic, candid, <em>quietly composed</em></h2>
+<p class="lead">We photograph the way you remember the day — not the way a shot list says it should look.</p>
+<p>Twelve years behind the lens. Two decades of art-school training. A fine-art eye paired with documentary instinct — capturing the small, true moments that posed photography always misses.</p>
+<ul class="benefit-list">
+<li>Two lead photographers — never just one — covering bride, groom, and family in parallel</li>
+<li>Editorial-trained editing in our signature warm, timeless tone (no harsh filters, no trends)</li>
+<li>Sneak peeks delivered in 48 hours, full gallery in under 6 weeks</li>
+<li>Hand-curated heirloom album options designed in-studio, printed in Italy</li>
+<li>Optional second-day "After Party" or "First Look" coverage available with every package</li>
+</ul>
+</div>
+<div class="solution-visual">
+<div class="visual-quote">
+<div class="mark">"</div>
+<p>Every frame felt like it was already a memory before the shutter clicked.</p>
+<div class="who">— Bride, October 2024</div>
+</div>
+</div>
+</div></div></section>
+
+<section class="packages"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">Investment</span><h2>Three ways to <span class="em">tell your story</span></h2><p>Every package includes a complimentary engagement session and lifetime cloud archive.</p></div>
+<div class="pack-grid">
+<div class="pack-card"><h3>Essential</h3><div class="sub">A graceful celebration</div><div class="price">$3,800<span>up to 8 hours</span></div>
+<ul class="pack-features"><li>One lead photographer</li><li>6 hours of coverage</li><li>Engagement session (1 hour)</li><li>400+ edited high-res images</li><li>Online gallery, 1-year hosting</li><li>Print release license</li></ul>
+<a href="#contact" class="btn-primary">Begin Inquiry</a></div>
+<div class="pack-card featured"><div class="pack-tag">Most Loved</div><h3>Signature</h3><div class="sub">Our complete day-of experience</div><div class="price">$5,900<span>up to 12 hours</span></div>
+<ul class="pack-features"><li>Two photographers (lead + second)</li><li>10 hours of full-day coverage</li><li>Engagement session (90 min)</li><li>700+ edited high-res images</li><li>72-hour sneak peek delivery</li><li>10×10 Italian heirloom album</li><li>USB drive in linen keepsake box</li></ul>
+<a href="#contact" class="btn-primary">Begin Inquiry</a></div>
+<div class="pack-card"><h3>Heirloom</h3><div class="sub">Destination & multi-day</div><div class="price">$8,400<span>multi-day or destination</span></div>
+<ul class="pack-features"><li>Two photographers + assistant</li><li>14 hours / 2-day coverage</li><li>Rehearsal & welcome event</li><li>1,000+ edited high-res images</li><li>12×12 leather Italian album</li><li>Parent albums (×2 included)</li><li>Travel within US included</li></ul>
+<a href="#contact" class="btn-primary">Begin Inquiry</a></div>
+</div></div></section>
+
+<section class="how"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">The Process</span><h2>From hello to <em>heirloom</em></h2></div>
+<div class="how-grid">
+<div class="step"><div class="step-num">i</div><h3>The Conversation</h3><p>We meet over coffee or video — get to know your story, your venue, and what matters most to you. No pitch. Just listening.</p></div>
+<div class="step"><div class="step-num">ii</div><h3>The Day</h3><p>We arrive 30 minutes early. We disappear into the day. You forget we're there — and that's exactly when the magic happens.</p></div>
+<div class="step"><div class="step-num">iii</div><h3>The Heirloom</h3><p>Sneak peek in 48 hours. Full gallery in 6 weeks. Then we sit with you and design the heirloom album you'll show your grandchildren.</p></div>
+</div></div></section>
+
+<section class="testimonials"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">Kind Words</span><h2>From <span class="em">our couples</span></h2></div>
+<div class="t-scroll">
+<div class="t-card"><div class="qmark">"</div><blockquote>I cried opening the gallery. They captured the moment my father whispered his blessing — a moment I didn't even see happen myself. Every single frame is a poem.</blockquote><div class="t-author"><div class="avatar">L</div><div><strong>Lauren & Eric</strong><span>Vermont · October '24</span></div></div></div>
+<div class="t-card"><div class="qmark">"</div><blockquote>Our photographer felt like the third best friend at our wedding. Invisible when they needed to be, present when it counted. The gallery is breathtaking — we sob looking through it.</blockquote><div class="t-author"><div class="avatar">M</div><div><strong>Maya & Daniel</strong><span>Big Sur · June '23</span></div></div></div>
+<div class="t-card"><div class="qmark">"</div><blockquote>Three photographers had quoted us. {{location.name}} was double the price. We never regretted a dollar. The Italian album sits on our coffee table — and every single guest stops to flip through it.</blockquote><div class="t-author"><div class="avatar">S</div><div><strong>Sophia & James</strong><span>Tuscany · May '23</span></div></div></div>
+</div></div></section>
+
+<section class="results"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">In Numbers</span><h2>A craft <em>refined</em></h2></div>
+<div class="results-grid">
+<div class="r-card"><div class="r-num">200+</div><div class="r-label">Weddings Captured</div></div>
+<div class="r-card"><div class="r-num">48 hrs</div><div class="r-label">Sneak Peek Delivery</div></div>
+<div class="r-card"><div class="r-num">6 wks</div><div class="r-label">Full Gallery Turnaround</div></div>
+<div class="r-card"><div class="r-num">12</div><div class="r-label">Countries Photographed</div></div>
+</div></div></section>
+
+<section class="faq"><div class="container">
+<div class="section-head"><div class="gold-rule"></div><span class="kicker">Common Questions</span><h2>Before <em>you ask</em></h2></div>
+<div class="faq-list">
+<details open><summary>How many weddings do you take each year?<span class="chevron">∨</span></summary><p>We intentionally cap at 18-22 weddings annually. This protects our editing turnaround, our energy on your day, and the deep relationship we build with every couple. Once a date is booked, that date is yours alone.</p></details>
+<details><summary>Do you travel for destination weddings?<span class="chevron">∨</span></summary><p>Yes — we love destinations. Domestic travel is included in our Heirloom package. For international weddings, we charge travel actuals plus a flat day-rate per travel day. Italy, France, Mexico, and the Caribbean are our most-photographed destinations.</p></details>
+<details><summary>How quickly do we get our photos?<span class="chevron">∨</span></summary><p>You'll receive a 30-image sneak peek within 48 hours of your wedding — perfect for sharing the morning after. Your full edited gallery is delivered within 6 weeks. Heirloom albums ship 4-6 weeks after gallery proofing.</p></details>
+<details><summary>Do you offer second photographers?<span class="chevron">∨</span></summary><p>Yes. Our Signature and Heirloom packages include a second photographer (also from our in-house team — never an outsourced freelancer). The second photographer captures parallel moments — groom prep, candid guest reactions, and detail shots — while the lead stays with the bride.</p></details>
+<details><summary>Can we see a full wedding gallery?<span class="chevron">∨</span></summary><p>Absolutely. Once we connect via the inquiry form, we'll share 2-3 full unedited galleries from recent weddings so you can see consistency from start to finish — not just the highlight reel. We believe in showing the work, not just the curated greatest hits.</p></details>
+<details><summary>What's the booking process?<span class="chevron">∨</span></summary><p>A signed contract and 25% retainer secure your date. The remaining 75% is split into two payments — one at six months out, one two weeks before the wedding. Dates book on a first-come, first-confirmed basis. Some Saturdays book 18 months in advance.</p></details>
+</div></div></section>
+
+<section class="cta-section" id="contact"><div class="container"><div class="cta-wrap">
+<div class="gold-rule"></div>
+<span class="kicker">Let's Begin</span>
+<h2>Your <em>once-in-a-lifetime</em> deserves more than ordinary</h2>
+<p>Inquire below — we respond personally to every couple within one business day.</p>
+<form>
+<h3>Tell Us About Your Day</h3>
+<p>· An invitation to a conversation ·</p>
+<div class="form-row"><input type="text" name="full_name" placeholder="Your Name(s)" required><input type="email" name="email" placeholder="Email Address" required></div>
+<div class="form-row"><input type="tel" name="phone" placeholder="Phone Number" required>
+<select name="event_type" required><option value="">Event Type</option><option>Wedding</option><option>Engagement Session</option><option>Family Portrait</option><option>Brand Editorial</option><option>Elopement</option></select></div>
+<div class="form-row"><input type="date" name="event_date" placeholder="Event Date" required><input type="text" name="location" placeholder="Event City / Venue" required></div>
+<div class="form-full"><select name="budget_range" required><option value="">Investment Range</option><option>Under $4,000</option><option>$4,000 – $6,500</option><option>$6,500 – $9,000</option><option>$9,000 – $14,000</option><option>$14,000+</option></select></div>
+<button type="submit">Send My Inquiry</button>
+<div class="form-foot">— Thoughtful responses within one business day —</div>
+</form>
+</div></div></section>
+
+<footer><div class="container">
+<div class="footer-grid">
+<div><div class="logo" style="color:#FFFBEB;margin-bottom:20px">{{location.name}}<small style="color:#FDE68A">Photography Studio</small></div>
+<p style="font-size:15px;line-height:1.7;color:#FDE68A;font-family:'Cormorant Garamond';font-style:italic;font-size:17px">Editorial wedding, portrait, and brand photography. Award-winning. Heart-led. Based in {{location.city}}, available worldwide.</p>
+<div class="social-row"><a href="#">ig</a><a href="#">pi</a><a href="#">vm</a></div></div>
+<div><h4>Visit</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<a href="#">{{location.fullAddress}}</a></div>
+<div><h4>Studio</h4><a href="#">Weddings</a><a href="#">Portraits</a><a href="#">Editorial</a><a href="#">Heirloom Albums</a></div>
+</div>
+<div class="copyright">© 2025 {{location.name}} · Crafted with care in {{location.city}}</div>
+</div></footer>
+</body></html>

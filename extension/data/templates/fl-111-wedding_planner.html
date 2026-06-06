@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Luxury Wedding Planning & Design</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500;600;700&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Montserrat',sans-serif;color:#1F2937;background:#FDF2F8;line-height:1.7;font-weight:300}
+h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:500;line-height:1.15;color:#500724;letter-spacing:-.005em}
+.container{max-width:1200px;margin:0 auto;padding:0 28px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes sparkle{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(251,207,232,.6)}50%{box-shadow:0 0 0 25px rgba(251,207,232,0)}}
+/* Decorative dividers */
+.flourish{display:flex;align-items:center;justify-content:center;gap:20px;margin:0 auto 24px;color:#9D174D}
+.flourish::before,.flourish::after{content:"";width:50px;height:1px;background:#9D174D}
+.flourish .diamond{width:8px;height:8px;background:#9D174D;transform:rotate(45deg);position:relative}
+/* NAV */
+nav{position:sticky;top:0;background:rgba(253,242,248,.92);backdrop-filter:blur(10px);z-index:100;padding:22px 0;border-bottom:1px solid rgba(157,23,77,.1)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Playfair Display',serif;font-style:italic;font-weight:500;font-size:28px;color:#9D174D}
+.logo small{font-family:'Montserrat';font-size:9px;letter-spacing:6px;text-transform:uppercase;display:block;color:#9D174D;margin-top:-4px;font-style:normal;font-weight:500}
+.nav-cta{background:#9D174D;color:#FDF2F8;padding:12px 28px;text-decoration:none;font-weight:500;font-size:12px;transition:all .3s;letter-spacing:4px;text-transform:uppercase;border-radius:50px}
+.nav-cta:hover{background:#500724;letter-spacing:5px}
+/* HERO */
+.hero{background:linear-gradient(135deg,#500724 0%,#9D174D 50%,#BE185D 100%);background-size:200% 200%;animation:gradient 16s ease infinite;color:#FDF2F8;padding:130px 0 140px;position:relative;overflow:hidden;text-align:center}
+.hero::before{content:"";position:absolute;top:-100px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(251,207,232,.2),transparent 60%);border-radius:50%;animation:float 9s ease-in-out infinite}
+.hero::after{content:"";position:absolute;bottom:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(251,207,232,.18),transparent 60%);border-radius:50%;animation:float 11s ease-in-out infinite reverse}
+.sparkle{position:absolute;color:#FBCFE8;font-size:18px;animation:sparkle 3s ease-in-out infinite}
+.s1{top:18%;left:14%}
+.s2{top:30%;right:18%;animation-delay:.7s}
+.s3{bottom:25%;left:20%;animation-delay:1.4s}
+.s4{bottom:20%;right:14%;animation-delay:2.1s}
+.hero-inner{position:relative;z-index:2;max-width:920px;margin:0 auto}
+.hero-flourish{display:flex;align-items:center;justify-content:center;gap:20px;margin:0 auto 30px;opacity:0;animation:fadeInUp .6s ease forwards}
+.hero-flourish::before,.hero-flourish::after{content:"";width:60px;height:1px;background:#FBCFE8}
+.hero-flourish .diamond{width:10px;height:10px;background:#FBCFE8;transform:rotate(45deg)}
+.eyebrow{display:inline-block;color:#FBCFE8;font-size:11px;text-transform:uppercase;letter-spacing:6px;font-weight:500;margin-bottom:30px;opacity:0;animation:fadeInUp .6s .1s ease forwards}
+.hero h1{font-size:84px;font-weight:400;color:#FDF2F8;margin-bottom:28px;opacity:0;animation:fadeInUp 1s .2s ease forwards;line-height:1.05;font-style:italic}
+.hero h1 .accent{font-style:normal;font-weight:600;color:#FBCFE8}
+.hero p.sub{font-size:22px;color:#FBCFE8;margin-bottom:46px;opacity:0;animation:fadeInUp .8s .3s ease forwards;max-width:680px;margin-left:auto;margin-right:auto;font-family:'Playfair Display';font-style:italic;font-weight:400}
+.hero-ctas{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeInUp .8s .4s ease forwards}
+.btn-primary{background:#FBCFE8;color:#500724;padding:18px 40px;text-decoration:none;font-weight:600;display:inline-block;transition:all .4s;letter-spacing:4px;text-transform:uppercase;font-size:12px;border-radius:50px;animation:pulse 2.5s infinite}
+.btn-primary:hover{background:#FDF2F8;transform:translateY(-3px)}
+.btn-secondary{background:transparent;color:#FDF2F8;padding:18px 40px;text-decoration:none;font-weight:500;border:1px solid rgba(251,207,232,.4);transition:all .4s;letter-spacing:4px;text-transform:uppercase;font-size:12px;border-radius:50px}
+.btn-secondary:hover{border-color:#FBCFE8;background:rgba(251,207,232,.1)}
+.featured-in{margin-top:70px;opacity:0;animation:fadeInUp .8s .5s ease forwards;padding-top:40px;border-top:1px solid rgba(251,207,232,.2)}
+.featured-label{color:#FBCFE8;font-size:10px;letter-spacing:6px;text-transform:uppercase;margin-bottom:16px}
+.featured-logos{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;font-family:'Playfair Display';font-style:italic;color:#FDF2F8;font-size:18px;letter-spacing:1px;opacity:.85}
+/* TRUST */
+.trust-bar{background:#FDF2F8;padding:50px 0}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.tcell .big{font-family:'Playfair Display';font-style:italic;font-size:48px;color:#9D174D;line-height:1;font-weight:500}
+.tcell .label{font-size:11px;color:#9D174D;text-transform:uppercase;letter-spacing:4px;margin-top:8px;font-weight:500}
+/* SECTIONS */
+section{padding:120px 0}
+.section-head{text-align:center;max-width:780px;margin:0 auto 70px}
+.section-head .kicker{color:#9D174D;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:18px;display:inline-block}
+.section-head h2{font-size:56px;margin-bottom:20px;font-weight:500}
+.section-head h2 em{font-style:italic;color:#9D174D;font-weight:500}
+.section-head p{color:#831843;font-size:20px;font-family:'Playfair Display';font-style:italic;font-weight:400}
+/* PROBLEM */
+.problems{background:#fff}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.problem-card{background:linear-gradient(180deg,#FDF2F8,#FCE7F3);padding:48px 36px;border-radius:14px;transition:all .4s;text-align:center;position:relative;border:1px solid rgba(251,207,232,.5)}
+.problem-card:hover{transform:translateY(-10px);box-shadow:0 30px 60px rgba(157,23,77,.15)}
+.problem-card .icon{font-size:42px;margin-bottom:20px}
+.problem-card h3{font-size:24px;margin-bottom:14px;font-style:italic}
+.problem-card p{color:#831843;font-size:15px;font-weight:400}
+/* SOLUTION */
+.solution{background:#FDF2F8}
+.solution-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;align-items:center}
+.solution-text .kicker{color:#9D174D;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:18px;display:inline-block}
+.solution-text h2{font-size:48px;margin-bottom:24px;font-weight:500;line-height:1.1}
+.solution-text h2 em{font-style:italic;color:#9D174D}
+.solution-text>p.lead{color:#500724;margin-bottom:26px;font-size:20px;font-family:'Playfair Display';font-style:italic}
+.solution-text>p{color:#831843;margin-bottom:30px;font-size:16px;font-weight:400}
+.benefit-list{list-style:none}
+.benefit-list li{padding:14px 0;display:flex;gap:18px;align-items:flex-start;font-size:16px;color:#500724;border-bottom:1px solid rgba(157,23,77,.1);font-weight:400}
+.benefit-list li:last-child{border:none}
+.benefit-list li::before{content:"❀";color:#9D174D;font-size:22px;flex-shrink:0;line-height:1.1}
+.solution-visual{position:relative;padding:30px}
+.solution-visual .frame{background:linear-gradient(135deg,#9D174D,#500724);height:520px;border-radius:14px;position:relative;overflow:hidden;box-shadow:0 30px 70px rgba(80,7,36,.3)}
+.solution-visual .frame::before{content:"";position:absolute;inset:18px;border:1px solid rgba(251,207,232,.4);border-radius:8px}
+.frame-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#FDF2F8;padding:30px;z-index:2}
+.frame-content .crest{font-family:'Playfair Display';font-style:italic;font-size:80px;color:#FBCFE8;line-height:1;opacity:.9}
+.frame-content h4{color:#FDF2F8;font-style:italic;margin:18px 0 8px;font-size:32px;font-weight:500}
+.frame-content p{color:#FBCFE8;font-family:'Playfair Display';font-style:italic;font-size:18px;letter-spacing:1px}
+.frame-content .stat{margin-top:24px;padding-top:24px;border-top:1px solid rgba(251,207,232,.2);color:#FBCFE8;font-size:11px;letter-spacing:4px;text-transform:uppercase}
+/* SERVICES */
+.services{background:#fff}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.service-card{background:#FDF2F8;padding:40px 32px;border-radius:14px;transition:all .4s;text-align:center;border:1px solid rgba(251,207,232,.5)}
+.service-card:hover{background:linear-gradient(180deg,#FDF2F8,#FBCFE8);transform:translateY(-8px);box-shadow:0 25px 50px rgba(157,23,77,.12)}
+.service-card .icon{font-size:38px;margin-bottom:18px}
+.service-card h3{font-size:22px;margin-bottom:10px;font-style:italic}
+.service-card p{color:#831843;font-size:14px}
+/* HOW */
+.how{background:#500724;color:#FDF2F8;position:relative;overflow:hidden}
+.how::before{content:"❀";position:absolute;font-size:300px;color:rgba(251,207,232,.04);top:-50px;right:-50px}
+.how .section-head h2,.how .section-head h2 em{color:#FDF2F8}
+.how .section-head p{color:#FBCFE8}
+.how .section-head .kicker{color:#FBCFE8}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative;z-index:2}
+.step{text-align:center;padding:40px 24px;background:rgba(157,23,77,.3);border-radius:18px;border:1px solid rgba(251,207,232,.15);transition:all .4s}
+.step:hover{background:rgba(157,23,77,.5);transform:translateY(-6px)}
+.step-num{font-family:'Playfair Display';font-size:84px;font-weight:500;color:#FBCFE8;line-height:1;font-style:italic;margin-bottom:10px;opacity:.9}
+.step h3{font-size:24px;margin-bottom:12px;color:#FDF2F8;font-style:italic;font-weight:500}
+.step p{color:#FBCFE8;font-size:15px;font-weight:400}
+/* PACKAGES */
+.packages{background:#FDF2F8}
+.pack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;align-items:stretch}
+.pack-card{background:#fff;padding:50px 38px;border-radius:18px;transition:all .4s;display:flex;flex-direction:column;position:relative;border:1px solid rgba(251,207,232,.5)}
+.pack-card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(157,23,77,.15)}
+.pack-card.featured{background:linear-gradient(180deg,#fff,#FCE7F3);border:2px solid #9D174D;transform:scale(1.05);box-shadow:0 30px 60px rgba(157,23,77,.2)}
+.pack-tag{position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:#9D174D;color:#FBCFE8;padding:8px 24px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:4px;border-radius:50px}
+.pack-card h3{font-size:32px;color:#500724;margin-bottom:8px;font-style:italic;font-weight:500;text-align:center}
+.pack-card .sub{text-align:center;color:#9D174D;font-family:'Playfair Display';font-style:italic;font-size:16px;margin-bottom:24px;padding-bottom:22px;border-bottom:1px solid rgba(157,23,77,.15)}
+.pack-card .price{font-family:'Playfair Display';font-size:48px;color:#9D174D;font-style:italic;text-align:center;margin:0 0 8px;font-weight:500}
+.pack-card .price span{font-size:12px;color:#831843;font-style:normal;opacity:.7;display:block;text-transform:uppercase;letter-spacing:3px;margin-top:6px}
+.pack-features{list-style:none;margin:28px 0;flex-grow:1}
+.pack-features li{padding:10px 0;color:#500724;font-size:14px;text-align:center;border-bottom:1px dotted rgba(157,23,77,.15);font-weight:400}
+.pack-features li:last-child{border:none}
+.pack-features li::before{content:"❀ ";color:#9D174D;margin-right:4px}
+.pack-card .btn-primary{text-align:center;margin-top:auto;animation:none}
+/* TESTIMONIALS */
+.testimonials{background:#fff}
+.t-scroll{display:flex;gap:32px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 4px 24px;scrollbar-width:thin}
+.t-card{flex:0 0 440px;scroll-snap-align:start;background:linear-gradient(180deg,#FDF2F8,#FCE7F3);padding:44px;border-radius:18px;position:relative;border:1px solid rgba(251,207,232,.5)}
+.qmark{font-family:'Playfair Display';font-style:italic;font-size:90px;color:#9D174D;line-height:.4;opacity:.4;margin-bottom:14px}
+.t-card blockquote{font-family:'Playfair Display';font-style:italic;font-size:20px;color:#500724;margin-bottom:28px;line-height:1.5;font-weight:500}
+.t-author{display:flex;align-items:center;gap:14px;padding-top:22px;border-top:1px solid rgba(157,23,77,.15)}
+.avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#9D174D,#FBCFE8);color:#FDF2F8;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-style:italic;font-size:22px;font-weight:500}
+.t-author strong{display:block;font-size:18px;color:#500724;font-family:'Playfair Display';font-style:italic;font-weight:500}
+.t-author span{color:#9D174D;font-size:11px;letter-spacing:3px;text-transform:uppercase}
+/* RESULTS */
+.results{background:linear-gradient(180deg,#FCE7F3,#FDF2F8)}
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.r-card{padding:30px}
+.r-num{font-family:'Playfair Display';font-style:italic;font-size:64px;color:#9D174D;line-height:1;font-weight:500}
+.r-label{color:#831843;font-size:11px;margin-top:12px;text-transform:uppercase;letter-spacing:4px;font-weight:500}
+/* FAQ */
+.faq{background:#fff}
+.faq-list{max-width:840px;margin:0 auto}
+details{background:#FDF2F8;border-radius:14px;margin-bottom:14px;overflow:hidden;border:1px solid rgba(251,207,232,.4);transition:all .3s}
+details[open]{box-shadow:0 14px 35px rgba(157,23,77,.08);background:linear-gradient(180deg,#FDF2F8,#FCE7F3)}
+summary{padding:24px 28px;cursor:pointer;font-family:'Playfair Display';font-weight:500;font-size:20px;color:#500724;font-style:italic;display:flex;justify-content:space-between;align-items:center;list-style:none;gap:20px}
+summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .4s;color:#9D174D;font-size:14px;flex-shrink:0}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 28px 26px;color:#831843;font-size:15px;font-weight:400}
+/* CTA */
+.cta-section{background:linear-gradient(135deg,#500724,#9D174D,#BE185D,#500724);background-size:300% 300%;animation:gradient 18s ease infinite;color:#FDF2F8;padding:130px 0;position:relative;overflow:hidden}
+.cta-section .sparkle{color:#FBCFE8}
+.cta-wrap{max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:2}
+.cta-section .flourish{color:#FBCFE8}
+.cta-section .flourish::before,.cta-section .flourish::after{background:#FBCFE8}
+.cta-section .flourish .diamond{background:#FBCFE8}
+.cta-section .kicker{color:#FBCFE8;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:6px;margin-bottom:20px;display:inline-block}
+.cta-section h2{font-size:60px;color:#FDF2F8;margin-bottom:18px;font-weight:500;line-height:1.1}
+.cta-section h2 em{font-style:italic;color:#FBCFE8;font-weight:500}
+.cta-section>.cta-wrap>p{color:#FBCFE8;font-size:22px;margin-bottom:46px;font-family:'Playfair Display';font-style:italic}
+form{background:#FDF2F8;padding:52px 44px;text-align:left;box-shadow:0 30px 80px rgba(80,7,36,.5);border-radius:18px;position:relative}
+form h3{color:#500724;font-size:32px;margin-bottom:10px;font-family:'Playfair Display';font-style:italic;font-weight:500;text-align:center}
+form>p{color:#9D174D;font-size:13px;margin-bottom:32px;text-align:center;letter-spacing:3px;text-transform:uppercase;font-weight:500}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+input,select{width:100%;padding:14px 18px;border:1px solid rgba(157,23,77,.2);border-radius:50px;font-family:'Montserrat';font-size:14px;color:#500724;background:#fff;transition:all .3s;font-weight:400}
+input:focus,select:focus{outline:none;border-color:#9D174D;box-shadow:0 0 0 3px rgba(251,207,232,.5)}
+input::placeholder{color:#9D174D;opacity:.6}
+.form-full{margin-bottom:16px}
+button[type=submit]{width:100%;background:#9D174D;color:#FDF2F8;padding:18px;border:none;border-radius:50px;font-weight:600;font-size:12px;cursor:pointer;font-family:'Montserrat';letter-spacing:5px;text-transform:uppercase;transition:all .4s;margin-top:14px}
+button[type=submit]:hover{background:#500724;letter-spacing:6px}
+.form-foot{text-align:center;color:#9D174D;font-size:14px;margin-top:18px;font-family:'Playfair Display';font-style:italic}
+/* FOOTER */
+footer{background:#500724;color:#FBCFE8;padding:70px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:50px;margin-bottom:40px}
+.footer-grid h4{color:#FDF2F8;font-size:11px;margin-bottom:20px;text-transform:uppercase;letter-spacing:5px;font-family:'Montserrat';font-weight:600}
+.footer-grid a{color:#FBCFE8;text-decoration:none;display:block;padding:5px 0;font-size:15px;font-family:'Playfair Display';font-style:italic;transition:color .3s}
+.footer-grid a:hover{color:#FDF2F8}
+.social-row{display:flex;gap:12px;margin-top:18px}
+.social-row a{width:40px;height:40px;background:transparent;border:1px solid rgba(251,207,232,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;font-family:'Playfair Display';font-style:italic}
+.social-row a:hover{background:#FBCFE8;color:#500724;border-color:#FBCFE8}
+.copyright{border-top:1px solid rgba(251,207,232,.2);padding-top:24px;text-align:center;font-size:14px;font-family:'Playfair Display';font-style:italic}
+@media (max-width:768px){
+.solution-grid,.footer-grid{grid-template-columns:1fr}
+.problem-grid,.services-grid,.how-grid,.pack-grid,.trust-grid,.results-grid{grid-template-columns:1fr 1fr}
+.hero h1{font-size:48px}
+.section-head h2,.cta-section h2{font-size:36px}
+.form-row{grid-template-columns:1fr}
+.pack-card.featured{transform:none}
+.featured-logos{gap:20px;font-size:15px}
+}
+</style>
+</head>
+<body>
+<nav><div class="container nav-inner"><div class="logo">{{location.name}}<small>Wedding Atelier</small></div><a href="#contact" class="nav-cta">Check Date</a></div></nav>
+
+<section class="hero">
+<span class="sparkle s1">✦</span><span class="sparkle s2">✧</span><span class="sparkle s3">✦</span><span class="sparkle s4">✧</span>
+<div class="container"><div class="hero-inner">
+<div class="hero-flourish"><div class="diamond"></div></div>
+<div class="eyebrow">Luxury Wedding Planning</div>
+<h1><em>Your Day, Effortless.</em><br>Your Memory, <span class="accent">Perfect.</span></h1>
+<p class="sub">Full-service luxury wedding planning. 150+ celebrations delivered. Featured in Vogue, Brides, and Martha Stewart Weddings.</p>
+<div class="hero-ctas"><a href="#contact" class="btn-primary">Check My Date Availability</a><a href="#packages" class="btn-secondary">Explore Packages</a></div>
+<div class="featured-in">
+<div class="featured-label">As Featured In</div>
+<div class="featured-logos"><span>Vogue</span><span>·</span><span>Brides</span><span>·</span><span>Martha Stewart</span><span>·</span><span>The Knot</span><span>·</span><span>Harper's Bazaar</span></div>
+</div>
+</div></div></section>
+
+<section class="trust-bar"><div class="container"><div class="trust-grid">
+<div class="tcell"><div class="big">150+</div><div class="label">Weddings Planned</div></div>
+<div class="tcell"><div class="big">14 yrs</div><div class="label">Atelier Experience</div></div>
+<div class="tcell"><div class="big">5★</div><div class="label">Couples' Choice</div></div>
+<div class="tcell"><div class="big">23</div><div class="label">Destinations</div></div>
+</div></div></section>
+
+<section class="problems"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">The Hidden Cost of DIY</span><h2>Planning your own wedding shouldn't <em>steal your joy</em></h2><p>Three quiet truths every bride discovers — too late.</p></div>
+<div class="problem-grid">
+<div class="problem-card"><div class="icon">⏳</div><h3>250+ Lost Hours</h3><p>The average bride spends 250+ hours researching vendors, chasing quotes, and managing logistics. That's a full month of work, on top of your real job.</p></div>
+<div class="problem-card"><div class="icon">💍</div><h3>Vendor Overpays</h3><p>Without industry relationships, couples overpay by 18-30% on florals, catering, and rentals. We've seen brides lose $40,000+ to inflated retail pricing.</p></div>
+<div class="problem-card"><div class="icon">😰</div><h3>The Day-Of Stress</h3><p>You shouldn't be wrangling a missing officiant in your wedding dress. Without a day-of coordinator, 80% of brides report being unable to enjoy their own ceremony.</p></div>
+</div></div></section>
+
+<section class="solution"><div class="container"><div class="solution-grid">
+<div class="solution-text">
+<span class="kicker">The Atelier Difference</span>
+<h2>White-glove planning, <em>effortless elegance</em></h2>
+<p class="lead">From the very first inspiration to the final goodbye toast — we are with you for every detail, decision, and dream.</p>
+<p>Fourteen years building a vendor network of trusted artisans, florists, and venues. A signature design aesthetic featured in five national publications. The discretion expected at the highest level of service.</p>
+<ul class="benefit-list">
+<li>Dedicated lead planner with you from day one through the morning after</li>
+<li>Exclusive vendor pricing — saving our couples an average of $22,000</li>
+<li>Custom design board, paper suite, and floral concept created in-house</li>
+<li>Full guest concierge: travel, lodging, transportation, welcome boxes</li>
+<li>24/7 on-site coordination team of three on your wedding day</li>
+</ul>
+</div>
+<div class="solution-visual"><div class="frame"><div class="frame-content">
+<div class="crest">✦</div>
+<h4>The Atelier Promise</h4>
+<p>"Not one decision left to chance"</p>
+<div class="stat">— A Signature Of Care —</div>
+</div></div></div>
+</div></div></section>
+
+<section class="services"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">Complete Concierge</span><h2>Every facet of your day, <em>thoughtfully held</em></h2><p>From design to dance floor — nothing is outsourced, nothing is forgotten.</p></div>
+<div class="services-grid">
+<div class="service-card"><div class="icon">✦</div><h3>Design & Aesthetic</h3><p>Custom mood boards, floral concepts, color story, and full visual cohesion across every guest touchpoint.</p></div>
+<div class="service-card"><div class="icon">❀</div><h3>Vendor Curation</h3><p>Hand-matched florist, photographer, band, catering, and stationer — only the best in the country.</p></div>
+<div class="service-card"><div class="icon">✧</div><h3>Budget Architecture</h3><p>Transparent budget tracking, vendor negotiation, and savings on every single category — guaranteed.</p></div>
+<div class="service-card"><div class="icon">❋</div><h3>Guest Concierge</h3><p>RSVP management, travel logistics, welcome boxes, transportation, and 24-hour guest hotline.</p></div>
+<div class="service-card"><div class="icon">✦</div><h3>Day-Of Direction</h3><p>Three coordinators on-site, second-by-second timeline, vendor management, and quiet problem-solving.</p></div>
+<div class="service-card"><div class="icon">❀</div><h3>Destination Planning</h3><p>Domestic and international weddings — Italy, France, Mexico, Caribbean. Full venue scouting included.</p></div>
+</div></div></section>
+
+<section class="how"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">Our Process</span><h2>A journey told in <em>three movements</em></h2></div>
+<div class="how-grid">
+<div class="step"><div class="step-num">i</div><h3>The Dream</h3><p>A 90-minute discovery session. We listen to your story, your vision, and your hopes — and craft a personalized design brief in seven days.</p></div>
+<div class="step"><div class="step-num">ii</div><h3>The Design</h3><p>Vendor curation, budget mapping, custom florals, paper suite, and timeline architecture — built collaboratively in monthly sit-downs.</p></div>
+<div class="step"><div class="step-num">iii</div><h3>The Day</h3><p>You wake up. Everything is handled. Your only task is presence. We orchestrate every second so you live the day, never manage it.</p></div>
+</div></div></section>
+
+<section id="packages" class="packages"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">The Collections</span><h2>Three ways to <em>be cared for</em></h2><p>Every collection begins with a complimentary consultation and a fully personalized proposal.</p></div>
+<div class="pack-grid">
+<div class="pack-card"><h3>Day-Of</h3><div class="sub">For the bride who's done the work</div><div class="price">$3,800<span>Starting Investment</span></div>
+<ul class="pack-features"><li>6-week pre-wedding handoff</li><li>2 in-person planning meetings</li><li>Vendor confirmation calls</li><li>Master day-of timeline</li><li>Rehearsal direction</li><li>10 hours on-site day-of</li><li>2-person coordinator team</li></ul>
+<a href="#contact" class="btn-primary">Inquire</a></div>
+<div class="pack-card featured"><div class="pack-tag">Most Loved</div><h3>Partial</h3><div class="sub">Our most-requested collection</div><div class="price">$8,800<span>Starting Investment</span></div>
+<ul class="pack-features"><li>6-month planning engagement</li><li>Monthly in-person meetings</li><li>Custom design board</li><li>Vendor referrals & contracts</li><li>Budget architecture & tracking</li><li>RSVP & guest management</li><li>3-person on-site team</li><li>Rehearsal direction</li></ul>
+<a href="#contact" class="btn-primary">Inquire</a></div>
+<div class="pack-card"><h3>Full Atelier</h3><div class="sub">White-glove, edge-to-edge</div><div class="price">$22,000<span>Starting Investment</span></div>
+<ul class="pack-features"><li>12-18 month engagement</li><li>Bi-weekly planning sessions</li><li>Custom paper & florals in-house</li><li>Hand-curated vendor team</li><li>Welcome weekend programming</li><li>Guest concierge hotline</li><li>4-person on-site team</li><li>Send-off brunch coordination</li></ul>
+<a href="#contact" class="btn-primary">Inquire</a></div>
+</div></div></section>
+
+<section class="testimonials"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">From Our Brides</span><h2>Letters of <em>love</em></h2></div>
+<div class="t-scroll">
+<div class="t-card"><div class="qmark">"</div><blockquote>I will tell every bride I know — hiring {{location.name}} was the single best decision of our wedding. The day was a dream I didn't have to manage. My mother cried. My father said it was the most beautiful evening of his life. Every detail was perfect.</blockquote><div class="t-author"><div class="avatar">A</div><div><strong>Alexandra & Thomas</strong><span>The Plaza, NYC · 2024</span></div></div></div>
+<div class="t-card"><div class="qmark">"</div><blockquote>We were planning a destination wedding from across the country with 220 guests. Without their team, I genuinely think it would have broken us. Instead, it was the most magical, effortless, joyful week of our lives. Italy. Florals. Vows under olive trees. A masterpiece.</blockquote><div class="t-author"><div class="avatar">I</div><div><strong>Isabel & Marcus</strong><span>Tuscany · Spring 2024</span></div></div></div>
+<div class="t-card"><div class="qmark">"</div><blockquote>I was the bride who didn't think I "needed" a planner. Eight months in, drowning, I called them. Within ten days they had untangled three vendor disasters, renegotiated catering, and saved us $31,000 in real costs. They more than paid for themselves.</blockquote><div class="t-author"><div class="avatar">C</div><div><strong>Catherine & David</strong><span>Beverly Hills · 2023</span></div></div></div>
+</div></div></section>
+
+<section class="results"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">By The Numbers</span><h2>A craft <em>measured in moments</em></h2></div>
+<div class="results-grid">
+<div class="r-card"><div class="r-num">150+</div><div class="r-label">Weddings Crafted</div></div>
+<div class="r-card"><div class="r-num">$22k</div><div class="r-label">Average Savings Per Couple</div></div>
+<div class="r-card"><div class="r-num">5</div><div class="r-label">National Magazine Features</div></div>
+<div class="r-card"><div class="r-num">23</div><div class="r-label">Destinations Planned</div></div>
+</div></div></section>
+
+<section class="faq"><div class="container">
+<div class="section-head"><div class="flourish"><div class="diamond"></div></div><span class="kicker">Quietly Asked</span><h2>The questions <em>every bride has</em></h2></div>
+<div class="faq-list">
+<details open><summary>How many weddings do you take per year?<span class="chevron">∨</span></summary><p>We intentionally limit our atelier to 12-14 full-service weddings annually. This ensures every couple receives the attention, design, and presence the work demands. Once a date is contracted, it is exclusively yours.</p></details>
+<details><summary>How early should we book?<span class="chevron">∨</span></summary><p>For Full Atelier service, we recommend 12-18 months before your wedding date. For Partial Planning, 6-9 months. For Day-Of coordination, no later than 8 weeks out. Saturday dates in peak season (May-October) often book 16+ months in advance.</p></details>
+<details><summary>Do you have a preferred vendor list?<span class="chevron">∨</span></summary><p>We have a hand-curated network of 80+ vendors across florals, catering, photography, music, and stationery — but we never insist. Many of our couples bring vendors of their own, and we vet and integrate them with the same care. The goal is your vision, not ours.</p></details>
+<details><summary>Will we save money by hiring you?<span class="chevron">∨</span></summary><p>The math surprises most couples. Our exclusive vendor pricing, contract negotiation, and budget oversight save our average client $22,000 — typically more than our fee. We send a transparent savings audit at the end of every engagement.</p></details>
+<details><summary>Do you plan destination weddings?<span class="chevron">∨</span></summary><p>Yes — destinations are a signature of our practice. We've planned in Italy, France, Mexico, the Caribbean, and across the U.S. Travel and accommodations for our team are billed at actuals; we conduct a scouting trip with you 6-8 months out for venue and vendor selection.</p></details>
+<details><summary>What if our budget grows or changes?<span class="chevron">∨</span></summary><p>Budgets evolve — that's expected. We maintain a real-time master budget and notify you of any line that approaches its threshold. Our role is to protect your priorities, not your ego — we will always tell you, kindly, when a decision threatens the larger vision.</p></details>
+</div></div></section>
+
+<section class="cta-section" id="contact">
+<span class="sparkle s1">✦</span><span class="sparkle s2">✧</span><span class="sparkle s3">✦</span><span class="sparkle s4">✧</span>
+<div class="container"><div class="cta-wrap">
+<div class="flourish"><div class="diamond"></div></div>
+<span class="kicker">Tell Us Your Story</span>
+<h2>Begin with a <em>complimentary</em> consultation</h2>
+<p>Inquire below. A senior planner responds personally — never an assistant, never a form letter.</p>
+<form>
+<h3>Reserve a Consultation</h3>
+<p>· Replies Within One Business Day ·</p>
+<div class="form-row"><input type="text" name="bride_name" placeholder="Your Name" required><input type="text" name="partner_name" placeholder="Partner's Name" required></div>
+<div class="form-row"><input type="email" name="email" placeholder="Email Address" required><input type="tel" name="phone" placeholder="Phone Number" required></div>
+<div class="form-row"><input type="date" name="wedding_date" placeholder="Wedding Date" required>
+<select name="estimated_guests" required><option value="">Estimated Guests</option><option>Under 50</option><option>50 – 150</option><option>150 – 300</option><option>Over 300</option></select></div>
+<div class="form-row">
+<select name="venue_status" required><option value="">Venue Status</option><option>Booked</option><option>Currently Looking</option><option>Need Help Selecting</option></select>
+<select name="budget_range" required><option value="">Investment Range</option><option>$50k – $100k</option><option>$100k – $250k</option><option>$250k – $500k</option><option>$500k +</option></select>
+</div>
+<button type="submit">Send Inquiry</button>
+<div class="form-foot">— With care and complete discretion —</div>
+</form>
+</div></div></section>
+
+<footer><div class="container">
+<div class="footer-grid">
+<div><div class="logo" style="color:#FDF2F8;margin-bottom:20px">{{location.name}}<small style="color:#FBCFE8">Wedding Atelier</small></div>
+<p style="font-size:16px;line-height:1.7;color:#FBCFE8;font-family:'Playfair Display';font-style:italic">Luxury wedding planning and design. Featured in Vogue, Brides, and Martha Stewart Weddings. Based in {{location.city}}, available worldwide.</p>
+<div class="social-row"><a href="#">ig</a><a href="#">pi</a><a href="#">fb</a></div></div>
+<div><h4>Atelier</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<a href="#">{{location.fullAddress}}</a></div>
+<div><h4>Collections</h4><a href="#">Day-Of</a><a href="#">Partial Planning</a><a href="#">Full Atelier</a><a href="#">Destination</a></div>
+</div>
+<div class="copyright">© 2025 {{location.name}} · Lovingly crafted in {{location.city}}</div>
+</div></footer>
+</body></html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} | Pest Control Services</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#111827;background:#F0FDF4;line-height:1.6}
+a{color:inherit;text-decoration:none}
+.container{max-width:1180px;margin:0 auto;padding:0 24px}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(21,128,61,.55)}50%{box-shadow:0 0 0 22px rgba(21,128,61,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+@keyframes growShield{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:2px solid #15803D;padding:14px 0;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:21px;color:#14532D}
+.logo-mark{width:38px;height:38px;background:linear-gradient(135deg,#15803D,#22C55E);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.nav-cta .phone{color:#15803D;font-weight:700;font-size:15px}
+.nav .btn-primary{padding:10px 22px;font-size:14px;animation:none}
+
+/* BUTTONS */
+.btn-primary{display:inline-block;background:#15803D;color:#fff;font-weight:700;padding:16px 32px;border-radius:50px;transition:all .3s;border:none;cursor:pointer;font-family:inherit;font-size:15px;animation:pulse 2.4s infinite}
+.btn-primary:hover{background:#166534;transform:translateY(-3px);box-shadow:0 12px 26px rgba(21,128,61,.4)}
+.btn-secondary{display:inline-block;background:#fff;color:#15803D;font-weight:700;padding:14px 30px;border-radius:50px;border:2px solid #15803D;transition:all .3s}
+.btn-secondary:hover{background:#15803D;color:#fff}
+.btn-orange{background:#F59E0B;color:#14532D}
+.btn-orange:hover{background:#D97706;color:#fff}
+
+/* HERO */
+.hero{background:linear-gradient(120deg,#14532D 0%,#15803D 35%,#16A34A 65%,#15803D 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;padding:90px 0 110px;position:relative;overflow:hidden}
+.hero::before{content:"🛡️";position:absolute;font-size:480px;right:-100px;top:50%;transform:translateY(-50%);opacity:.06;animation:float 6s ease-in-out infinite}
+.hero-inner{position:relative;z-index:2;max-width:780px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,.15);color:#FCD34D;padding:8px 18px;border-radius:50px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:22px;border:1px solid rgba(245,158,11,.4);animation:fadeInUp .8s ease}
+.eyebrow::before{content:"●";color:#22C55E;animation:wiggle 2s ease infinite}
+.hero h1{font-size:clamp(36px,5.2vw,62px);font-weight:900;line-height:1.05;margin-bottom:20px;animation:fadeInUp .8s .1s both}
+.hero h1 em{font-style:normal;color:#FCD34D;display:inline-block}
+.hero-sub{font-size:19px;color:#DCFCE7;margin-bottom:32px;animation:fadeInUp .8s .2s both;max-width:620px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;animation:fadeInUp .8s .3s both}
+.trust-strip{margin-top:42px;display:flex;gap:28px;flex-wrap:wrap;animation:fadeInUp .8s .4s both}
+.trust-pill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);backdrop-filter:blur(6px);padding:10px 18px;border-radius:50px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.15)}
+
+/* BADGE BAR */
+.badges{background:#fff;padding:34px 0;border-bottom:1px solid #DCFCE7}
+.badges-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.badge-item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.badge-icon{font-size:32px}
+.badge-num{font-size:30px;font-weight:900;color:#15803D;line-height:1}
+.badge-label{font-size:13px;color:#374151;font-weight:600}
+
+/* SECTIONS */
+.section{padding:90px 0}
+.section-head{text-align:center;max-width:740px;margin:0 auto 56px}
+.section-head h2{font-size:clamp(30px,4vw,46px);font-weight:900;color:#14532D;margin-bottom:14px;line-height:1.15}
+.section-head p{font-size:18px;color:#374151}
+.tag{display:inline-block;color:#15803D;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;background:#DCFCE7;padding:6px 16px;border-radius:50px}
+
+/* PAIN */
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pain-card{background:#fff;padding:34px 28px;border-radius:18px;border:2px solid #DCFCE7;transition:all .35s}
+.pain-card:hover{transform:translateY(-8px);border-color:#15803D;box-shadow:0 20px 36px rgba(20,83,45,.12)}
+.pain-icon{font-size:46px;margin-bottom:14px;display:inline-block;animation:wiggle 3s ease infinite}
+.pain-card:nth-child(2) .pain-icon{animation-delay:.4s}
+.pain-card:nth-child(3) .pain-icon{animation-delay:.8s}
+.pain-card h3{font-size:21px;margin-bottom:10px;color:#14532D}
+.pain-card p{color:#475569}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#fff 0%,#F0FDF4 100%)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.split h2{font-size:42px;color:#14532D;margin-bottom:18px}
+.split p{font-size:17px;color:#475569}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:13px 0 13px 40px;position:relative;font-size:17px;border-bottom:1px dashed #BBF7D0;color:#1F2937}
+.checklist li::before{content:"";position:absolute;left:0;top:14px;width:26px;height:26px;background:#15803D;border-radius:50%;background-image:radial-gradient(circle,#fff 30%,#15803D 32%);box-shadow:0 0 0 4px #DCFCE7}
+.checklist li::after{content:"✓";position:absolute;left:7px;top:13px;color:#fff;font-weight:900;font-size:14px}
+.shield-visual{aspect-ratio:1;background:radial-gradient(circle at 30% 30%,#22C55E,#15803D 55%,#14532D);border-radius:30% 70% 70% 30%/30% 30% 70% 70%;position:relative;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(20,83,45,.3);animation:growShield 1s ease,float 6s ease-in-out infinite 1s}
+.shield-visual::before{content:"";position:absolute;inset:14px;border:3px dashed rgba(255,255,255,.4);border-radius:30% 70% 70% 30%/30% 30% 70% 70%;animation:gradient 20s linear infinite reverse}
+.shield-icon{font-size:160px;filter:drop-shadow(0 8px 20px rgba(0,0,0,.3));z-index:2}
+
+/* PESTS GRID */
+.pests-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.pest-card{background:#fff;padding:30px 18px;border-radius:14px;text-align:center;transition:all .3s;border:1px solid #E5E7EB}
+.pest-card:hover{transform:translateY(-6px);border-color:#F59E0B;background:linear-gradient(180deg,#fff,#FEF3C7)}
+.pest-emoji{font-size:46px;margin-bottom:10px;display:block;transition:transform .3s}
+.pest-card:hover .pest-emoji{transform:scale(1.2) rotate(-8deg)}
+.pest-name{font-weight:700;color:#14532D;font-size:15px}
+
+/* STEPS */
+.steps{background:linear-gradient(135deg,#14532D,#15803D);color:#fff}
+.steps .section-head h2{color:#fff}
+.steps .section-head p{color:#BBF7D0}
+.steps .tag{background:rgba(252,211,77,.2);color:#FCD34D}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative}
+.steps-grid::before{content:"";position:absolute;top:36px;left:15%;right:15%;height:2px;background:repeating-linear-gradient(90deg,#FCD34D,#FCD34D 8px,transparent 8px,transparent 16px);z-index:1}
+.step{text-align:center;position:relative;z-index:2}
+.step-num{width:72px;height:72px;background:#F59E0B;color:#14532D;border-radius:50%;font-weight:900;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;border:4px solid #14532D;animation:float 5s ease-in-out infinite}
+.step:nth-child(2) .step-num{animation-delay:.5s}
+.step:nth-child(3) .step-num{animation-delay:1s}
+.step h3{font-size:22px;margin-bottom:8px;color:#fff}
+.step p{color:#BBF7D0}
+
+/* TESTIMONIALS */
+.testimonials-scroll{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 24px}
+.test-card{flex:0 0 360px;scroll-snap-align:start;background:#fff;padding:30px;border-radius:16px;border-top:4px solid #F59E0B;box-shadow:0 4px 16px rgba(0,0,0,.06);position:relative}
+.test-card::before{content:"\201C";position:absolute;top:-6px;right:20px;font-size:80px;color:#DCFCE7;font-family:Georgia,serif;line-height:1}
+.stars{color:#F59E0B;font-size:18px;margin-bottom:12px;letter-spacing:2px}
+.test-card blockquote{font-size:16px;color:#1F2937;line-height:1.6;margin-bottom:20px;position:relative;z-index:2}
+.test-author{display:flex;align-items:center;gap:12px}
+.test-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#15803D,#F59E0B);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.test-name{font-weight:700;font-size:15px;color:#14532D}
+.test-meta{font-size:13px;color:#64748B}
+
+/* STATS */
+.stats{background:#fff}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-box{padding:30px 20px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-radius:18px;transition:all .3s}
+.stat-box:hover{transform:translateY(-6px);background:linear-gradient(135deg,#DCFCE7,#BBF7D0)}
+.stat-num{font-size:48px;font-weight:900;color:#15803D;line-height:1}
+.stat-label{margin-top:8px;color:#374151;font-size:15px;font-weight:600}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+.price-card{background:#fff;border-radius:20px;padding:36px 28px;border:2px solid #DCFCE7;transition:all .35s;position:relative;display:flex;flex-direction:column}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(20,83,45,.14)}
+.price-card.featured{border-color:#F59E0B;background:linear-gradient(180deg,#fff,#FEF3C7);transform:scale(1.04);box-shadow:0 18px 40px rgba(245,158,11,.22)}
+.price-card.featured:hover{transform:scale(1.04) translateY(-6px)}
+.featured-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#F59E0B;color:#14532D;font-weight:900;font-size:12px;padding:6px 18px;border-radius:50px;letter-spacing:1px}
+.price-name{font-size:22px;font-weight:800;color:#14532D;margin-bottom:6px}
+.price-amount{font-size:46px;font-weight:900;color:#15803D;margin:10px 0}
+.price-amount small{font-size:18px;color:#64748B;font-weight:600}
+.price-desc{color:#64748B;margin-bottom:18px;font-size:14px}
+.price-features{list-style:none;margin-bottom:26px;flex-grow:1}
+.price-features li{padding:8px 0 8px 28px;position:relative;font-size:15px;color:#374151}
+.price-features li::before{content:"✓";position:absolute;left:0;color:#15803D;font-weight:900;font-size:18px}
+.price-card .btn-primary{width:100%;text-align:center;animation:none}
+
+/* FAQ */
+.faq{max-width:820px;margin:0 auto}
+.faq details{background:#fff;border-radius:14px;margin-bottom:14px;border:2px solid #DCFCE7;overflow:hidden;transition:all .3s}
+.faq details[open]{border-color:#15803D;box-shadow:0 8px 20px rgba(20,83,45,.1)}
+.faq summary{padding:22px 26px;font-weight:700;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none;color:#14532D}
+.faq summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .3s;color:#15803D;font-weight:900;font-size:22px}
+.faq details[open] .chevron{transform:rotate(180deg)}
+.faq-body{padding:0 26px 24px;color:#475569;line-height:1.7}
+
+/* CTA FORM */
+.cta-section{background:linear-gradient(135deg,#15803D 0%,#16A34A 50%,#15803D 100%);background-size:200% 200%;animation:gradient 10s ease infinite;color:#fff;padding:100px 0}
+.cta-section h2{font-size:clamp(32px,4.5vw,48px);text-align:center;margin-bottom:12px;color:#fff}
+.cta-section .sub{text-align:center;font-size:18px;max-width:680px;margin:0 auto 40px;color:#DCFCE7}
+.form-card{max-width:680px;margin:0 auto;background:#fff;color:#111827;border-radius:24px;padding:44px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.form-card h3{font-size:24px;color:#14532D;margin-bottom:8px;text-align:center}
+.form-card .sub-form{color:#64748B;text-align:center;font-size:15px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-card input,.form-card select{width:100%;padding:14px 16px;border-radius:10px;border:2px solid #E5E7EB;background:#F0FDF4;color:#111827;font-size:15px;font-family:inherit;margin-bottom:14px;transition:all .2s}
+.form-card input:focus,.form-card select:focus{outline:none;border-color:#15803D;background:#fff}
+.form-card .btn-primary{width:100%;padding:18px;font-size:16px;background:#F59E0B;color:#14532D;animation:pulse 2.4s infinite}
+.form-card .btn-primary:hover{background:#D97706;color:#fff}
+.form-disclaimer{text-align:center;color:#64748B;font-size:13px;margin-top:14px}
+
+/* FOOTER */
+.footer{background:#14532D;color:#BBF7D0;padding:60px 0 26px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px}
+.footer h4{color:#fff;font-size:15px;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px}
+.footer a,.footer p{display:block;color:#BBF7D0;padding:4px 0;font-size:14px}
+.footer a:hover{color:#FCD34D}
+.social-row{display:flex;gap:10px;margin-top:12px}
+.social-row a{width:36px;height:36px;background:#15803D;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;font-weight:700}
+.social-row a:hover{background:#F59E0B;color:#14532D}
+.copy{border-top:1px solid #15803D;padding-top:24px;text-align:center;font-size:13px}
+
+@media (max-width:768px){
+  .badges-grid,.pain-grid,.pests-grid,.services-grid,.steps-grid,.stats-grid,.pricing-grid{grid-template-columns:1fr}
+  .split,.footer-grid{grid-template-columns:1fr;gap:32px}
+  .form-row{grid-template-columns:1fr}
+  .section{padding:60px 0}
+  .hero{padding:60px 0 80px}
+  .price-card.featured{transform:none}
+  .price-card.featured:hover{transform:translateY(-6px)}
+  .pests-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .badges-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-cta .phone{display:none}
+  .steps-grid::before{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo"><span class="logo-mark">🛡️</span> {{location.name}}</a>
+    <div class="nav-cta">
+      <a href="tel:{{location.phoneRaw}}" class="phone">📞 {{location.phone}}</a>
+      <a href="#contact" class="btn-primary">Free Inspection</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow">Same-Day Service Available</span>
+    <h1>Kick Pests Out. <em>Keep Them Out.</em> Guaranteed.</h1>
+    <p class="hero-sub">Eco-friendly pest control with a 100% pest-free guarantee. Same-day service available across {{location.city}}.</p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn-primary btn-orange">Get My Free Inspection</a>
+      <a href="tel:{{location.phoneRaw}}" class="btn-secondary">Call {{location.phone}}</a>
+    </div>
+    <div class="trust-strip">
+      <span class="trust-pill">🌱 Family & Pet Safe</span>
+      <span class="trust-pill">✅ EPA Approved</span>
+      <span class="trust-pill">⚡ Same-Day Service</span>
+      <span class="trust-pill">🛡️ 100% Guarantee</span>
+    </div>
+  </div>
+</section>
+
+<section class="badges">
+  <div class="container badges-grid">
+    <div class="badge-item"><div class="badge-icon">🏠</div><div class="badge-num">10K+</div><div class="badge-label">Homes Protected</div></div>
+    <div class="badge-item"><div class="badge-icon">⭐</div><div class="badge-num">4.9★</div><div class="badge-label">Customer Rating</div></div>
+    <div class="badge-item"><div class="badge-icon">🛡️</div><div class="badge-num">100%</div><div class="badge-label">Guarantee</div></div>
+    <div class="badge-item"><div class="badge-icon">📅</div><div class="badge-num">12+</div><div class="badge-label">Years Experience</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Common Frustrations</span>
+      <h2>The Same Pests. The Same Bills. Every Year.</h2>
+      <p>You spray, they come back. You call a guy, they overcharge. Sound familiar?</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <span class="pain-icon">🐜</span>
+        <h3>They Keep Coming Back</h3>
+        <p>Hardware-store sprays kill what you see — but the colony hidden in your walls keeps breeding.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">💸</span>
+        <h3>Overpriced & Vague</h3>
+        <p>Generic "monthly plans" with surprise fees, locked-in contracts, and zero results guarantees.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">☠️</span>
+        <h3>Toxic Chemicals</h3>
+        <p>You shouldn't have to choose between pest-free and keeping your kids and pets safe at home.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <span class="tag">Our Approach</span>
+        <h2>Targeted Treatments. Lasting Results.</h2>
+        <p>We don't just spray surfaces. We hunt the source — nests, entry points, breeding zones — using EPA-approved eco-friendly products that are tough on pests, gentle on your family.</p>
+        <ul class="checklist">
+          <li>Family & pet-safe botanical formulas</li>
+          <li>Free re-treatments between scheduled visits</li>
+          <li>Detailed inspection report with photos</li>
+          <li>No long-term contracts — cancel anytime</li>
+          <li>Licensed, insured, background-checked techs</li>
+        </ul>
+        <div style="margin-top:30px"><a href="#contact" class="btn-primary">Book Free Inspection</a></div>
+      </div>
+      <div class="shield-visual"><div class="shield-icon">🌿</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">We Treat It All</span>
+      <h2>One Service. Every Pest Covered.</h2>
+      <p>Whatever's crawling, flying, or scurrying — we've got the protocol to make it stop.</p>
+    </div>
+    <div class="pests-grid">
+      <div class="pest-card"><span class="pest-emoji">🐜</span><div class="pest-name">Ants</div></div>
+      <div class="pest-card"><span class="pest-emoji">🪳</span><div class="pest-name">Roaches</div></div>
+      <div class="pest-card"><span class="pest-emoji">🕷️</span><div class="pest-name">Spiders</div></div>
+      <div class="pest-card"><span class="pest-emoji">🐀</span><div class="pest-name">Rodents</div></div>
+      <div class="pest-card"><span class="pest-emoji">🪵</span><div class="pest-name">Termites</div></div>
+      <div class="pest-card"><span class="pest-emoji">🛏️</span><div class="pest-name">Bed Bugs</div></div>
+      <div class="pest-card"><span class="pest-emoji">🐝</span><div class="pest-name">Wasps</div></div>
+      <div class="pest-card"><span class="pest-emoji">🦟</span><div class="pest-name">Mosquitoes</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section steps">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">How It Works</span>
+      <h2>From First Call to Pest-Free in Days</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step"><div class="step-num">1</div><h3>Free Inspection</h3><p>We map every entry point, nest, and risk zone. You get a detailed photo report — no obligation.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Targeted Treatment</h3><p>Custom protocol using eco-friendly EPA-approved products. Indoor, outdoor, perimeter — done in 60 minutes.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Stay Protected</h3><p>Quarterly or monthly visits keep them gone. Free re-treats if anything returns between visits.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#F0FDF4">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Real Reviews</span>
+      <h2>Neighbors Who Got Their Homes Back</h2>
+    </div>
+    <div class="testimonials-scroll">
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"We had German roaches for 3 years — tried everything. {{location.name}} solved it in 2 treatments. Haven't seen one in 8 months. Worth every dollar."</blockquote>
+        <div class="test-author"><div class="test-avatar">DH</div><div><div class="test-name">Diana H.</div><div class="test-meta">Quarterly Plan · Roaches</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"The tech was unbelievable. He found a mouse nest behind our oven we never knew existed. Sealed every gap. Three months pest-free."</blockquote>
+        <div class="test-author"><div class="test-avatar">RP</div><div><div class="test-name">Ramon P.</div><div class="test-meta">Monthly Plan · Rodents</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I was so worried about my dog. They explained every product they used and showed me EPA certifications. Pet-safe AND pest-free. Phenomenal."</blockquote>
+        <div class="test-author"><div class="test-avatar">EM</div><div><div class="test-name">Emily M.</div><div class="test-meta">Quarterly · Ants & Spiders</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-num">10K+</div><div class="stat-label">Homes Protected</div></div>
+      <div class="stat-box"><div class="stat-num">4.9★</div><div class="stat-label">Avg Rating (2,100+)</div></div>
+      <div class="stat-box"><div class="stat-num">100%</div><div class="stat-label">EPA-Approved</div></div>
+      <div class="stat-box"><div class="stat-num">30-Day</div><div class="stat-label">Pest-Free Guarantee</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Pick Your Plan</span>
+      <h2>Simple, Honest, No-Contract Pricing</h2>
+      <p>Free re-treatments between visits. Cancel anytime. No fine print.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">One-Time Treatment</div>
+        <div class="price-amount">$149</div>
+        <div class="price-desc">Perfect for active pest emergencies</div>
+        <ul class="price-features">
+          <li>Full home inspection</li>
+          <li>Interior & exterior treatment</li>
+          <li>Targeted source elimination</li>
+          <li>30-day guarantee</li>
+          <li>Detailed photo report</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Book One-Time</a>
+      </div>
+      <div class="price-card featured">
+        <span class="featured-tag">MOST POPULAR</span>
+        <div class="price-name">Quarterly Plan</div>
+        <div class="price-amount">$35<small>/mo</small></div>
+        <div class="price-desc">4 visits/year — most homes stay pest-free</div>
+        <ul class="price-features">
+          <li>4 seasonal treatments per year</li>
+          <li>All common pests covered</li>
+          <li>FREE re-treatments anytime</li>
+          <li>Priority scheduling</li>
+          <li>No contract — cancel anytime</li>
+          <li>Loyalty discount after 1 yr</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Start Quarterly</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Monthly Plan</div>
+        <div class="price-amount">$59<small>/mo</small></div>
+        <div class="price-desc">Maximum protection — for severe issues</div>
+        <ul class="price-features">
+          <li>12 visits per year</li>
+          <li>All pests + termite monitoring</li>
+          <li>FREE re-treatments anytime</li>
+          <li>Mosquito/tick yard treatment</li>
+          <li>Priority same-day service</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Start Monthly</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#F0FDF4">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Got Questions?</span>
+      <h2>Answers, Straight Up</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Are your products safe for my kids and pets? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes. We use EPA-approved botanical and low-toxicity formulas. Treated areas are safe to re-enter within 30 minutes of application. We use the same standards in our own homes.</div>
+      </details>
+      <details>
+        <summary>What's actually included in the "free inspection"? <span class="chevron">▾</span></summary>
+        <div class="faq-body">A licensed technician walks your entire property — interior, exterior, attic, crawlspace — documenting every entry point, nest, and risk zone with photos. You receive a written report with recommendations. Zero obligation, zero pressure.</div>
+      </details>
+      <details>
+        <summary>How fast can you come out? <span class="chevron">▾</span></summary>
+        <div class="faq-body">For emergencies (roaches, wasps, rodents) we offer same-day or next-day service. Standard inspections are usually scheduled within 24–48 hours.</div>
+      </details>
+      <details>
+        <summary>What does the "pest-free guarantee" really mean? <span class="chevron">▾</span></summary>
+        <div class="faq-body">If you see treated pests return between scheduled visits, we come back and re-treat — for free. No service call charges, no hidden costs. We don't leave until they're gone.</div>
+      </details>
+      <details>
+        <summary>Do I have to sign a long-term contract? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Never. All our plans are month-to-month. Cancel anytime with a phone call. We earn your business one visit at a time.</div>
+      </details>
+      <details>
+        <summary>Can you handle termite or bed bug infestations? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes — both require specialized protocols which we provide. Termite treatments include monitoring and re-treatment guarantees. Bed bug treatments are heat or chemical based and include follow-up inspections.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Book Your FREE Inspection Today</h2>
+    <p class="sub">Same-day service available. Honest quote, no obligation, no pressure.</p>
+    <div class="form-card">
+      <h3>Get Your Free Pest Inspection</h3>
+      <p class="sub-form">We'll respond within 30 minutes during business hours.</p>
+      <form>
+        <div class="form-row">
+          <input type="text" name="full_name" placeholder="Full Name *" required>
+          <input type="tel" name="phone" placeholder="Phone *" required>
+        </div>
+        <input type="email" name="email" placeholder="Email Address *" required>
+        <input type="text" name="address" placeholder="Service Address *" required>
+        <div class="form-row">
+          <select name="pest_type" required>
+            <option value="">Pest Type *</option>
+            <option value="Ants">Ants</option>
+            <option value="Roaches">Roaches</option>
+            <option value="Spiders">Spiders</option>
+            <option value="Rodents">Rodents</option>
+            <option value="Termites">Termites</option>
+            <option value="Bed Bugs">Bed Bugs</option>
+            <option value="Wasps">Wasps</option>
+            <option value="Mosquitoes">Mosquitoes</option>
+            <option value="Multiple">Multiple / Not Sure</option>
+          </select>
+          <select name="severity" required>
+            <option value="">Severity *</option>
+            <option value="Just noticed">Just noticed</option>
+            <option value="Recurring">Recurring problem</option>
+            <option value="Infestation">Full infestation</option>
+          </select>
+        </div>
+        <select name="service_type" required>
+          <option value="">Preferred Service *</option>
+          <option value="One-time">One-time treatment</option>
+          <option value="Quarterly">Quarterly plan</option>
+          <option value="Monthly">Monthly plan</option>
+          <option value="Not sure">Not sure — advise me</option>
+        </select>
+        <button type="submit" class="btn-primary">Claim My FREE Inspection</button>
+        <p class="form-disclaimer">🛡️ 100% pest-free guarantee · No spam · No obligation</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:12px;color:#fff"><span class="logo-mark">🛡️</span> {{location.name}}</div>
+        <p>Eco-friendly pest control serving {{location.city}} families with safe, effective, guaranteed protection since day one.</p>
+        <div class="social-row">
+          <a href="#">f</a><a href="#">ig</a><a href="#">in</a><a href="#">yt</a>
+        </div>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <a href="#">Residential</a>
+        <a href="#">Commercial</a>
+        <a href="#">Termite</a>
+        <a href="#">Mosquito</a>
+        <a href="#">Bed Bug</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Hours</h4>
+        <p>Mon–Fri: 7am–7pm</p>
+        <p>Sat: 8am–4pm</p>
+        <p>24/7 emergency line</p>
+      </div>
+    </div>
+    <div class="copy">© {{location.name}}. All rights reserved. · Licensed, Bonded & Insured</div>
+  </div>
+</footer>
+
+</body>
+</html>

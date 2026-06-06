@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — The Skincare Revolution</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',system-ui,sans-serif;background:#FDF2F8;color:#1F2937;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Manrope',sans-serif;font-weight:800;line-height:1.15;letter-spacing:-.5px;color:#1F2937}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+.btn-primary{display:inline-block;background:#BE185D;color:#fff;font-weight:700;padding:16px 36px;border-radius:50px;transition:all .3s ease;font-size:16px;border:none;cursor:pointer;letter-spacing:.3px}
+.btn-primary:hover{background:#831843;transform:translateY(-3px);box-shadow:0 16px 32px rgba(190,24,93,.35)}
+.btn-secondary{display:inline-block;background:transparent;color:#fff;font-weight:700;padding:16px 32px;border-radius:50px;border:2px solid #FACC15;transition:all .3s ease;font-size:16px}
+.btn-secondary:hover{background:#FACC15;color:#831843}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.6)}50%{box-shadow:0 0 0 20px rgba(250,204,21,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes flash{0%,100%{opacity:1}50%{opacity:.6}}
+nav{position:sticky;top:0;background:rgba(253,242,248,.95);backdrop-filter:blur(12px);z-index:100;padding:16px 0;border-bottom:1px solid rgba(190,24,93,.1)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Manrope',sans-serif;font-size:24px;font-weight:800;color:#831843;letter-spacing:-1px}
+.logo span{color:#BE185D}
+nav .btn-primary{padding:11px 24px;font-size:14px}
+.announce{background:#1F2937;color:#FACC15;text-align:center;padding:9px 0;font-size:13.5px;font-weight:600;letter-spacing:.5px;animation:flash 3s ease-in-out infinite}
+.announce span{display:inline-block;background:#FACC15;color:#831843;padding:2px 10px;border-radius:50px;margin-right:8px;font-weight:800}
+.hero{background:linear-gradient(135deg,#831843 0%,#BE185D 30%,#DB2777 60%,#BE185D 80%,#831843 100%);background-size:200% 200%;animation:gradient 10s ease infinite;color:#fff;padding:90px 0 110px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-150px;right:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(250,204,21,.2),transparent 70%);border-radius:50%;animation:float 8s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-200px;left:-150px;width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);border-radius:50%}
+.hero .container{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.limited-badge{display:inline-block;background:#FACC15;color:#831843;padding:8px 18px;border-radius:50px;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:22px;opacity:0;animation:fadeInUp .8s ease forwards,pulse 2.5s ease-in-out infinite .8s}
+.hero h1{font-size:clamp(40px,5vw,64px);font-weight:800;margin-bottom:20px;opacity:0;animation:fadeInUp 1s ease .15s forwards;color:#fff}
+.hero h1 span{background:linear-gradient(135deg,#FACC15,#FEF08A);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(16px,1.8vw,19px);max-width:540px;margin-bottom:32px;opacity:0;animation:fadeInUp 1s ease .3s forwards;color:rgba(255,255,255,.92)}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .45s forwards;margin-bottom:30px}
+.hero-stars{display:flex;align-items:center;gap:14px;opacity:0;animation:fadeInUp 1s ease .6s forwards}
+.hero-stars .stars{color:#FACC15;font-size:20px;letter-spacing:2px}
+.hero-stars span{font-size:14px;color:rgba(255,255,255,.85)}
+.hero-visual{position:relative;height:480px;opacity:0;animation:fadeInUp 1s ease .3s forwards}
+.product-box{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:380px;background:linear-gradient(180deg,#FACC15 0%,#FDE047 50%,#FACC15 100%);border-radius:18px 18px 100px 100px;box-shadow:0 30px 60px rgba(0,0,0,.4),inset 0 4px 10px rgba(255,255,255,.5);animation:float 6s ease-in-out infinite;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;color:#831843;text-align:center}
+.product-box .ribbon{position:absolute;top:30px;left:-12px;background:#BE185D;color:#fff;padding:8px 22px;font-size:11px;font-weight:800;letter-spacing:1.5px;border-radius:0 4px 4px 0;animation:shake 2s ease-in-out infinite}
+.product-box .ribbon::before{content:'';position:absolute;bottom:-8px;left:0;border-top:8px solid #831843;border-left:8px solid transparent}
+.product-box .brand{font-family:'Manrope',sans-serif;font-weight:800;letter-spacing:6px;font-size:13px;margin-bottom:14px}
+.product-box .name{font-size:32px;font-weight:800;line-height:1.05;margin-bottom:18px}
+.product-box .tag{font-size:11px;font-weight:700;letter-spacing:2px;opacity:.7}
+.savings-badge{position:absolute;top:30px;right:20px;width:90px;height:90px;background:#fff;color:#BE185D;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;box-shadow:0 14px 30px rgba(0,0,0,.25);animation:bounce 2s ease-in-out infinite;transform:rotate(-12deg)}
+.savings-badge .pct{font-size:32px;line-height:1}
+.savings-badge .txt{font-size:10px;letter-spacing:1px;margin-top:2px}
+section{padding:90px 0}
+.section-tag{display:inline-block;background:#FCE7F3;color:#BE185D;padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:14px;text-transform:uppercase}
+.section-title{font-size:clamp(32px,4.5vw,48px);margin-bottom:14px}
+.section-sub{font-size:18px;color:#6B7280;max-width:640px;margin:0 auto 56px}
+.center{text-align:center}
+.trust{background:#fff;padding:40px 0;border-top:1px solid #FCE7F3;border-bottom:1px solid #FCE7F3}
+.trust .row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.trust .row .item{padding:0 14px}
+.trust .row .item .ic{font-size:28px;margin-bottom:6px;display:block}
+.trust .row .item strong{display:block;font-size:15px;color:#1F2937;font-weight:800}
+.trust .row .item small{display:block;color:#6B7280;font-size:13px;margin-top:2px}
+.problems{background:#FDF2F8}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.problem-card{background:#fff;padding:34px 28px;border-radius:20px;transition:all .35s ease;border:2px solid transparent}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(190,24,93,.15);border-color:#FACC15}
+.problem-card .emoji{font-size:48px;margin-bottom:18px;display:block}
+.problem-card h3{font-size:22px;margin-bottom:10px;color:#831843}
+.problem-card p{color:#6B7280;font-size:15px}
+.solution{background:#fff}
+.solution .split{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.solution .visual{height:460px;background:linear-gradient(135deg,#FCE7F3,#FBCFE8);border-radius:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.solution .visual::before{content:'\1F33F';font-size:160px;animation:float 6s ease-in-out infinite}
+.solution .visual::after{content:'';position:absolute;width:300px;height:300px;border:2px dashed #BE185D;border-radius:50%;opacity:.3}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:14px 0 14px 38px;position:relative;font-size:17px;color:#1F2937;font-weight:500}
+.checklist li::before{content:'\2713';position:absolute;left:0;top:14px;width:26px;height:26px;background:#BE185D;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.features{background:#FDF2F8}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.feature-card{background:#fff;padding:32px 26px;border-radius:18px;transition:all .35s ease;text-align:center}
+.feature-card:hover{transform:translateY(-8px);box-shadow:0 18px 38px rgba(190,24,93,.15)}
+.feature-card .emoji{font-size:42px;margin-bottom:14px;display:inline-flex;width:70px;height:70px;background:linear-gradient(135deg,#FDF2F8,#FCE7F3);border-radius:50%;align-items:center;justify-content:center}
+.feature-card h3{font-size:19px;margin-bottom:8px;color:#831843}
+.feature-card p{color:#6B7280;font-size:14.5px}
+.steps{background:#fff}
+.steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:50px}
+.step{text-align:center;padding:34px 24px;background:linear-gradient(180deg,#FDF2F8,#fff);border-radius:20px;border:1px solid #FCE7F3;transition:all .3s ease}
+.step:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(190,24,93,.12)}
+.step-num{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#BE185D,#831843);color:#FACC15;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.step h3{font-size:20px;margin-bottom:8px}
+.step p{color:#6B7280;font-size:15px}
+.testimonials{background:#FDF2F8}
+.testimonial-carousel{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 4px 28px;scrollbar-width:thin}
+.testimonial{flex:0 0 min(380px,90%);scroll-snap-align:start;background:#fff;padding:32px 28px;border-radius:18px;border:1px solid #FCE7F3}
+.testimonial .stars{color:#FACC15;font-size:18px;margin-bottom:12px}
+.testimonial .verified{display:inline-block;background:#10B981;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:50px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px}
+.testimonial .quote{font-size:15.5px;color:#1F2937;margin-bottom:20px;line-height:1.65}
+.testimonial .who{font-weight:700;color:#831843;font-size:15px}
+.testimonial .who small{display:block;color:#6B7280;font-weight:500;margin-top:3px;font-size:13px}
+.stats-section{background:linear-gradient(135deg,#831843,#BE185D,#831843);color:#fff;padding:80px 0;background-size:200% 200%;animation:gradient 12s ease infinite}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;text-align:center}
+.stat{padding:30px 18px}
+.stat .num{font-size:54px;font-weight:800;color:#FACC15;line-height:1}
+.stat .label{margin-top:10px;font-size:15px;color:rgba(255,255,255,.88);font-weight:500}
+.pricing{background:#fff}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{background:#FDF2F8;padding:40px 32px;border-radius:22px;transition:all .35s ease;border:2px solid transparent;position:relative;text-align:center}
+.price-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(190,24,93,.18)}
+.price-card.featured{background:linear-gradient(180deg,#831843,#BE185D);color:#fff;border-color:#FACC15;transform:scale(1.05)}
+.price-card.featured h3,.price-card.featured .price{color:#fff}
+.price-card.featured .save-tag{background:#FACC15;color:#831843}
+.featured-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#FACC15;color:#831843;padding:7px 20px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;animation:pulse 2.5s ease-in-out infinite}
+.price-card h3{font-size:22px;margin-bottom:6px;color:#831843}
+.price-card-sub{color:#6B7280;font-size:14px;margin-bottom:18px}
+.price-card.featured .price-card-sub{color:rgba(255,255,255,.75)}
+.price-card .price{font-size:48px;font-weight:800;color:#BE185D;margin:6px 0;line-height:1}
+.price-card .price small{font-size:15px;font-weight:500;color:#6B7280;text-decoration:line-through;margin-left:6px}
+.price-card.featured .price small{color:rgba(255,255,255,.6)}
+.save-tag{display:inline-block;background:#FACC15;color:#831843;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:800;margin:10px 0 18px}
+.price-card ul{list-style:none;margin:14px 0 26px;text-align:left}
+.price-card ul li{padding:8px 0 8px 28px;position:relative;font-size:14.5px}
+.price-card ul li::before{content:'\2713';position:absolute;left:0;color:#BE185D;font-weight:800}
+.price-card.featured ul li::before{color:#FACC15}
+.price-card .btn-primary{display:block;text-align:center;width:100%}
+.price-card.featured .btn-primary{background:#FACC15;color:#831843}
+.price-card.featured .btn-primary:hover{background:#fff}
+.faq{background:#FDF2F8}
+.faq-wrap{max-width:780px;margin:0 auto}
+details{background:#fff;border-radius:14px;margin-bottom:12px;border:1px solid #FCE7F3;overflow:hidden;transition:all .3s ease}
+details[open]{box-shadow:0 14px 32px rgba(190,24,93,.12);border-color:#BE185D}
+summary{padding:22px 26px;cursor:pointer;font-weight:700;font-size:17px;color:#1F2937;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{font-size:20px;color:#BE185D;transition:transform .3s ease}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 26px 22px;color:#6B7280;font-size:15px}
+.cta-final{background:linear-gradient(135deg,#831843 0%,#BE185D 40%,#DB2777 70%,#831843 100%);background-size:200% 200%;animation:gradient 10s ease infinite;color:#fff;padding:100px 0;position:relative;overflow:hidden}
+.cta-final::before{content:'';position:absolute;top:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(250,204,21,.15),transparent 70%);border-radius:50%}
+.cta-final h2{font-size:clamp(32px,4.5vw,48px);margin-bottom:14px;color:#fff;text-align:center}
+.cta-final .lead{font-size:18px;color:rgba(255,255,255,.9);max-width:620px;margin:0 auto 40px;text-align:center}
+.cta-final .urgency{display:block;text-align:center;color:#FACC15;font-weight:800;text-transform:uppercase;letter-spacing:2px;font-size:13px;margin-bottom:14px;animation:flash 2s ease-in-out infinite}
+form{max-width:660px;margin:0 auto;background:#fff;padding:38px 36px;border-radius:22px;box-shadow:0 30px 60px rgba(0,0,0,.3);position:relative;z-index:2}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+form input,form select{width:100%;padding:14px 16px;border:1.5px solid #FCE7F3;border-radius:12px;font-family:'Manrope',sans-serif;font-size:15px;background:#FDF2F8;color:#1F2937;transition:all .25s ease;margin-bottom:14px}
+.form-row input,.form-row select{margin-bottom:0}
+form input:focus,form select:focus{outline:none;border-color:#BE185D;background:#fff;box-shadow:0 0 0 4px rgba(190,24,93,.1)}
+form button{width:100%;background:#FACC15;color:#831843;border:none;padding:18px;border-radius:50px;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px;cursor:pointer;transition:all .3s ease;letter-spacing:.3px;animation:pulse 2.4s ease-in-out infinite}
+form button:hover{background:#fff;transform:translateY(-2px)}
+footer{background:#1F2937;color:#9CA3AF;padding:60px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;margin-bottom:40px}
+footer h4{color:#FACC15;font-size:16px;margin-bottom:18px;font-weight:800}
+footer p,footer a{color:#9CA3AF;font-size:14.5px;line-height:1.9;display:block}
+footer a:hover{color:#FACC15}
+.social-row{display:flex;gap:10px;margin-top:18px}
+.social-row a{width:36px;height:36px;border-radius:50%;background:rgba(250,204,21,.1);display:flex;align-items:center;justify-content:center;color:#FACC15;font-size:12px;font-weight:800;transition:all .25s ease}
+.social-row a:hover{background:#FACC15;color:#831843}
+.copyright{border-top:1px solid #374151;padding-top:24px;text-align:center;font-size:13px}
+@media (max-width:768px){
+.hero .container{grid-template-columns:1fr;gap:40px}
+.hero-visual{height:380px}
+.problem-grid,.feature-grid,.pricing-grid,.steps-row{grid-template-columns:1fr}
+.stats-grid,.trust .row,.footer-grid{grid-template-columns:repeat(2,1fr)}
+.solution .split{grid-template-columns:1fr;gap:40px}
+.form-row{grid-template-columns:1fr;gap:0}
+.hero{padding:60px 0 80px}
+section{padding:60px 0}
+form{padding:26px 20px}
+}
+</style>
+</head>
+<body>
+
+<div class="announce"><span>40% OFF</span> Launch Week Only &middot; Free Shipping on $50+ &middot; Code: LAUNCH40</div>
+
+<nav>
+<div class="container">
+<div class="logo">{{location.name}}<span>.</span></div>
+<a href="#contact" class="btn-primary">Shop Now</a>
+</div>
+</nav>
+
+<header class="hero">
+<div class="container">
+<div>
+<span class="limited-badge">&#9889; Limited Time &middot; 40% Off</span>
+<h1>The Skincare Revolution <span>Your Skin's Been Waiting For.</span></h1>
+<p>Clinically-proven results in 14 days. Free shipping on orders $50+. 60-day money-back guarantee — no questions asked.</p>
+<div class="hero-ctas">
+<a href="#contact" class="btn-primary">Shop Now (-40% Launch)</a>
+<a href="#results" class="btn-secondary">See Results</a>
+</div>
+<div class="hero-stars">
+<span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+<span>4.8 / 5 from 12,000+ verified reviews</span>
+</div>
+</div>
+<div class="hero-visual">
+<div class="product-box">
+<div class="ribbon">NEW</div>
+<div class="brand">RADIANT</div>
+<div class="name">Glow<br>Serum</div>
+<div class="tag">30-DAY SUPPLY</div>
+</div>
+<div class="savings-badge"><div class="pct">40%</div><div class="txt">OFF</div></div>
+</div>
+</div>
+</header>
+
+<section class="trust">
+<div class="container">
+<div class="row">
+<div class="item"><span class="ic">&#128666;</span><strong>Free US Shipping</strong><small>On orders $50+</small></div>
+<div class="item"><span class="ic">&#128274;</span><strong>60-Day Guarantee</strong><small>Money-back, no risk</small></div>
+<div class="item"><span class="ic">&#127757;</span><strong>100K+ Customers</strong><small>Across 32 countries</small></div>
+<div class="item"><span class="ic">&#11088;</span><strong>4.8 / 5 Reviews</strong><small>From 12,000+ buyers</small></div>
+</div>
+</div>
+</section>
+
+<section class="problems">
+<div class="container center">
+<span class="section-tag">The Skincare Lie</span>
+<h2 class="section-title">Tired of Products That Don't Work?</h2>
+<p class="section-sub">We get it. You've tried the celebrity-endorsed bottles, the trendy oils, the $200 creams. Skin still won't cooperate.</p>
+<div class="problem-grid">
+<div class="problem-card"><span class="emoji">&#128549;</span><h3>Dullness Won't Quit</h3><p>You've layered serums, tonics, moisturizers. Your skin still looks tired the moment the makeup comes off.</p></div>
+<div class="problem-card"><span class="emoji">&#128563;</span><h3>Breakouts at 30+</h3><p>Adult acne, hormonal flare-ups, weird redness — nothing was supposed to be this hard after high school.</p></div>
+<div class="problem-card"><span class="emoji">&#128176;</span><h3>$$ Down the Drain</h3><p>$500-a-month skincare routines that overpromise, underdeliver, and leave a bathroom full of half-empty bottles.</p></div>
+</div>
+</div>
+</section>
+
+<section class="solution" id="results">
+<div class="container">
+<div class="split">
+<div class="visual"></div>
+<div>
+<span class="section-tag">The Breakthrough</span>
+<h2 class="section-title" style="font-size:42px;text-align:left">Real Ingredients. <br>Real Results. In 14 Days.</h2>
+<p style="color:#6B7280;font-size:17px;margin-bottom:10px">Our clinical-grade formula combines 5 dermatologist-approved actives at salon-strength concentrations — without the salon-strength price.</p>
+<ul class="checklist">
+<li>89% reported brighter, more even tone in 14 days</li>
+<li>76% saw fewer fine lines by week 4</li>
+<li>Free of parabens, sulfates, alcohol, fragrance</li>
+<li>Cruelty-free, vegan, recyclable packaging</li>
+<li>Made in the USA &middot; clinically tested</li>
+</ul>
+<a href="#contact" class="btn-primary" style="margin-top:20px">Try It Risk-Free &rarr;</a>
+</div>
+</div>
+</div>
+</section>
+
+<section class="features">
+<div class="container center">
+<span class="section-tag">What's Inside</span>
+<h2 class="section-title">Why It Works</h2>
+<p class="section-sub">Six ingredients. Zero filler. Each chosen for proven impact at clinically-effective doses.</p>
+<div class="feature-grid">
+<div class="feature-card"><span class="emoji">&#127807;</span><h3>Clean Ingredients</h3><p>No parabens, sulfates, phthalates, or synthetic fragrance. Just what your skin needs.</p></div>
+<div class="feature-card"><span class="emoji">&#9889;</span><h3>Fast-Acting</h3><p>Visible glow in 7 days. Significant change in 14. Independently lab-verified.</p></div>
+<div class="feature-card"><span class="emoji">&#129516;</span><h3>Clinically Tested</h3><p>3rd-party tested with 200+ participants. Real results, real science, not hype.</p></div>
+<div class="feature-card"><span class="emoji">&#129418;</span><h3>Cruelty-Free</h3><p>Never tested on animals. Leaping Bunny certified. Vegan formula.</p></div>
+<div class="feature-card"><span class="emoji">&#9851;</span><h3>Recyclable</h3><p>Glass bottles. Plant-based packaging. Carbon-neutral shipping.</p></div>
+<div class="feature-card"><span class="emoji">&#127482;&#127480;</span><h3>Made in USA</h3><p>Formulated in San Diego. Manufactured in FDA-registered facilities.</p></div>
+</div>
+</div>
+</section>
+
+<section class="steps">
+<div class="container center">
+<span class="section-tag">Easy Routine</span>
+<h2 class="section-title">3 Steps. 60 Seconds. Daily.</h2>
+<div class="steps-row">
+<div class="step"><div class="step-num">1</div><h3>Cleanse</h3><p>Gentle pH-balanced cleanser preps skin without stripping. Morning &amp; night.</p></div>
+<div class="step"><div class="step-num">2</div><h3>Apply</h3><p>2–3 drops of Glow Serum massaged in. Absorbs in 15 seconds. No tackiness.</p></div>
+<div class="step"><div class="step-num">3</div><h3>Glow</h3><p>Wake up to brighter, smoother, healthier skin. See real changes by day 14.</p></div>
+</div>
+</div>
+</section>
+
+<section class="testimonials">
+<div class="container">
+<div class="center">
+<span class="section-tag">Real Reviews</span>
+<h2 class="section-title">100,000+ Glowing Customers</h2>
+<p class="section-sub">Every review is from a verified buyer. No paid endorsements. No staged before-and-afters.</p>
+</div>
+<div class="testimonial-carousel">
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><span class="verified">&#10004; Verified Buyer</span><div class="quote">"I'm 34 and was convinced my skin was just 'aging.' Two weeks in and my husband asked if I'd gotten a facial. Buying again immediately."</div><div class="who">Amanda K.<small>Used for 6 weeks</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><span class="verified">&#10004; Verified Buyer</span><div class="quote">"After years of $80 serums that did nothing, this is the first product I've actually noticed working. The breakouts on my chin? Gone."</div><div class="who">Jasmine R.<small>Used for 3 months</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><span class="verified">&#10004; Verified Buyer</span><div class="quote">"Skeptical at first because of all the hype, but the 60-day guarantee made it a no-brainer. Now I'm on my third bottle. Not going back."</div><div class="who">Michelle T.<small>Subscribe &amp; Save customer</small></div></div>
+</div>
+</div>
+</section>
+
+<section class="stats-section">
+<div class="container">
+<div class="center" style="margin-bottom:46px">
+<h2 style="color:#fff;font-size:clamp(28px,4vw,40px);margin-bottom:10px">The Numbers Don't Lie</h2>
+<p style="color:rgba(255,255,255,.85);font-size:17px">Why 100,000+ people made the switch.</p>
+</div>
+<div class="stats-grid">
+<div class="stat"><div class="num">100K+</div><div class="label">Happy Customers</div></div>
+<div class="stat"><div class="num">12,000</div><div class="label">5-star Reviews</div></div>
+<div class="stat"><div class="num">14 Days</div><div class="label">To Visible Results</div></div>
+<div class="stat"><div class="num">60-Day</div><div class="label">Money-Back Promise</div></div>
+</div>
+</div>
+</section>
+
+<section class="pricing">
+<div class="container center">
+<span class="section-tag">Choose Your Bundle</span>
+<h2 class="section-title">Best Value Pricing</h2>
+<p class="section-sub">Try a single bottle or save big with bundles &amp; subscription. Launch week only — 40% off.</p>
+<div class="pricing-grid">
+<div class="price-card"><h3>Try It</h3><div class="price-card-sub">1 bottle &middot; 30-day supply</div><div class="price">$39<small>$65</small></div><span class="save-tag">SAVE 40%</span><ul><li>1 bottle of Glow Serum</li><li>Free shipping over $50</li><li>60-day money-back guarantee</li><li>One-time purchase</li><li>Ships in 1–2 business days</li></ul><a href="#contact" class="btn-primary">Try 1 Bottle</a></div>
+<div class="price-card featured"><div class="featured-badge">&#127881; Best Value</div><h3>Stock Up</h3><div class="price-card-sub">3 bottles &middot; 90-day supply</div><div class="price">$89<small>$195</small></div><span class="save-tag">SAVE $106</span><ul><li>3 bottles of Glow Serum</li><li>Free express shipping</li><li>FREE gift: travel-size cleanser</li><li>60-day guarantee</li><li>$30/bottle vs $65 retail</li></ul><a href="#contact" class="btn-primary">Get 3-Pack &rarr;</a></div>
+<div class="price-card"><h3>Subscribe &amp; Save</h3><div class="price-card-sub">1 bottle / month &middot; ongoing</div><div class="price">$29<small>$65</small></div><span class="save-tag">SAVE 55%</span><ul><li>1 bottle delivered monthly</li><li>Lowest price guaranteed</li><li>Free shipping always</li><li>Pause or cancel anytime</li><li>Member-only perks</li></ul><a href="#contact" class="btn-primary">Subscribe</a></div>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<div class="container">
+<div class="center">
+<span class="section-tag">FAQs</span>
+<h2 class="section-title">Quick Answers</h2>
+<p class="section-sub">Anything not covered? Email {{location.email}} — we reply within 12 hours.</p>
+</div>
+<div class="faq-wrap">
+<details><summary>When will I see results?<span class="chevron">&#9662;</span></summary><p>Most customers notice brighter, more even skin within 7 days. Significant changes (fine lines, texture, tone) emerge between days 14–30 with consistent twice-daily use.</p></details>
+<details><summary>Is it safe for sensitive skin?<span class="chevron">&#9662;</summary><p>Yes. Our formula is fragrance-free, alcohol-free, and dermatologist-tested. That said, we always recommend a patch test for the first 24 hours.</p></details>
+<details><summary>What's the return policy?<span class="chevron">&#9662;</summary><p>60-day money-back guarantee — even if the bottle is empty. Email us, ship it back at no cost to you, and we'll refund 100%. No questions, no fine print.</p></details>
+<details><summary>Can I combine with other products?<span class="chevron">&#9662;</summary><p>Absolutely. Apply after cleansing and before moisturizer/SPF. Works alongside retinols (alternate nights) and most actives. Avoid stacking with strong acids.</p></details>
+<details><summary>How fast does it ship?<span class="chevron">&#9662;</summary><p>Orders placed before 2pm ET ship the same business day. US delivery: 2–4 business days. International: 7–14 days. Tracking sent via email.</p></details>
+<details><summary>Is it cruelty-free?<span class="chevron">&#9662;</summary><p>Always. Leaping Bunny certified and 100% vegan. We never test on animals and never will.</p></details>
+</div>
+</div>
+</section>
+
+<section class="cta-final">
+<div class="container">
+<div class="center">
+<span class="urgency">&#9889; Launch Week Pricing Ends Soon</span>
+<h2>Claim Your 40% Off Bundle</h2>
+<p class="lead">Fill out your details below and your bundle ships within 24 hours. 60-day guarantee means zero risk on your end.</p>
+</div>
+<form id="contact" method="post">
+<input type="text" name="full_name" placeholder="Full Name" required>
+<div class="form-row">
+<input type="email" name="email" placeholder="Email Address" required>
+<input type="tel" name="phone" placeholder="Phone (for shipping updates)" required>
+</div>
+<input type="text" name="address_line1" placeholder="Shipping Address" required>
+<div class="form-row">
+<input type="text" name="city" placeholder="City" required>
+<input type="text" name="zip" placeholder="ZIP / Postal Code" required>
+</div>
+<div class="form-row">
+<select name="product_variant" required>
+<option value="">Choose Bundle</option>
+<option>1 bottle &middot; 30-day &middot; $39</option>
+<option>3 bottles &middot; 90-day &middot; $89 (Best Value)</option>
+<option>Subscribe &amp; Save &middot; $29/mo</option>
+</select>
+<input type="text" name="promo_code" placeholder="Promo Code (optional)">
+</div>
+<button type="submit">Claim My 40% Discount &rarr;</button>
+</form>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="logo" style="color:#FACC15;margin-bottom:14px">{{location.name}}<span style="color:#BE185D">.</span></div>
+<p>Clinically-proven skincare that actually works. Free shipping, 60-day guarantee, no nonsense.</p>
+<div class="social-row">
+<a href="#" aria-label="Instagram">IG</a>
+<a href="#" aria-label="TikTok">TT</a>
+<a href="#" aria-label="Facebook">FB</a>
+<a href="#" aria-label="Pinterest">PT</a>
+</div>
+</div>
+<div>
+<h4>Shop</h4>
+<a href="#">All Products</a>
+<a href="#">Bundles</a>
+<a href="#">Subscribe &amp; Save</a>
+<a href="#">Gift Cards</a>
+</div>
+<div>
+<h4>Help</h4>
+<a href="#">Shipping &amp; Returns</a>
+<a href="#">FAQ</a>
+<a href="#">Track Order</a>
+<a href="#">Ingredients</a>
+</div>
+<div>
+<h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<p>{{location.fullAddress}}</p>
+</div>
+</div>
+<div class="copyright">&copy; {{location.name}}. All rights reserved. &nbsp;&middot;&nbsp; Cruelty-free &middot; Vegan &middot; Made with love.</div>
+</div>
+</footer>
+
+</body>
+</html>

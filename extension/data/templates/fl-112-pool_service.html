@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} | Pool Service & Maintenance</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;color:#0F172A;background:#ECFEFF;line-height:1.65}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(8,145,178,.5)}50%{box-shadow:0 0 0 22px rgba(8,145,178,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes ripple{0%{transform:scale(.8);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+@keyframes bubbles{0%{transform:translateY(20px);opacity:0}50%{opacity:.7}100%{transform:translateY(-100px);opacity:0}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);padding:14px 0;border-bottom:1px solid #CFFAFE;box-shadow:0 2px 12px rgba(8,145,178,.06)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;color:#164E63}
+.logo-mark{width:40px;height:40px;background:linear-gradient(135deg,#0891B2,#06B6D4);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;box-shadow:0 4px 12px rgba(8,145,178,.3)}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.nav-cta .phone{color:#0891B2;font-weight:700;font-size:15px}
+.nav .btn-primary{padding:10px 22px;font-size:14px;animation:none}
+
+/* BUTTONS */
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#0891B2,#06B6D4);color:#fff;font-weight:700;padding:16px 32px;border-radius:50px;transition:all .3s;border:none;cursor:pointer;font-family:inherit;font-size:15px;animation:pulse 2.5s infinite;box-shadow:0 8px 20px rgba(8,145,178,.25)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(8,145,178,.4)}
+.btn-secondary{display:inline-block;background:#fff;color:#0891B2;font-weight:700;padding:14px 30px;border-radius:50px;border:2px solid #0891B2;transition:all .3s}
+.btn-secondary:hover{background:#0891B2;color:#fff}
+.btn-gold{background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#164E63}
+.btn-gold:hover{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#164E63 0%,#0891B2 30%,#06B6D4 60%,#0E7490 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:90px 0 130px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;bottom:-30px;left:0;right:0;height:80px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path d='M0,60 Q300,0 600,60 T1200,60 L1200,120 L0,120 Z' fill='%23ECFEFF'/></svg>") repeat-x;background-size:1200px 100%}
+.hero::after{content:"";position:absolute;top:20%;right:8%;width:14px;height:14px;background:rgba(251,191,36,.6);border-radius:50%;box-shadow:0 0 0 0 rgba(251,191,36,.6);animation:ripple 3s ease-out infinite}
+.hero-inner{position:relative;z-index:2;max-width:820px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(251,191,36,.18);color:#FBBF24;padding:8px 18px;border-radius:50px;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:22px;border:1px solid rgba(251,191,36,.4);animation:fadeInUp .8s ease}
+.hero h1{font-size:clamp(38px,5.4vw,64px);font-weight:900;line-height:1.05;margin-bottom:22px;animation:fadeInUp .8s .1s both;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:#FBBF24;display:inline-block}
+.hero-sub{font-size:20px;color:#CFFAFE;margin-bottom:32px;animation:fadeInUp .8s .2s both;max-width:640px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;animation:fadeInUp .8s .3s both}
+.trust-strip{margin-top:42px;display:flex;gap:28px;flex-wrap:wrap;animation:fadeInUp .8s .4s both}
+.trust-pill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);backdrop-filter:blur(6px);padding:10px 18px;border-radius:50px;font-size:14px;font-weight:500;border:1px solid rgba(255,255,255,.2)}
+
+/* BADGE BAR */
+.badges{background:#fff;padding:34px 0;border-bottom:1px solid #CFFAFE}
+.badges-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.badge-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.badge-icon{font-size:30px}
+.badge-num{font-size:32px;font-weight:900;color:#0891B2;line-height:1}
+.badge-label{font-size:13px;color:#475569;font-weight:600}
+
+/* SECTIONS */
+.section{padding:90px 0;position:relative}
+.section-head{text-align:center;max-width:740px;margin:0 auto 56px}
+.section-head h2{font-size:clamp(30px,4vw,46px);font-weight:900;color:#164E63;margin-bottom:14px;line-height:1.15;letter-spacing:-.01em}
+.section-head p{font-size:18px;color:#475569}
+.tag{display:inline-block;color:#0891B2;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;background:#CFFAFE;padding:6px 16px;border-radius:50px}
+
+/* PAIN */
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pain-card{background:#fff;padding:34px 28px;border-radius:24px;border:2px solid #CFFAFE;transition:all .35s;position:relative;overflow:hidden}
+.pain-card::before{content:"";position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(8,145,178,.07),transparent);border-radius:50%}
+.pain-card:hover{transform:translateY(-8px);border-color:#0891B2;box-shadow:0 24px 40px rgba(8,145,178,.15)}
+.pain-icon{font-size:46px;margin-bottom:14px;display:inline-block;animation:float 4s ease-in-out infinite}
+.pain-card:nth-child(2) .pain-icon{animation-delay:.5s}
+.pain-card:nth-child(3) .pain-icon{animation-delay:1s}
+.pain-card h3{font-size:21px;margin-bottom:10px;color:#164E63;font-weight:700}
+.pain-card p{color:#475569}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#fff 0%,#ECFEFF 100%)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.split h2{font-size:42px;color:#164E63;margin-bottom:18px}
+.split p{font-size:17px;color:#475569}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:13px 0 13px 40px;position:relative;font-size:17px;border-bottom:1px solid #CFFAFE;color:#1F2937}
+.checklist li::before{content:"";position:absolute;left:0;top:14px;width:26px;height:26px;background:linear-gradient(135deg,#0891B2,#06B6D4);border-radius:50%}
+.checklist li::after{content:"✓";position:absolute;left:7px;top:13px;color:#fff;font-weight:900;font-size:14px}
+.pool-visual{aspect-ratio:1.1;background:linear-gradient(180deg,#06B6D4 0%,#0891B2 40%,#164E63 100%);border-radius:20px;position:relative;overflow:hidden;box-shadow:0 30px 60px rgba(8,145,178,.3)}
+.pool-visual::before{content:"";position:absolute;top:0;left:-50%;width:200%;height:60%;background:repeating-linear-gradient(90deg,transparent,transparent 30px,rgba(255,255,255,.08) 30px,rgba(255,255,255,.08) 60px);animation:wave 8s linear infinite}
+.pool-visual::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(255,255,255,.25),transparent 60%)}
+.bubble{position:absolute;width:14px;height:14px;background:rgba(255,255,255,.5);border-radius:50%;animation:bubbles 5s ease-in infinite}
+.bubble:nth-child(1){left:20%;bottom:20%;animation-delay:0s}
+.bubble:nth-child(2){left:50%;bottom:30%;width:20px;height:20px;animation-delay:1.5s}
+.bubble:nth-child(3){left:75%;bottom:15%;width:10px;height:10px;animation-delay:3s}
+.pool-visual .emoji{position:absolute;font-size:120px;left:50%;top:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 8px 20px rgba(0,0,0,.3));z-index:2;animation:float 5s ease-in-out infinite}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.service-card{background:#fff;padding:32px 26px;border-radius:20px;transition:all .35s;border:1px solid #CFFAFE;position:relative}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(8,145,178,.14)}
+.service-icon{width:60px;height:60px;background:linear-gradient(135deg,#0891B2,#06B6D4);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:18px;color:#fff;box-shadow:0 6px 16px rgba(8,145,178,.3)}
+.service-card h3{font-size:19px;margin-bottom:8px;color:#164E63;font-weight:700}
+.service-card p{color:#475569;font-size:15px}
+
+/* STEPS */
+.steps{background:linear-gradient(135deg,#164E63 0%,#0891B2 100%);color:#fff;position:relative;overflow:hidden}
+.steps::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 80%,rgba(251,191,36,.1),transparent 50%)}
+.steps .section-head h2{color:#fff}
+.steps .section-head p{color:#CFFAFE}
+.steps .tag{background:rgba(251,191,36,.2);color:#FBBF24}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative;z-index:2}
+.step{text-align:center;padding:30px 22px;background:rgba(255,255,255,.06);border-radius:20px;border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);transition:all .35s}
+.step:hover{background:rgba(255,255,255,.1);transform:translateY(-6px)}
+.step-num{width:72px;height:72px;background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#164E63;border-radius:50%;font-weight:900;font-size:30px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;animation:float 5s ease-in-out infinite}
+.step:nth-child(2) .step-num{animation-delay:.5s}
+.step:nth-child(3) .step-num{animation-delay:1s}
+.step h3{font-size:22px;margin-bottom:8px;color:#fff;font-weight:700}
+.step p{color:#CFFAFE}
+
+/* TESTIMONIALS */
+.testimonials-scroll{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 24px}
+.test-card{flex:0 0 360px;scroll-snap-align:start;background:#fff;padding:32px;border-radius:20px;border:1px solid #CFFAFE;box-shadow:0 8px 24px rgba(8,145,178,.08);position:relative}
+.stars{color:#FBBF24;font-size:18px;margin-bottom:12px;letter-spacing:2px}
+.test-card blockquote{font-size:16px;color:#1F2937;line-height:1.65;margin-bottom:20px;font-style:italic}
+.test-author{display:flex;align-items:center;gap:12px}
+.test-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0891B2,#FBBF24);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.test-name{font-weight:700;font-size:15px;color:#164E63}
+.test-meta{font-size:13px;color:#64748B}
+
+/* STATS */
+.stats{background:#fff}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-box{padding:36px 20px;background:linear-gradient(135deg,#ECFEFF,#CFFAFE);border-radius:20px;transition:all .3s}
+.stat-box:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(8,145,178,.15)}
+.stat-num{font-size:50px;font-weight:900;color:#0891B2;line-height:1;letter-spacing:-.02em}
+.stat-label{margin-top:8px;color:#475569;font-size:15px;font-weight:600}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+.price-card{background:#fff;border-radius:24px;padding:36px 30px;border:2px solid #CFFAFE;transition:all .35s;position:relative;display:flex;flex-direction:column}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(8,145,178,.15)}
+.price-card.featured{border-color:#FBBF24;background:linear-gradient(180deg,#fff,#FEF3C7);transform:scale(1.04);box-shadow:0 18px 40px rgba(251,191,36,.2)}
+.price-card.featured:hover{transform:scale(1.04) translateY(-6px)}
+.featured-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#164E63;font-weight:900;font-size:12px;padding:6px 18px;border-radius:50px;letter-spacing:1px;box-shadow:0 4px 12px rgba(251,191,36,.4)}
+.price-name{font-size:22px;font-weight:800;color:#164E63;margin-bottom:6px}
+.price-amount{font-size:48px;font-weight:900;color:#0891B2;margin:10px 0;letter-spacing:-.02em}
+.price-amount small{font-size:18px;color:#64748B;font-weight:600}
+.price-desc{color:#64748B;margin-bottom:20px;font-size:14px}
+.price-features{list-style:none;margin-bottom:26px;flex-grow:1}
+.price-features li{padding:9px 0 9px 28px;position:relative;font-size:15px;color:#374151}
+.price-features li::before{content:"💧";position:absolute;left:0;font-size:15px}
+.price-card .btn-primary{width:100%;text-align:center;animation:none}
+
+/* FAQ */
+.faq{max-width:820px;margin:0 auto}
+.faq details{background:#fff;border-radius:16px;margin-bottom:14px;border:2px solid #CFFAFE;overflow:hidden;transition:all .3s}
+.faq details[open]{border-color:#0891B2;box-shadow:0 10px 24px rgba(8,145,178,.12)}
+.faq summary{padding:22px 26px;font-weight:700;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none;color:#164E63}
+.faq summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .35s;color:#0891B2;font-weight:900;font-size:22px}
+.faq details[open] .chevron{transform:rotate(180deg)}
+.faq-body{padding:0 26px 24px;color:#475569;line-height:1.7}
+
+/* CTA FORM */
+.cta-section{background:linear-gradient(135deg,#0891B2 0%,#06B6D4 50%,#164E63 100%);background-size:200% 200%;animation:gradient 10s ease infinite;color:#fff;padding:100px 0;position:relative;overflow:hidden}
+.cta-section::before{content:"";position:absolute;top:0;left:0;right:0;height:60px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path d='M0,60 Q300,120 600,60 T1200,60 L1200,0 L0,0 Z' fill='%23ECFEFF'/></svg>") repeat-x;background-size:1200px 60px}
+.cta-section h2{font-size:clamp(32px,4.5vw,48px);text-align:center;margin:30px 0 12px;color:#fff}
+.cta-section .sub{text-align:center;font-size:18px;max-width:680px;margin:0 auto 40px;color:#CFFAFE}
+.form-card{max-width:680px;margin:0 auto;background:#fff;color:#111827;border-radius:24px;padding:44px;box-shadow:0 30px 60px rgba(0,0,0,.25);position:relative;z-index:2}
+.form-card h3{font-size:24px;color:#164E63;margin-bottom:8px;text-align:center;font-weight:800}
+.form-card .sub-form{color:#64748B;text-align:center;font-size:15px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-card input,.form-card select{width:100%;padding:14px 16px;border-radius:12px;border:2px solid #E5E7EB;background:#ECFEFF;color:#111827;font-size:15px;font-family:inherit;margin-bottom:14px;transition:all .2s}
+.form-card input:focus,.form-card select:focus{outline:none;border-color:#0891B2;background:#fff}
+.form-card .btn-primary{width:100%;padding:18px;font-size:16px;animation:pulse 2.5s infinite}
+.form-disclaimer{text-align:center;color:#64748B;font-size:13px;margin-top:14px}
+
+/* FOOTER */
+.footer{background:#164E63;color:#CFFAFE;padding:60px 0 26px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px}
+.footer h4{color:#fff;font-size:15px;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.footer a,.footer p{display:block;color:#CFFAFE;padding:4px 0;font-size:14px}
+.footer a:hover{color:#FBBF24}
+.social-row{display:flex;gap:10px;margin-top:12px}
+.social-row a{width:36px;height:36px;background:#0891B2;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;font-weight:700}
+.social-row a:hover{background:#FBBF24;color:#164E63}
+.copy{border-top:1px solid #0891B2;padding-top:24px;text-align:center;font-size:13px}
+
+@media (max-width:768px){
+  .badges-grid,.pain-grid,.services-grid,.steps-grid,.stats-grid,.pricing-grid{grid-template-columns:1fr}
+  .split,.footer-grid{grid-template-columns:1fr;gap:32px}
+  .form-row{grid-template-columns:1fr}
+  .section{padding:60px 0}
+  .hero{padding:60px 0 100px}
+  .price-card.featured{transform:none}
+  .price-card.featured:hover{transform:translateY(-6px)}
+  .stats-grid,.badges-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-cta .phone{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo"><span class="logo-mark">💧</span> {{location.name}}</a>
+    <div class="nav-cta">
+      <a href="tel:{{location.phoneRaw}}" class="phone">📞 {{location.phone}}</a>
+      <a href="#contact" class="btn-primary">Free Quote</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow">🏆 Trusted by 800+ {{location.city}} Homeowners</span>
+    <h1>Crystal-Clear Pool. <em>Zero Hassle.</em></h1>
+    <p class="hero-sub">Weekly pool service, chemical balancing, equipment repair, seasonal openings/closings. Set it and forget it.</p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn-primary btn-gold">Get My Free Pool Quote</a>
+      <a href="tel:{{location.phoneRaw}}" class="btn-secondary">Call {{location.phone}}</a>
+    </div>
+    <div class="trust-strip">
+      <span class="trust-pill">🏅 CPO Certified</span>
+      <span class="trust-pill">📋 Licensed & Insured</span>
+      <span class="trust-pill">⭐ 4.9★ (412 reviews)</span>
+      <span class="trust-pill">🏛️ BBB A+ Rated</span>
+    </div>
+  </div>
+</section>
+
+<section class="badges">
+  <div class="container badges-grid">
+    <div class="badge-item"><div class="badge-icon">🏊</div><div class="badge-num">800+</div><div class="badge-label">Pools Serviced Weekly</div></div>
+    <div class="badge-item"><div class="badge-icon">⭐</div><div class="badge-num">4.9★</div><div class="badge-label">412 Reviews</div></div>
+    <div class="badge-item"><div class="badge-icon">🏆</div><div class="badge-num">CPO</div><div class="badge-label">Certified Operators</div></div>
+    <div class="badge-item"><div class="badge-icon">🛡️</div><div class="badge-num">15+</div><div class="badge-label">Years Experience</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">The Pool-Owner Struggle</span>
+      <h2>Owning a Pool Shouldn't Feel Like a Second Job.</h2>
+      <p>Every weekend should be a swim day — not a maintenance day.</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <span class="pain-icon">🟢</span>
+        <h3>The Dreaded Green Pool</h3>
+        <p>Algae blooms overnight. You panic-buy shock at the hardware store and pray. Sometimes it clears. Often it doesn't.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">🧪</span>
+        <h3>Chemistry Roulette</h3>
+        <p>pH, alkalinity, free chlorine, CYA, calcium — get one wrong and everything snowballs. Test strips only tell half the story.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">💸</span>
+        <h3>Equipment Surprises</h3>
+        <p>Pump dies mid-July. Repair guy can't come for 2 weeks. Quote arrives — $1,800. No options, no transparency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <span class="tag">The Refreshing Solution</span>
+        <h2>One Call. One Crew. Every Week.</h2>
+        <p>Our certified pool technicians arrive weekly with everything needed to keep your water perfect. You get back your weekends — we handle the science.</p>
+        <ul class="checklist">
+          <li>Same dedicated technician every single visit</li>
+          <li>Lab-grade water testing (not strips)</li>
+          <li>All chemicals included — no upcharges</li>
+          <li>Photo report after every service</li>
+          <li>Equipment monitored before it fails</li>
+        </ul>
+        <div style="margin-top:30px"><a href="#contact" class="btn-primary">Get My Free Quote</a></div>
+      </div>
+      <div class="pool-visual">
+        <span class="bubble"></span>
+        <span class="bubble"></span>
+        <span class="bubble"></span>
+        <div class="emoji">🏊‍♀️</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Our Services</span>
+      <h2>Everything Your Pool Needs. Under One Roof.</h2>
+      <p>From weekly maintenance to equipment overhauls — we do it all in-house.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card"><div class="service-icon">🫧</div><h3>Weekly Maintenance</h3><p>Skim, brush, vacuum, empty baskets, backwash. Every visit, every time, never missed.</p></div>
+      <div class="service-card"><div class="service-icon">🧪</div><h3>Chemical Balancing</h3><p>Professional testing & precise dosing. We balance pH, alkalinity, sanitizer, and stabilizer to perfection.</p></div>
+      <div class="service-card"><div class="service-icon">⚙️</div><h3>Equipment Repair</h3><p>Pumps, filters, heaters, salt cells, automation. Diagnostics included with every service call.</p></div>
+      <div class="service-card"><div class="service-icon">🧱</div><h3>Tile & Wall Cleaning</h3><p>Calcium and scale removal at the waterline. Pressure-wash decks and pool walls to like-new.</p></div>
+      <div class="service-card"><div class="service-icon">🌿</div><h3>Green-Pool Recovery</h3><p>Got algae chaos? Our 5-step recovery clears most pools in 72 hours with no draining needed.</p></div>
+      <div class="service-card"><div class="service-icon">❄️</div><h3>Opening & Closing</h3><p>Seasonal start-up and winterization. Cover, antifreeze, equipment storage — by the book.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section steps">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">How It Works</span>
+      <h2>Hassle-Free Pool Care in 3 Easy Steps</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step"><div class="step-num">1</div><h3>Free On-Site Quote</h3><p>We inspect your pool, equipment, and surroundings. Honest pricing locked in — no surprises later.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Pick Your Plan</h3><p>Weekly Standard, Premium, or Elite. Cancel anytime, no contracts, no fine print.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Enjoy Your Pool</h3><p>Same tech each week. Photos & water report after every visit. You just dive in.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#ECFEFF">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Pool Owners Love Us</span>
+      <h2>What Customers Say After 1 Season</h2>
+    </div>
+    <div class="testimonials-scroll">
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Switched after my old service kept leaving green tint at the steps. {{location.name}} cleared it in one week — and my pool has been picture-perfect for 6 months. Same tech every Tuesday."</blockquote>
+        <div class="test-author"><div class="test-avatar">JL</div><div><div class="test-name">Janice L.</div><div class="test-meta">Premium Plan · In-Ground 22k gal</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Our heater quit in May. They diagnosed, ordered the part, installed in 48 hours — and gave me three repair options with prices upfront. Refreshingly honest."</blockquote>
+        <div class="test-author"><div class="test-avatar">MD</div><div><div class="test-name">Mike D.</div><div class="test-meta">Standard Plan · Equipment Repair</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"The weekly photo report is genius — I can see my pool is spotless even when I'm traveling. Worth every penny. Best service decision I've made in years."</blockquote>
+        <div class="test-author"><div class="test-avatar">CR</div><div><div class="test-name">Carla R.</div><div class="test-meta">Elite Plan · Spa Combo</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-num">800+</div><div class="stat-label">Pools Serviced Weekly</div></div>
+      <div class="stat-box"><div class="stat-num">15+</div><div class="stat-label">Years Experience</div></div>
+      <div class="stat-box"><div class="stat-num">72hr</div><div class="stat-label">Green-Pool Recovery</div></div>
+      <div class="stat-box"><div class="stat-num">100%</div><div class="stat-label">Satisfaction Guarantee</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Service Plans</span>
+      <h2>Simple, Honest Monthly Pricing</h2>
+      <p>All plans include weekly visits + chemicals. No contracts, no setup fees.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Standard</div>
+        <div class="price-amount">$135<small>/mo</small></div>
+        <div class="price-desc">Weekly visit essentials</div>
+        <ul class="price-features">
+          <li>Weekly visits (4/mo)</li>
+          <li>Skim, brush, vacuum</li>
+          <li>Empty baskets & pump</li>
+          <li>Chemical testing & dosing</li>
+          <li>All basic chemicals included</li>
+          <li>Photo report each visit</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Start Standard</a>
+      </div>
+      <div class="price-card featured">
+        <span class="featured-tag">MOST POPULAR</span>
+        <div class="price-name">Premium</div>
+        <div class="price-amount">$185<small>/mo</small></div>
+        <div class="price-desc">Total water + equipment care</div>
+        <ul class="price-features">
+          <li>Everything in Standard +</li>
+          <li>Tile/waterline cleaning monthly</li>
+          <li>Filter clean (quarterly)</li>
+          <li>Backwash & DE recharge</li>
+          <li>Equipment health checks</li>
+          <li>Priority repair scheduling</li>
+          <li>10% off equipment parts</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Start Premium</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Elite</div>
+        <div class="price-amount">$245<small>/mo</small></div>
+        <div class="price-desc">Premium + concierge service</div>
+        <ul class="price-features">
+          <li>Everything in Premium +</li>
+          <li>2 visits per week</li>
+          <li>Spa included if connected</li>
+          <li>Free seasonal open/close</li>
+          <li>20% off equipment parts</li>
+          <li>24/7 emergency hotline</li>
+          <li>Salt cell cleaning</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Start Elite</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#ECFEFF">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">FAQ</span>
+      <h2>Pool Service Questions, Answered</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Do I need to be home for service visits? <span class="chevron">▾</span></summary>
+        <div class="faq-body">No. Most clients aren't home. We need access to the pool gate (lockbox or code), and we leave a photo + chemical report after every visit so you know exactly what was done.</div>
+      </details>
+      <details>
+        <summary>What if my pool turns green between visits? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Call us immediately. Premium and Elite plans include free emergency re-treatment for algae blooms. Standard plans get a discounted rate. We typically clear most green pools in 48–72 hours.</div>
+      </details>
+      <details>
+        <summary>Are chemicals really included in the plan price? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes. Chlorine, pH adjusters, alkalinity buffers, stabilizer, and algaecide are all included at normal usage levels. Specialty treatments (heavy phosphate removal, metal sequestrant, etc.) are quoted transparently before applied.</div>
+      </details>
+      <details>
+        <summary>Will the same technician service my pool? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes — that's a core promise. Your pool gets the same dedicated tech every week. They learn your pool's quirks and catch issues before they become emergencies. Backup techs are cross-trained for vacations.</div>
+      </details>
+      <details>
+        <summary>Can I pause service during winter? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Absolutely. Many clients downshift to biweekly or pause entirely Nov–March. We'll handle winterization at the start and opening in spring (included free for Elite plans).</div>
+      </details>
+      <details>
+        <summary>What if equipment breaks? Do I pay extra? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Diagnostics are always free with any plan. Parts and labor are quoted transparently before any work begins. Plan members get discounts on parts (10% Premium, 20% Elite) and priority scheduling.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Get Your Free Pool Quote Today</h2>
+    <p class="sub">Free on-site assessment. Honest pricing. No obligation. Start enjoying your pool again.</p>
+    <div class="form-card">
+      <h3>Tell Us About Your Pool</h3>
+      <p class="sub-form">We'll respond within 1 business hour with a custom quote.</p>
+      <form>
+        <div class="form-row">
+          <input type="text" name="full_name" placeholder="Full Name *" required>
+          <input type="tel" name="phone" placeholder="Phone *" required>
+        </div>
+        <input type="email" name="email" placeholder="Email Address *" required>
+        <input type="text" name="address" placeholder="Pool Address *" required>
+        <div class="form-row">
+          <select name="pool_type" required>
+            <option value="">Pool Type *</option>
+            <option value="In-ground">In-ground</option>
+            <option value="Above-ground">Above-ground</option>
+            <option value="Spa">Spa / Hot Tub</option>
+            <option value="Combo">Pool + Spa Combo</option>
+          </select>
+          <select name="pool_size" required>
+            <option value="">Pool Size *</option>
+            <option value="<15k gal">Under 15,000 gal</option>
+            <option value="15-25k gal">15,000–25,000 gal</option>
+            <option value=">25k gal">Over 25,000 gal</option>
+            <option value="Not sure">Not sure</option>
+          </select>
+        </div>
+        <select name="service_needed" required>
+          <option value="">Service Needed *</option>
+          <option value="Weekly maintenance">Weekly maintenance</option>
+          <option value="One-time clean">One-time clean</option>
+          <option value="Equipment repair">Equipment repair</option>
+          <option value="Green pool recovery">Green-pool recovery</option>
+          <option value="Opening/closing">Seasonal opening/closing</option>
+          <option value="Not sure">Not sure — recommend</option>
+        </select>
+        <button type="submit" class="btn-primary">Get My Free Pool Quote</button>
+        <p class="form-disclaimer">💧 No spam · No obligation · Same-day response</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:12px;color:#fff"><span class="logo-mark">💧</span> {{location.name}}</div>
+        <p>Crystal-clear pool service for {{location.city}} homeowners. CPO-certified technicians, transparent pricing, weekly photo reports.</p>
+        <div class="social-row">
+          <a href="#">f</a><a href="#">ig</a><a href="#">in</a><a href="#">yt</a>
+        </div>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <a href="#">Weekly Maintenance</a>
+        <a href="#">Equipment Repair</a>
+        <a href="#">Green-Pool Recovery</a>
+        <a href="#">Open / Close</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Hours</h4>
+        <p>Mon–Fri: 7am–6pm</p>
+        <p>Sat: 8am–4pm</p>
+        <p>24/7 Elite hotline</p>
+      </div>
+    </div>
+    <div class="copy">© {{location.name}}. All rights reserved. · CPO Certified · Licensed & Insured · BBB A+</div>
+  </div>
+</footer>
+
+</body>
+</html>

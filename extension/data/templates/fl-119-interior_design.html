@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Interior Design Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',sans-serif;background:#FFFBEB;color:#1C1917;line-height:1.7;-webkit-font-smoothing:antialiased;font-size:16px}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;font-weight:500;line-height:1.15;color:#1C1917;letter-spacing:-.5px}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 28px}
+.btn-primary{display:inline-block;background:#78350F;color:#FFFBEB;font-family:'Manrope',sans-serif;font-weight:500;padding:16px 40px;letter-spacing:2px;font-size:13px;text-transform:uppercase;border:1px solid #78350F;transition:all .35s ease;cursor:pointer;border-radius:0}
+.btn-primary:hover{background:transparent;color:#78350F;letter-spacing:3px}
+.btn-secondary{display:inline-block;background:transparent;color:#FFFBEB;font-family:'Manrope',sans-serif;font-weight:500;padding:16px 36px;letter-spacing:2px;font-size:13px;text-transform:uppercase;border:1px solid #FBBF24;transition:all .35s ease}
+.btn-secondary:hover{background:#FBBF24;color:#451A03;letter-spacing:3px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.4)}50%{box-shadow:0 0 0 20px rgba(251,191,36,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes shimmer{0%,100%{opacity:.6}50%{opacity:1}}
+nav{position:sticky;top:0;background:rgba(255,251,235,.97);backdrop-filter:blur(12px);z-index:100;padding:22px 0;border-bottom:1px solid rgba(120,53,15,.1)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:#451A03;letter-spacing:1px;font-style:italic}
+.logo span{color:#78350F;font-weight:700}
+nav .btn-primary{padding:11px 24px;font-size:11px;letter-spacing:1.8px}
+.hero{background:linear-gradient(135deg,#451A03 0%,#78350F 40%,#92400E 70%,#451A03 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#FFFBEB;padding:130px 0 150px;position:relative;overflow:hidden;text-align:center}
+.hero::before{content:'';position:absolute;top:50%;left:10%;width:300px;height:300px;background:radial-gradient(circle,rgba(251,191,36,.18),transparent 70%);border-radius:50%;animation:float 8s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-150px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(251,191,36,.1),transparent 70%);border-radius:50%}
+.hero .container{position:relative;z-index:2}
+.hero-tag{display:inline-block;font-family:'Cormorant Garamond',serif;font-style:italic;color:#FBBF24;font-size:18px;letter-spacing:8px;margin-bottom:22px;opacity:0;animation:fadeInUp .8s ease forwards;text-transform:uppercase}
+.hero h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(48px,7vw,96px);margin-bottom:22px;opacity:0;animation:fadeInUp 1s ease .15s forwards;color:#FFFBEB;letter-spacing:-1px;line-height:1.05}
+.hero h1 em{font-style:italic;color:#FBBF24}
+.hero p{font-size:clamp(17px,1.8vw,21px);max-width:680px;margin:0 auto 42px;opacity:0;animation:fadeInUp 1s ease .3s forwards;color:rgba(255,251,235,.88);font-weight:300;font-family:'Cormorant Garamond',serif;font-style:italic}
+.hero-ctas{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .45s forwards}
+.trust-strip{margin-top:70px;display:flex;gap:48px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .6s forwards;font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(255,251,235,.65);font-size:14px;letter-spacing:3px;text-transform:uppercase}
+.divider{display:flex;align-items:center;justify-content:center;gap:18px;margin:24px 0 40px}
+.divider::before,.divider::after{content:'';height:1px;width:60px;background:#78350F}
+.divider .dot{width:8px;height:8px;background:#FBBF24;border-radius:50%}
+section{padding:120px 0;position:relative}
+.section-tag{font-family:'Cormorant Garamond',serif;font-style:italic;color:#78350F;font-size:16px;letter-spacing:5px;text-transform:uppercase;text-align:center;display:block;margin-bottom:14px}
+.section-title{text-align:center;font-size:clamp(34px,5vw,58px);margin-bottom:14px;font-weight:500}
+.section-title em{font-style:italic;color:#78350F}
+.section-sub{text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:#57534E;max-width:680px;margin:0 auto 60px;font-weight:400}
+.trust{background:#FFFBEB;padding:50px 0;border-top:1px solid rgba(120,53,15,.12);border-bottom:1px solid rgba(120,53,15,.12)}
+.trust .row{display:flex;flex-wrap:wrap;justify-content:space-around;align-items:center;gap:30px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:#78350F;letter-spacing:3px;text-transform:uppercase;text-align:center}
+.problems{background:#FEF3C7}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.problem-card{background:#FFFBEB;padding:48px 36px;text-align:center;transition:all .4s ease;border:1px solid rgba(120,53,15,.1);position:relative}
+.problem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#78350F,#FBBF24);transform:scaleX(0);transform-origin:left;transition:transform .4s ease}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(120,53,15,.12);border-color:#FBBF24}
+.problem-card:hover::before{transform:scaleX(1)}
+.problem-card .emoji{font-size:48px;margin-bottom:22px;display:block;font-family:'Cormorant Garamond',serif}
+.problem-card h3{font-size:26px;margin-bottom:12px;color:#451A03}
+.problem-card p{color:#57534E;font-size:15px;line-height:1.7}
+.solution{background:#FFFBEB}
+.solution .split{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.solution h2{text-align:left;margin-bottom:18px}
+.solution .visual{height:560px;background:linear-gradient(135deg,#78350F,#451A03);position:relative;overflow:hidden;box-shadow:0 40px 80px rgba(69,26,3,.3)}
+.solution .visual::before{content:'';position:absolute;inset:24px;border:1px solid #FBBF24;pointer-events:none}
+.solution .visual::after{content:'\1F3DB';font-size:160px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);animation:float 8s ease-in-out infinite}
+.solution .visual .corner{position:absolute;width:60px;height:60px;border:1px solid #FBBF24}
+.solution .visual .c1{top:24px;left:24px;border-right:none;border-bottom:none}
+.solution .visual .c2{top:24px;right:24px;border-left:none;border-bottom:none}
+.solution .visual .c3{bottom:24px;left:24px;border-right:none;border-top:none}
+.solution .visual .c4{bottom:24px;right:24px;border-left:none;border-top:none}
+.solution .visual .label{position:absolute;bottom:40px;left:0;right:0;text-align:center;color:#FBBF24;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;letter-spacing:6px}
+.checklist{list-style:none;margin-top:26px}
+.checklist li{padding:16px 0 16px 44px;position:relative;font-size:17px;color:#1C1917;border-bottom:1px solid rgba(120,53,15,.1)}
+.checklist li::before{content:'\2756';position:absolute;left:0;top:15px;width:28px;height:28px;color:#FBBF24;font-size:20px;text-align:center;line-height:28px}
+.services{background:#FEF3C7}
+.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.service-card{background:#FFFBEB;padding:50px 38px;transition:all .4s ease;border-top:3px solid #78350F;position:relative}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(120,53,15,.18);border-top-color:#FBBF24}
+.service-card .num{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:#FBBF24;letter-spacing:4px;margin-bottom:10px;text-transform:uppercase}
+.service-card h3{font-size:30px;margin-bottom:14px;color:#451A03;font-style:italic}
+.service-card .price{font-family:'Cormorant Garamond',serif;font-size:38px;color:#78350F;font-weight:500;margin-bottom:6px}
+.service-card .price small{font-size:14px;color:#92400E;font-style:italic;font-family:'Manrope',sans-serif;font-weight:400}
+.service-card ul{list-style:none;margin:24px 0 28px;padding-top:20px;border-top:1px solid rgba(120,53,15,.15)}
+.service-card ul li{padding:8px 0 8px 24px;position:relative;font-size:14.5px;color:#57534E}
+.service-card ul li::before{content:'\2014';position:absolute;left:0;color:#FBBF24}
+.gallery{background:#FFFBEB}
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,280px);gap:18px}
+.gallery-item{position:relative;overflow:hidden;cursor:pointer;transition:all .4s ease}
+.gallery-item:hover{transform:scale(.98)}
+.gallery-item:hover .gal-overlay{opacity:1}
+.gal-1{background:linear-gradient(135deg,#78350F,#92400E)}
+.gal-2{background:linear-gradient(135deg,#FBBF24,#D97706);grid-column:span 1;grid-row:span 1}
+.gal-3{background:linear-gradient(135deg,#451A03,#78350F)}
+.gal-4{background:linear-gradient(135deg,#D97706,#92400E)}
+.gal-5{background:linear-gradient(135deg,#92400E,#451A03)}
+.gal-6{background:linear-gradient(135deg,#FEF3C7,#FBBF24)}
+.gallery-item::before{content:'';position:absolute;inset:18px;border:1px solid rgba(255,251,235,.3);pointer-events:none}
+.gallery-item .gal-content{position:absolute;bottom:30px;left:30px;right:30px;color:#FFFBEB;z-index:2}
+.gallery-item .gal-num{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;letter-spacing:3px;color:#FBBF24;text-transform:uppercase;margin-bottom:6px}
+.gallery-item .gal-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;line-height:1.2}
+.gallery-item.gal-6 .gal-content{color:#451A03}
+.gallery-item.gal-6 .gal-num{color:#78350F}
+.gal-overlay{position:absolute;inset:0;background:rgba(69,26,3,.85);display:flex;align-items:center;justify-content:center;color:#FBBF24;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;letter-spacing:4px;text-transform:uppercase;opacity:0;transition:opacity .4s ease;z-index:3}
+.steps{background:#FEF3C7}
+.steps-row{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:60px;position:relative}
+.step{text-align:center;position:relative}
+.step-num{width:64px;height:64px;border-radius:50%;background:#FFFBEB;border:2px solid #78350F;color:#78350F;font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;font-style:italic;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;transition:all .35s ease}
+.step:hover .step-num{background:#78350F;color:#FBBF24;transform:rotate(8deg)}
+.step h3{font-size:22px;margin-bottom:8px;color:#451A03;font-style:italic}
+.step p{color:#57534E;font-size:14px;line-height:1.6}
+.authority{background:#451A03;color:#FFFBEB;padding:90px 0;position:relative;overflow:hidden}
+.authority::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(251,191,36,.1),transparent 70%);border-radius:50%}
+.authority .container{position:relative;z-index:2}
+.authority .section-tag{color:#FBBF24}
+.authority h2{color:#FFFBEB}
+.authority h2 em{color:#FBBF24}
+.authority-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;margin-top:50px;text-align:center}
+.auth-card{padding:34px 22px;border:1px solid rgba(251,191,36,.2);transition:all .35s ease}
+.auth-card:hover{border-color:#FBBF24;background:rgba(251,191,36,.05)}
+.auth-card .auth-num{font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:600;color:#FBBF24;line-height:1;font-style:italic}
+.auth-card .auth-label{margin-top:12px;font-size:14px;color:rgba(255,251,235,.78);letter-spacing:2px;text-transform:uppercase;font-family:'Cormorant Garamond',serif;font-style:italic}
+.testimonials{background:#FFFBEB}
+.testimonial-carousel{display:flex;gap:30px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 4px 28px;scrollbar-width:thin}
+.testimonial{flex:0 0 min(440px,90%);scroll-snap-align:start;background:#FEF3C7;padding:48px 38px;border-left:3px solid #FBBF24;position:relative}
+.testimonial::before{content:'\201C';position:absolute;top:14px;right:24px;font-family:'Cormorant Garamond',serif;font-size:80px;color:#FBBF24;opacity:.35;line-height:1}
+.testimonial .quote{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:#1C1917;margin-bottom:24px;line-height:1.5;font-weight:400}
+.testimonial .who{font-family:'Manrope',sans-serif;font-weight:600;color:#451A03;font-size:14px;letter-spacing:2px;text-transform:uppercase}
+.testimonial .who small{display:block;color:#92400E;font-weight:400;font-style:italic;font-family:'Cormorant Garamond',serif;margin-top:6px;font-size:15px;letter-spacing:0;text-transform:none}
+.faq{background:#FEF3C7}
+.faq-wrap{max-width:820px;margin:0 auto}
+details{background:#FFFBEB;margin-bottom:16px;border:1px solid rgba(120,53,15,.12);overflow:hidden;transition:all .3s ease}
+details[open]{box-shadow:0 18px 40px rgba(120,53,15,.12);border-color:#78350F}
+summary{padding:26px 32px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:22px;color:#451A03;display:flex;justify-content:space-between;align-items:center;list-style:none;font-style:italic}
+summary::-webkit-details-marker{display:none}
+.chevron{font-size:22px;color:#78350F;transition:transform .35s ease}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 32px 26px;color:#57534E;font-size:15.5px;line-height:1.7}
+.cta-final{background:linear-gradient(135deg,#451A03 0%,#78350F 50%,#451A03 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#FFFBEB;padding:120px 0;position:relative;overflow:hidden}
+.cta-final::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(251,191,36,.12),transparent 70%);border-radius:50%}
+.cta-final h2{font-size:clamp(36px,5vw,58px);margin-bottom:14px;color:#FFFBEB;text-align:center;font-weight:500}
+.cta-final h2 em{color:#FBBF24;font-style:italic}
+.cta-final .lead{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;color:rgba(255,251,235,.88);max-width:620px;margin:0 auto 50px;text-align:center}
+form{max-width:720px;margin:0 auto;background:#FFFBEB;padding:48px 44px;box-shadow:0 40px 80px rgba(0,0,0,.4);position:relative;z-index:2}
+form .form-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:28px;color:#451A03;text-align:center;margin-bottom:6px;font-weight:500}
+form .form-sub{text-align:center;color:#78350F;font-size:13px;margin-bottom:30px;letter-spacing:2px;text-transform:uppercase}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+form input,form select{width:100%;padding:15px 18px;border:1px solid rgba(120,53,15,.2);font-family:'Manrope',sans-serif;font-size:15px;background:#FFFBEB;color:#1C1917;transition:all .25s ease;margin-bottom:16px;border-radius:0}
+.form-row input,.form-row select{margin-bottom:0}
+form input:focus,form select:focus{outline:none;border-color:#78350F;background:#fff}
+form button{width:100%;background:#78350F;color:#FFFBEB;border:none;padding:18px;font-family:'Manrope',sans-serif;font-weight:500;font-size:13px;cursor:pointer;letter-spacing:3px;text-transform:uppercase;transition:all .35s ease;margin-top:8px;animation:pulse 2.4s ease-in-out infinite}
+form button:hover{background:#451A03;letter-spacing:4px}
+footer{background:#1C1917;color:#A8A29E;padding:70px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:50px}
+footer h4{color:#FBBF24;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;margin-bottom:20px;font-weight:500}
+footer p,footer a{color:#A8A29E;font-size:14.5px;line-height:2;display:block}
+footer a:hover{color:#FBBF24}
+.social-row{display:flex;gap:14px;margin-top:22px}
+.social-row a{width:40px;height:40px;border-radius:50%;background:transparent;border:1px solid rgba(251,191,36,.3);display:flex;align-items:center;justify-content:center;color:#FBBF24;transition:all .3s ease;font-size:12px;letter-spacing:1px}
+.social-row a:hover{background:#FBBF24;color:#451A03;border-color:#FBBF24}
+.copyright{border-top:1px solid #292524;padding-top:28px;text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;letter-spacing:1px}
+@media (max-width:768px){
+.problem-grid,.service-grid,.authority-grid,.footer-grid{grid-template-columns:1fr}
+.gallery-grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,220px)}
+.steps-row{grid-template-columns:repeat(2,1fr);gap:30px}
+.solution .split{grid-template-columns:1fr;gap:50px}
+.form-row{grid-template-columns:1fr;gap:0}
+.hero{padding:80px 0 100px}
+section{padding:80px 0}
+form{padding:32px 24px}
+.trust-strip{gap:24px}
+.solution .visual{height:400px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<div class="logo">{{location.name}}<span>.</span></div>
+<a href="#contact" class="btn-primary">Begin Project</a>
+</div>
+</nav>
+
+<header class="hero">
+<div class="container">
+<span class="hero-tag">Interior Design Studio</span>
+<h1>Spaces That Tell<br><em>Your Story.</em></h1>
+<p>Award-winning full-service interior design. Residential and commercial. Featured in Architectural Digest and Elle Decor.</p>
+<div class="hero-ctas">
+<a href="#contact" class="btn-primary">Request a Consultation</a>
+<a href="#portfolio" class="btn-secondary">View Portfolio</a>
+</div>
+<div class="trust-strip">
+<span>Architectural Digest</span>
+<span>Elle Decor</span>
+<span>AD100 Recognized</span>
+<span>NCIDQ Certified</span>
+</div>
+</div>
+</header>
+
+<section class="trust">
+<div class="container">
+<div class="row">
+<span>Est. 2009 in {{location.city}}</span>
+<span>200+ Completed Projects</span>
+<span>15+ Industry Awards</span>
+<span>Residential &middot; Commercial &middot; Hospitality</span>
+</div>
+</div>
+</section>
+
+<section class="problems">
+<div class="container">
+<span class="section-tag">The Reality of Most Spaces</span>
+<h2 class="section-title">Beautiful Homes Don't <em>Happen by Accident.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<div class="problem-grid">
+<div class="problem-card"><span class="emoji">&#127968;</span><h3>It Doesn't Feel Like You</h3><p>You moved in years ago, but the space still feels like someone else lives here. Generic, disjointed, uninspiring.</p></div>
+<div class="problem-card"><span class="emoji">&#129488;</span><h3>Overwhelmed by Choices</h3><p>Endless Pinterest boards, contradictory advice, fear of expensive mistakes. Decision fatigue has stalled the whole project.</p></div>
+<div class="problem-card"><span class="emoji">&#9203;</span><h3>Trade-Coordination Nightmare</h3><p>Contractors, vendors, electricians, fabric houses — managing all of it alongside your real job has become a part-time job.</p></div>
+</div>
+</div>
+</section>
+
+<section class="solution">
+<div class="container">
+<div class="split">
+<div>
+<span class="section-tag" style="text-align:left">Our Approach</span>
+<h2 class="section-title" style="text-align:left;font-size:48px">Editorial Design.<br><em>Personal to You.</em></h2>
+<p style="color:#57534E;font-size:17px;margin-bottom:6px;font-family:'Cormorant Garamond',serif;font-style:italic">Every space we design begins with a single question — how do you want to feel when you walk through the door? Everything else follows.</p>
+<ul class="checklist">
+<li>White-glove project management from concept to install day</li>
+<li>Trade-only access to over 400 vendors and artisans</li>
+<li>3D renderings &amp; floor plans before a single dollar is spent</li>
+<li>Custom millwork, soft goods, and furniture procurement</li>
+<li>Single point of contact through every phase</li>
+</ul>
+</div>
+<div class="visual">
+<div class="corner c1"></div><div class="corner c2"></div>
+<div class="corner c3"></div><div class="corner c4"></div>
+<div class="label">— FROM CONCEPT TO COMPLETION —</div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="services">
+<div class="container">
+<span class="section-tag">Services &amp; Investment</span>
+<h2 class="section-title">Three Ways to <em>Work With Us.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<p class="section-sub">From a focused single-day consult to a multi-year whole-home transformation. Pricing reflects scope and complexity.</p>
+<div class="service-grid">
+<div class="service-card"><div class="num">— I —</div><h3>Design Consultation</h3><div class="price">$1,500<small> &middot; one day</small></div><ul><li>4-hour in-home walkthrough</li><li>Color palette &amp; mood direction</li><li>Furniture &amp; layout recommendations</li><li>Trade source list (private)</li><li>Follow-up summary document</li></ul><a href="#contact" class="btn-primary" style="font-size:11px;padding:11px 22px">Inquire</a></div>
+<div class="service-card"><div class="num">— II —</div><h3>Full Room Design</h3><div class="price">$5,500<small> &middot; starting</small></div><ul><li>Concept board &amp; 3D renderings</li><li>Custom floor plan &amp; elevations</li><li>Procurement of all FF&amp;E</li><li>Trade-only pricing passed to client</li><li>Install day coordination</li></ul><a href="#contact" class="btn-primary" style="font-size:11px;padding:11px 22px">Inquire</a></div>
+<div class="service-card"><div class="num">— III —</div><h3>Full Home Design</h3><div class="price">$25,000+</div><ul><li>Multi-room &amp; whole-home design</li><li>Architectural &amp; renovation oversight</li><li>Custom millwork &amp; finishes</li><li>Soft-goods, lighting, art curation</li><li>White-glove install &amp; styling</li></ul><a href="#contact" class="btn-primary" style="font-size:11px;padding:11px 22px">Inquire</a></div>
+</div>
+</div>
+</section>
+
+<section class="gallery" id="portfolio">
+<div class="container">
+<span class="section-tag">Selected Work</span>
+<h2 class="section-title">Recent <em>Projects.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<p class="section-sub">A glimpse into spaces we've designed for clients across the country.</p>
+<div class="gallery-grid">
+<div class="gallery-item gal-1"><div class="gal-content"><div class="gal-num">No. 001</div><div class="gal-title">Brooklyn Loft Renovation</div></div><div class="gal-overlay">View Project</div></div>
+<div class="gallery-item gal-2"><div class="gal-content"><div class="gal-num">No. 002</div><div class="gal-title">Hamptons Beach House</div></div><div class="gal-overlay">View Project</div></div>
+<div class="gallery-item gal-3"><div class="gal-content"><div class="gal-num">No. 003</div><div class="gal-title">Soho Pied-&agrave;-Terre</div></div><div class="gal-overlay">View Project</div></div>
+<div class="gallery-item gal-4"><div class="gal-content"><div class="gal-num">No. 004</div><div class="gal-title">Aspen Mountain Retreat</div></div><div class="gal-overlay">View Project</div></div>
+<div class="gallery-item gal-5"><div class="gal-content"><div class="gal-num">No. 005</div><div class="gal-title">Tribeca Penthouse</div></div><div class="gal-overlay">View Project</div></div>
+<div class="gallery-item gal-6"><div class="gal-content"><div class="gal-num">No. 006</div><div class="gal-title">Boutique Hotel, Carmel</div></div><div class="gal-overlay">View Project</div></div>
+</div>
+</div>
+</section>
+
+<section class="steps">
+<div class="container">
+<span class="section-tag">Our Process</span>
+<h2 class="section-title">From First Call to <em>Final Reveal.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<div class="steps-row">
+<div class="step"><div class="step-num">I</div><h3>Discovery</h3><p>An intimate call to understand the space, the lifestyle, the dream.</p></div>
+<div class="step"><div class="step-num">II</div><h3>Concept</h3><p>Mood boards, palettes, and 3D renderings that capture the vision.</p></div>
+<div class="step"><div class="step-num">III</div><h3>Refinement</h3><p>We iterate together until every detail is exactly right.</p></div>
+<div class="step"><div class="step-num">IV</div><h3>Install Day</h3><p>Our team manages every vendor, every delivery, every install.</p></div>
+<div class="step"><div class="step-num">V</div><h3>The Reveal</h3><p>You walk in. Speechless. We've been waiting for this moment.</p></div>
+</div>
+</div>
+</section>
+
+<section class="authority">
+<div class="container">
+<span class="section-tag">Recognition</span>
+<h2 class="section-title">A Studio With <em>Standing.</em></h2>
+<div class="divider"><span class="dot" style="background:#FBBF24"></span></div>
+<p class="section-sub" style="color:rgba(255,251,235,.75)">Industry recognition reflects the standards we hold every project to.</p>
+<div class="authority-grid">
+<div class="auth-card"><div class="auth-num">15+</div><div class="auth-label">Industry Awards</div></div>
+<div class="auth-card"><div class="auth-num">AD100</div><div class="auth-label">Architectural Digest</div></div>
+<div class="auth-card"><div class="auth-num">NCIDQ</div><div class="auth-label">Certified Designers</div></div>
+<div class="auth-card"><div class="auth-num">200+</div><div class="auth-label">Completed Projects</div></div>
+</div>
+</div>
+</section>
+
+<section class="testimonials">
+<div class="container">
+<span class="section-tag">Client Voices</span>
+<h2 class="section-title">In Their <em>Own Words.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<p class="section-sub">From whole-home transformations to single-room refreshes — what clients say after the dust settles.</p>
+<div class="testimonial-carousel">
+<div class="testimonial"><div class="quote">We had lived in our Tribeca apartment for eight years and never felt at home. Six months after working with the studio, we walked in and cried. The way they translated who we are into the space — it's something we'll never forget.</div><div class="who">Eleanor &amp; Marcus W.<small>Full Home Design &middot; Tribeca</small></div></div>
+<div class="testimonial"><div class="quote">The attention to detail was beyond anything I'd imagined possible. From the custom millwork to the hand-selected lighting, every single element was considered. And the project came in on time and on budget.</div><div class="who">Sarah K.<small>Hamptons Beach House &middot; Full Home</small></div></div>
+<div class="testimonial"><div class="quote">Professional from the first call to the final install. They made what felt like an overwhelming project completely effortless on our end. The hotel has been featured in three publications since. Worth every dollar.</div><div class="who">Patricia &amp; David L.<small>Boutique Hotel &middot; Carmel</small></div></div>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<div class="container">
+<span class="section-tag">Considerations</span>
+<h2 class="section-title">Common <em>Questions.</em></h2>
+<div class="divider"><span class="dot"></span></div>
+<div class="faq-wrap">
+<details><summary>What does a typical project investment look like?<span class="chevron">&#9662;</span></summary><p>Full-room projects begin at $5,500 in design fees, with furnishings typically ranging from $25,000 to $150,000+ depending on scope. Whole-home projects start at $25,000 in fees and scale with complexity. We provide a transparent fee proposal after our initial discovery call.</p></details>
+<details><summary>How long does a typical project take?<span class="chevron">&#9662;</summary><p>A single-room design typically takes 12 to 20 weeks from concept to install. Whole-home projects range from 6 to 18 months. Renovation projects depend on construction timelines, which we manage on your behalf.</p></details>
+<details><summary>Do you work outside of {{location.city}}?<span class="chevron">&#9662;</summary><p>Absolutely. Approximately 40% of our projects are out-of-state, including current work in California, Florida, Colorado, and abroad. Travel costs are included transparently in your project proposal.</p></details>
+<details><summary>What's the difference between your service tiers?<span class="chevron">&#9662;</summary><p>The Consultation is a focused day to give you clear direction. Full Room Design is end-to-end design, procurement, and install of a single space. Full Home Design encompasses multiple rooms, often paired with renovation, with comprehensive oversight throughout.</p></details>
+<details><summary>Do you handle the renovation/construction side as well?<span class="chevron">&#9662;</summary><p>We do not act as general contractors, but we partner with a vetted network of GCs and architects in major markets and oversee the design coordination throughout construction. For most clients, this is the ideal middle ground.</p></details>
+<details><summary>How do we get started?<span class="chevron">&#9662;</summary><p>Complete the inquiry form below and our studio coordinator will reach out within 48 hours to schedule a complimentary 30-minute discovery call. From there, we'll outline the right service tier and next steps.</p></details>
+</div>
+</div>
+</section>
+
+<section class="cta-final">
+<div class="container">
+<h2>Let's Begin <em>Something Beautiful.</em></h2>
+<p class="lead">Tell us about your space and your vision. Our studio coordinator will be in touch within 48 hours.</p>
+<form id="contact" method="post">
+<div class="form-title">Project Inquiry</div>
+<div class="form-sub">Confidential &middot; No Obligation</div>
+<input type="text" name="full_name" placeholder="Full Name" required>
+<div class="form-row">
+<input type="email" name="email" placeholder="Email Address" required>
+<input type="tel" name="phone" placeholder="Phone Number" required>
+</div>
+<div class="form-row">
+<select name="project_type" required>
+<option value="">Project Type</option>
+<option>Residential</option>
+<option>Commercial</option>
+<option>Hospitality</option>
+</select>
+<select name="project_scope" required>
+<option value="">Project Scope</option>
+<option>Single Room</option>
+<option>Multiple Rooms</option>
+<option>Whole Home</option>
+<option>Renovation / New Build</option>
+</select>
+</div>
+<input type="text" name="project_location" placeholder="Project Location (City, State)" required>
+<div class="form-row">
+<select name="budget_range" required>
+<option value="">Investment Range</option>
+<option>Under $25,000</option>
+<option>$25,000 – $75,000</option>
+<option>$75,000 – $200,000</option>
+<option>$200,000+</option>
+</select>
+<select name="timeline" required>
+<option value="">Desired Timeline</option>
+<option>ASAP &middot; within 3 months</option>
+<option>Within 6 months</option>
+<option>6 – 12 months</option>
+<option>Just exploring</option>
+</select>
+</div>
+<button type="submit">Submit Inquiry</button>
+</form>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="logo" style="color:#FBBF24;margin-bottom:18px">{{location.name}}<span style="color:#78350F">.</span></div>
+<p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;line-height:1.7;max-width:380px">An interior design studio crafting spaces that reflect the lives lived within them. Based in {{location.city}}. Working worldwide.</p>
+<div class="social-row">
+<a href="#" aria-label="Instagram">IG</a>
+<a href="#" aria-label="Pinterest">PT</a>
+<a href="#" aria-label="Houzz">HZ</a>
+<a href="#" aria-label="LinkedIn">IN</a>
+</div>
+</div>
+<div>
+<h4>Studio</h4>
+<a href="#">Our Approach</a>
+<a href="#">Services</a>
+<a href="#">Portfolio</a>
+<a href="#">Press</a>
+</div>
+<div>
+<h4>Resources</h4>
+<a href="#">Journal</a>
+<a href="#">Process Guide</a>
+<a href="#">Trade Program</a>
+<a href="#">FAQs</a>
+</div>
+<div>
+<h4>Visit</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<p>{{location.fullAddress}}</p>
+</div>
+</div>
+<div class="copyright">&copy; {{location.name}}. All rights reserved. &middot; Designed with intention.</div>
+</div>
+</footer>
+
+</body>
+</html>

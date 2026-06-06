@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Mortgage Pre-Approval in 60 Seconds</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800;900&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:#0F172A;background:#F1F5F9;line-height:1.6}
+h1,h2,h3,h4{font-family:'Manrope',sans-serif;font-weight:800;line-height:1.15;color:#0F172A}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 20px rgba(16,185,129,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes countUp{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+/* NAV */
+nav{position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);z-index:100;padding:16px 0;border-bottom:1px solid #E2E8F0}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Manrope';font-weight:900;font-size:22px;color:#0F172A}
+.logo span{color:#10B981}
+.nav-cta{background:#10B981;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;transition:all .3s}
+.nav-cta:hover{background:#059669;transform:translateY(-2px)}
+/* HERO */
+.hero{background:linear-gradient(-45deg,#0F172A,#020617,#1E293B,#0F172A);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:90px 0 110px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-50px;right:-50px;width:300px;height:300px;background:radial-gradient(circle,rgba(16,185,129,.25),transparent);border-radius:50%;animation:float 6s ease-in-out infinite}
+.hero-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:50px;align-items:center;position:relative;z-index:2}
+.badge-top{display:inline-block;background:rgba(16,185,129,.15);color:#10B981;padding:8px 16px;border-radius:50px;font-size:13px;font-weight:600;margin-bottom:20px;border:1px solid rgba(16,185,129,.3);opacity:0;animation:fadeInUp .6s ease forwards}
+.hero h1{font-size:58px;color:#fff;margin-bottom:20px;opacity:0;animation:fadeInUp .8s .1s ease forwards}
+.hero p.sub{font-size:20px;color:#CBD5E1;margin-bottom:32px;opacity:0;animation:fadeInUp .8s .2s ease forwards}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;opacity:0;animation:fadeInUp .8s .3s ease forwards}
+.btn-primary{background:#10B981;color:#fff;padding:16px 30px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;transition:all .3s;animation:pulse 2.5s infinite}
+.btn-primary:hover{background:#059669;transform:translateY(-3px)}
+.btn-secondary{background:transparent;color:#fff;padding:16px 30px;border-radius:10px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.3);transition:all .3s}
+.btn-secondary:hover{border-color:#10B981;color:#10B981}
+.trust-strip{margin-top:30px;display:flex;gap:24px;flex-wrap:wrap;opacity:0;animation:fadeInUp .8s .4s ease forwards}
+.trust-strip span{color:#94A3B8;font-size:14px}
+.trust-strip strong{color:#10B981}
+.rate-card{background:#fff;color:#0F172A;border-radius:18px;padding:30px;box-shadow:0 30px 60px rgba(0,0,0,.4);opacity:0;animation:fadeInUp .8s .4s ease forwards}
+.rate-card h4{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#64748B;margin-bottom:8px}
+.rate-big{font-size:54px;font-weight:900;color:#10B981;line-height:1}
+.rate-card .apr{color:#64748B;font-size:13px;margin:4px 0 20px}
+.rate-row{display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #E2E8F0;font-size:14px}
+.rate-row strong{font-weight:700}
+/* TRUST BAR */
+.trust-bar{background:#fff;padding:36px 0;border-bottom:1px solid #E2E8F0}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.trust-grid .stat{font-family:'Manrope';font-size:32px;font-weight:900;color:#0F172A}
+.trust-grid .stat span{color:#10B981}
+.trust-grid .label{font-size:13px;color:#64748B;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+/* SECTIONS */
+section{padding:80px 0}
+.section-head{text-align:center;max-width:700px;margin:0 auto 50px}
+.section-head .eyebrow{color:#10B981;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.section-head h2{font-size:42px;margin-bottom:14px}
+.section-head p{color:#475569;font-size:18px}
+/* PROBLEM */
+.problems{background:#fff}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.problem-card{background:#F8FAFC;border-radius:14px;padding:32px;border-top:4px solid #DC2626;transition:transform .3s,box-shadow .3s}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(15,23,42,.08)}
+.problem-card .icon{font-size:36px;margin-bottom:14px}
+.problem-card h3{font-size:20px;margin-bottom:10px}
+.problem-card p{color:#64748B;font-size:15px}
+/* SOLUTION */
+.solution-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.solution-text h2{font-size:40px;margin-bottom:18px}
+.solution-text>p{color:#475569;margin-bottom:24px;font-size:17px}
+.benefit-list{list-style:none}
+.benefit-list li{padding:12px 0;display:flex;gap:14px;align-items:flex-start;font-size:16px;color:#0F172A}
+.benefit-list li::before{content:"✓";background:#10B981;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:14px}
+.solution-visual{background:linear-gradient(135deg,#0F172A,#1E293B);border-radius:20px;padding:40px;color:#fff;position:relative;overflow:hidden}
+.solution-visual::after{content:"";position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(16,185,129,.3),transparent);border-radius:50%;bottom:-60px;right:-60px}
+.visual-row{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.1);position:relative;z-index:2}
+.visual-row span:first-child{color:#94A3B8}
+.visual-row span:last-child{color:#10B981;font-weight:700}
+.visual-savings{margin-top:20px;padding:20px;background:rgba(16,185,129,.15);border-radius:12px;text-align:center;position:relative;z-index:2}
+.visual-savings .big{font-size:38px;font-weight:900;color:#10B981}
+/* LOAN TYPES */
+.loans{background:#fff}
+.loan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.loan-card{background:#F8FAFC;border-radius:14px;padding:30px;transition:all .3s;border:2px solid transparent}
+.loan-card:hover{border-color:#10B981;transform:translateY(-6px);box-shadow:0 20px 40px rgba(16,185,129,.15)}
+.loan-card .emoji{font-size:34px;margin-bottom:12px}
+.loan-card h3{font-size:20px;margin-bottom:8px}
+.loan-card p{color:#64748B;font-size:14px;margin-bottom:12px}
+.loan-card .tag{font-size:12px;color:#10B981;font-weight:700;text-transform:uppercase}
+/* HOW */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative}
+.step{text-align:center;background:#fff;padding:36px 24px;border-radius:14px;box-shadow:0 4px 20px rgba(15,23,42,.06);position:relative}
+.step-num{width:60px;height:60px;background:#10B981;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Manrope';font-weight:900;font-size:24px;margin:0 auto 16px}
+.step h3{font-size:20px;margin-bottom:8px}
+.step p{color:#64748B;font-size:15px}
+/* TESTIMONIALS */
+.testimonials{background:#fff}
+.t-scroll{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 4px 20px;scrollbar-width:thin}
+.t-card{flex:0 0 380px;scroll-snap-align:start;background:#F8FAFC;border-radius:16px;padding:30px;border-left:4px solid #10B981}
+.stars{color:#FBBF24;font-size:20px;margin-bottom:14px}
+.t-card blockquote{font-size:16px;color:#1E293B;font-style:italic;margin-bottom:18px;line-height:1.6}
+.t-author{display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.t-author strong{display:block;font-size:15px}
+.t-author span{color:#64748B;font-size:13px}
+/* RESULTS */
+.results{background:#0F172A;color:#fff}
+.results .section-head h2{color:#fff}
+.results .section-head p{color:#94A3B8}
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.result-num{font-family:'Manrope';font-size:54px;font-weight:900;color:#10B981;animation:countUp 1s ease}
+.result-label{color:#CBD5E1;font-size:15px;margin-top:6px}
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+.price-card{background:#fff;border-radius:18px;padding:36px 30px;border:2px solid #E2E8F0;transition:all .3s;display:flex;flex-direction:column}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(15,23,42,.08)}
+.price-card.popular{border-color:#10B981;transform:scale(1.04);box-shadow:0 20px 50px rgba(16,185,129,.2);position:relative}
+.popular-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#10B981;color:#fff;padding:6px 18px;border-radius:50px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.price-card h3{font-size:22px;margin-bottom:8px}
+.price-card .price{font-family:'Manrope';font-size:42px;font-weight:900;color:#0F172A;margin:10px 0}
+.price-card .price span{font-size:16px;color:#64748B;font-weight:500}
+.price-features{list-style:none;margin:20px 0;flex-grow:1}
+.price-features li{padding:8px 0;color:#475569;font-size:14px;display:flex;gap:10px}
+.price-features li::before{content:"✓";color:#10B981;font-weight:700}
+/* FAQ */
+.faq{background:#fff}
+.faq-list{max-width:800px;margin:0 auto}
+details{background:#F8FAFC;border-radius:12px;margin-bottom:12px;overflow:hidden;border:1px solid #E2E8F0}
+summary{padding:20px 24px;cursor:pointer;font-weight:600;font-size:16px;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .3s;color:#10B981;font-weight:900}
+details[open] .chevron{transform:rotate(180deg)}
+details[open] summary{background:#F1F5F9}
+details p{padding:0 24px 20px;color:#475569;font-size:15px}
+/* CTA FORM */
+.cta-section{background:linear-gradient(-45deg,#0F172A,#020617,#10B981,#0F172A);background-size:300% 300%;animation:gradient 15s ease infinite;color:#fff;padding:90px 0}
+.cta-wrap{max-width:680px;margin:0 auto;text-align:center}
+.cta-section h2{font-size:46px;color:#fff;margin-bottom:14px}
+.cta-section>.cta-wrap>p{color:#CBD5E1;font-size:18px;margin-bottom:34px}
+form{background:#fff;border-radius:18px;padding:36px;text-align:left;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+form h3{color:#0F172A;font-size:22px;margin-bottom:8px}
+form>p{color:#64748B;font-size:14px;margin-bottom:22px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+input,select{width:100%;padding:14px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-family:inherit;font-size:15px;color:#0F172A;background:#F8FAFC;transition:border .2s}
+input:focus,select:focus{outline:none;border-color:#10B981;background:#fff}
+.form-full{margin-bottom:14px}
+button[type=submit]{width:100%;background:#10B981;color:#fff;padding:18px;border:none;border-radius:10px;font-weight:700;font-size:17px;cursor:pointer;font-family:inherit;transition:all .3s;margin-top:8px}
+button[type=submit]:hover{background:#059669;transform:translateY(-2px)}
+.form-foot{text-align:center;color:#64748B;font-size:12px;margin-top:14px}
+/* FOOTER */
+footer{background:#020617;color:#94A3B8;padding:50px 0 24px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:30px}
+.footer-grid h4{color:#fff;font-size:16px;margin-bottom:14px}
+.footer-grid a{color:#94A3B8;text-decoration:none;display:block;padding:4px 0;font-size:14px}
+.footer-grid a:hover{color:#10B981}
+.social-row{display:flex;gap:12px;margin-top:14px}
+.social-row a{width:36px;height:36px;background:rgba(255,255,255,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0}
+.social-row a:hover{background:#10B981;color:#fff}
+.copyright{border-top:1px solid #1E293B;padding-top:20px;text-align:center;font-size:13px}
+.disclaimer{font-size:11px;color:#64748B;margin-top:10px;line-height:1.5;max-width:900px;margin-left:auto;margin-right:auto}
+@media (max-width:768px){
+.hero-grid,.solution-grid,.footer-grid{grid-template-columns:1fr}
+.problem-grid,.loan-grid,.how-grid,.results-grid,.pricing-grid,.trust-grid{grid-template-columns:1fr 1fr}
+.results-grid{grid-template-columns:1fr 1fr}
+.hero h1{font-size:38px}
+.section-head h2,.cta-section h2{font-size:30px}
+.form-row{grid-template-columns:1fr}
+.price-card.popular{transform:none}
+}
+</style>
+</head>
+<body>
+<nav><div class="container nav-inner"><div class="logo">{{location.name}} <span>★</span></div><a href="#contact" class="nav-cta">Get My Rate →</a></div></nav>
+
+<section class="hero"><div class="container"><div class="hero-grid">
+<div>
+<span class="badge-top">★ NMLS LICENSED • BBB A+ RATED</span>
+<h1>Get Pre-Approved in 60 Seconds. Lock the Lowest Rate.</h1>
+<p class="sub">Compare 50+ lenders in one place. No credit pull required. Trusted by 12,000+ homebuyers nationwide.</p>
+<div class="hero-ctas"><a href="#contact" class="btn-primary">See My Rate (Free) →</a><a href="#how" class="btn-secondary">How It Works</a></div>
+<div class="trust-strip"><span>✓ <strong>No</strong> hard credit pull</span><span>✓ <strong>60-sec</strong> pre-approval</span><span>✓ <strong>$0</strong> application fee</span></div>
+</div>
+<div class="rate-card">
+<h4>Today's Lowest Rate</h4>
+<div class="rate-big">5.87%</div>
+<div class="apr">30-yr fixed • 6.02% APR</div>
+<div class="rate-row"><span>15-yr fixed</span><strong>5.12%</strong></div>
+<div class="rate-row"><span>FHA 30-yr</span><strong>5.95%</strong></div>
+<div class="rate-row"><span>VA 30-yr</span><strong>5.79%</strong></div>
+<div class="rate-row"><span>Jumbo 30-yr</span><strong>6.18%</strong></div>
+</div>
+</div></div></section>
+
+<section class="trust-bar"><div class="container"><div class="trust-grid">
+<div><div class="stat"><span>$2.4B</span></div><div class="label">Loans Funded</div></div>
+<div><div class="stat"><span>12,000+</span></div><div class="label">Happy Buyers</div></div>
+<div><div class="stat"><span>4.9★</span></div><div class="label">Customer Rating</div></div>
+<div><div class="stat"><span>50+</span></div><div class="label">Lender Network</div></div>
+</div></div></section>
+
+<section class="problems"><div class="container">
+<div class="section-head"><div class="eyebrow">The Mortgage Maze</div><h2>Buying a home shouldn't feel like this</h2><p>Most buyers leave $40,000+ on the table by trusting the wrong lender. Here's where it goes wrong.</p></div>
+<div class="problem-grid">
+<div class="problem-card"><div class="icon">📉</div><h3>Overpaying by 0.5%+</h3><p>Banks only show their own products. Without shopping multiple lenders, you'll likely pay $200-$400 extra every single month.</p></div>
+<div class="problem-card"><div class="icon">⏳</div><h3>Slow, Bureaucratic Closings</h3><p>Big banks average 47 days to close. Sellers reject offers that drag. You lose the home you wanted.</p></div>
+<div class="problem-card"><div class="icon">🤐</div><h3>Hidden Fees & Surprises</h3><p>Junk fees, padded origination charges, and surprise PMI add up to $4,000-$12,000 at closing. Nobody warns you.</p></div>
+</div></div></section>
+
+<section><div class="container"><div class="solution-grid">
+<div class="solution-text">
+<div class="eyebrow" style="color:#10B981;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px">Why {{location.name}}</div>
+<h2>One application. 50+ lenders. The lowest rate, guaranteed.</h2>
+<p>We're independent mortgage brokers — not loan officers tied to a single bank. That means we shop your file across our entire lender network and bring you the best rate, not the most profitable one for us.</p>
+<ul class="benefit-list">
+<li>Compare 50+ wholesale lenders in one place — banks can't match wholesale pricing</li>
+<li>Soft credit pull only — your score won't drop a single point during shopping</li>
+<li>Average close time: 18 days (vs. 47-day industry average)</li>
+<li>Rate Lock Guarantee — if rates drop, we re-lock you lower</li>
+<li>One dedicated loan officer from application to closing day</li>
+</ul>
+</div>
+<div class="solution-visual">
+<h3 style="color:#fff;margin-bottom:18px">Your Potential Savings</h3>
+<div class="visual-row"><span>Bank Rate (30-yr)</span><span style="color:#F87171">6.62%</span></div>
+<div class="visual-row"><span>Our Rate (30-yr)</span><span>5.87%</span></div>
+<div class="visual-row"><span>Monthly savings</span><span>$218/mo</span></div>
+<div class="visual-row"><span>Total interest saved</span><span>$78,480</span></div>
+<div class="visual-savings"><div class="big">$78,480</div><div style="color:#CBD5E1;font-size:13px;margin-top:4px">Lifetime savings on a $400k loan</div></div>
+</div>
+</div></div></section>
+
+<section class="loans"><div class="container">
+<div class="section-head"><div class="eyebrow">Loan Programs</div><h2>Every loan type. One trusted broker.</h2><p>Whether you're a first-time buyer or refinancing your fifth investment property — we have a program built for you.</p></div>
+<div class="loan-grid">
+<div class="loan-card"><div class="emoji">🏠</div><h3>Conventional</h3><p>3% down for first-time buyers. Best rates for 740+ credit. Most flexible terms.</p><div class="tag">From 5.87%</div></div>
+<div class="loan-card"><div class="emoji">🏛️</div><h3>FHA Loans</h3><p>3.5% down. Credit scores from 580. Government-insured. First-time buyer friendly.</p><div class="tag">From 5.95%</div></div>
+<div class="loan-card"><div class="emoji">🎖️</div><h3>VA Loans</h3><p>$0 down for veterans and active military. No PMI ever. Lowest possible rates.</p><div class="tag">From 5.79%</div></div>
+<div class="loan-card"><div class="emoji">💎</div><h3>Jumbo Loans</h3><p>Loans above $766k. Competitive rates for high-net-worth buyers. Up to $5M.</p><div class="tag">From 6.18%</div></div>
+<div class="loan-card"><div class="emoji">🔄</div><h3>Refinance</h3><p>Rate-and-term, cash-out, streamline. Lower your payment or pull equity.</p><div class="tag">No appraisal options</div></div>
+<div class="loan-card"><div class="emoji">🏡</div><h3>HELOC</h3><p>Home equity line of credit. Tap your equity for renovations, debt, or investments.</p><div class="tag">From 7.25%</div></div>
+</div></div></section>
+
+<section id="how" style="background:#F8FAFC"><div class="container">
+<div class="section-head"><div class="eyebrow">Simple Process</div><h2>From application to keys in 3 steps</h2><p>Most buyers close in 18 days. Here's exactly how it works.</p></div>
+<div class="how-grid">
+<div class="step"><div class="step-num">1</div><h3>60-Second Application</h3><p>Answer 6 simple questions. Soft credit check. Get pre-approved instantly with a real loan amount and rate.</p></div>
+<div class="step"><div class="step-num">2</div><h3>We Shop 50+ Lenders</h3><p>Your dedicated broker shops your file across our entire wholesale lender network to find the lowest rate possible.</p></div>
+<div class="step"><div class="step-num">3</div><h3>Close in 18 Days</h3><p>Sign your final documents and pick up the keys. We handle the title company, appraiser, and underwriter for you.</p></div>
+</div></div></section>
+
+<section class="testimonials"><div class="container">
+<div class="section-head"><div class="eyebrow">Real Buyers, Real Savings</div><h2>12,000+ families have closed with us</h2></div>
+<div class="t-scroll">
+<div class="t-card"><div class="stars">★★★★★</div><blockquote>"Saved us 0.75% over what our local bank offered. That's $312 a month back in our pocket. Closed in 21 days. Our agent was floored at how smooth it went."</blockquote><div class="t-author"><div class="avatar">MR</div><div><strong>Michael & Rebecca</strong><span>First home buyers • Conventional 30-yr</span></div></div></div>
+<div class="t-card"><div class="stars">★★★★★</div><blockquote>"As a veteran, I thought I'd seen every VA loan trick. These folks got me 0.5% below what the VA hotline quoted me. $0 down, no PMI, closed in 16 days flat."</blockquote><div class="t-author"><div class="avatar">JT</div><div><strong>James T.</strong><span>VA Loan • Refinance</span></div></div></div>
+<div class="t-card"><div class="stars">★★★★★</div><blockquote>"Refinanced our jumbo loan and pulled $180k in equity for the renovation. Rate dropped from 7.2% to 5.95%. Saving $1,400/month — that's a vacation every quarter."</blockquote><div class="t-author"><div class="avatar">SP</div><div><strong>Sarah P.</strong><span>Jumbo Cash-Out Refi</span></div></div></div>
+</div></div></section>
+
+<section class="results"><div class="container">
+<div class="section-head"><div class="eyebrow" style="color:#10B981">By The Numbers</div><h2>Results that make a real difference</h2><p>Every number below is verified through closed loan data — no fluff.</p></div>
+<div class="results-grid">
+<div><div class="result-num">$2.4B</div><div class="result-label">In loans funded</div></div>
+<div><div class="result-num">12,847</div><div class="result-label">Homebuyers served</div></div>
+<div><div class="result-num">18 days</div><div class="result-label">Average close time</div></div>
+<div><div class="result-num">$41,200</div><div class="result-label">Average savings per buyer</div></div>
+</div></div></section>
+
+<section><div class="container">
+<div class="section-head"><div class="eyebrow">Transparent Pricing</div><h2>Three ways to work with us</h2><p>Every program includes the Rate Lock Guarantee. No surprises, ever.</p></div>
+<div class="pricing-grid">
+<div class="price-card"><h3>Standard</h3><div class="price">0.5%<span> origination</span></div><p style="color:#64748B;font-size:14px">Best for straightforward purchases.</p>
+<ul class="price-features"><li>50+ lender comparison</li><li>Soft credit pull</li><li>Dedicated loan officer</li><li>Email support</li><li>21-day close target</li></ul>
+<a href="#contact" class="btn-primary" style="text-align:center;animation:none">Get Started</a></div>
+<div class="price-card popular"><div class="popular-tag">Most Popular</div><h3>Concierge</h3><div class="price">0.75%<span> origination</span></div><p style="color:#64748B;font-size:14px">For buyers who want hand-holding.</p>
+<ul class="price-features"><li>Everything in Standard</li><li>Rate Lock Float-Down</li><li>Priority phone & text support</li><li>Title & escrow coordination</li><li>15-day close target</li><li>Realtor referral network</li></ul>
+<a href="#contact" class="btn-primary" style="text-align:center;animation:none">Get Started</a></div>
+<div class="price-card"><h3>Investor</h3><div class="price">1.0%<span> origination</span></div><p style="color:#64748B;font-size:14px">For multi-property investors.</p>
+<ul class="price-features"><li>Everything in Concierge</li><li>DSCR & non-QM programs</li><li>Portfolio loan structuring</li><li>Multi-property strategy session</li><li>Up to 10-property close</li></ul>
+<a href="#contact" class="btn-primary" style="text-align:center;animation:none">Get Started</a></div>
+</div></div></section>
+
+<section class="faq"><div class="container">
+<div class="section-head"><div class="eyebrow">Common Questions</div><h2>Everything you need to know</h2></div>
+<div class="faq-list">
+<details open><summary>Will applying hurt my credit score?<span class="chevron">▼</span></summary><p>No — we run a soft credit pull only during pre-approval, which has zero impact on your score. A hard pull only happens once you select a final lender and lock your rate, and even then the score impact is typically just 3-5 points and recovers within 30 days.</p></details>
+<details><summary>How much down payment do I really need?<span class="chevron">▼</span></summary><p>It depends on the loan type. VA loans require $0 down, FHA needs 3.5%, conventional starts at 3% for first-time buyers. We'll show you 5+ down payment options so you can choose what fits your savings best — including down payment assistance programs in most states.</p></details>
+<details><summary>What credit score do I need to qualify?<span class="chevron">▼</span></summary><p>We have lenders willing to work with scores as low as 580 (FHA) and even some non-QM programs accepting 500+. The best rates kick in at 740+, but we have programs across the entire spectrum. We'll match you to the right lender for your score.</p></details>
+<details><summary>How is a broker different from a bank?<span class="chevron">▼</span></summary><p>A bank can only offer their own loan products. A broker shops your file across 50+ wholesale lenders to find the best rate. Brokers also have access to wholesale pricing that retail banks legally cannot match — typically 0.25%-0.5% lower on the same loan.</p></details>
+<details><summary>How long until I can close?<span class="chevron">▼</span></summary><p>Our average is 18 days from application to keys. The fastest we've ever closed was 9 days. Standard industry average is 45-47 days. Speed depends mostly on how quickly you provide documentation — we have a checklist that makes it painless.</p></details>
+<details><summary>What if I'm self-employed or have non-traditional income?<span class="chevron">▼</span></summary><p>We specialize in this. We have bank statement loans, 1099 programs, asset-depletion loans, and DSCR loans for real estate investors. If you've been turned down by a bank, there's a very high chance we can place your loan.</p></details>
+</div></div></section>
+
+<section class="cta-section" id="contact"><div class="container"><div class="cta-wrap">
+<h2>Lock your rate in 60 seconds</h2>
+<p>Free quote. No credit pull. No obligation. Average buyer saves $41,200 over the life of their loan.</p>
+<form>
+<h3>Get My Personalized Rate</h3>
+<p>Takes under 60 seconds. We'll call you within 1 business hour.</p>
+<div class="form-row"><input type="text" name="full_name" placeholder="Full Name" required><input type="email" name="email" placeholder="Email Address" required></div>
+<div class="form-row"><input type="tel" name="phone" placeholder="Phone Number" required>
+<select name="loan_purpose" required><option value="">Loan Purpose</option><option>Buying a home</option><option>Refinancing</option><option>Cash-out refinance</option><option>Investment property</option></select></div>
+<div class="form-row">
+<select name="loan_amount" required><option value="">Loan Amount</option><option>Under $200,000</option><option>$200,000 - $500,000</option><option>$500,000 - $1M</option><option>Over $1M</option></select>
+<select name="credit_score" required><option value="">Credit Score</option><option>580 - 620</option><option>620 - 680</option><option>680 - 740</option><option>740+</option></select>
+</div>
+<button type="submit">See My Rate (Free) →</button>
+<div class="form-foot">🔒 Soft credit pull only — your score will not drop. NMLS Licensed.</div>
+</form>
+</div></div></section>
+
+<footer><div class="container">
+<div class="footer-grid">
+<div><div class="logo" style="color:#fff;margin-bottom:14px">{{location.name}} <span style="color:#10B981">★</span></div>
+<p style="font-size:14px;line-height:1.7">Independent mortgage brokers helping families lock the lowest rate and close fast. Licensed in 47 states.</p>
+<div class="social-row"><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="Instagram">ig</a><a href="#" aria-label="LinkedIn">in</a></div></div>
+<div><h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">📞 {{location.phone}}</a>
+<a href="mailto:{{location.email}}">✉ {{location.email}}</a>
+<a href="#">📍 {{location.fullAddress}}</a></div>
+<div><h4>Loan Programs</h4><a href="#">Conventional</a><a href="#">FHA & VA</a><a href="#">Jumbo & Non-QM</a><a href="#">Refinance & HELOC</a></div>
+</div>
+<div class="copyright">© 2025 {{location.name}}. All rights reserved. Equal Housing Lender. NMLS Licensed.
+<div class="disclaimer">Rates and APRs shown are estimates and depend on credit profile, loan-to-value, and other factors. This is not a commitment to lend. {{location.name}} is not affiliated with any government agency.</div>
+</div>
+</div></footer>
+</body></html>

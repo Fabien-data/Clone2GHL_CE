@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clone2GHL Dashboard</title>
+  <link rel="icon" type="image/png" href="icons/logo.png">
   <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
@@ -11,8 +12,7 @@
   <!-- ─── Sidebar ─────────────────────────────────────────────────────────── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-icon">⚡</span>
-      <span class="brand-name">Clone<span class="brand-accent">2</span>GHL</span>
+      <img src="icons/logo.png" alt="Clone2GHL" class="brand-logo">
     </div>
 
     <nav class="sidebar-nav">
@@ -23,6 +23,10 @@
       <button class="nav-item" data-tab="library">
         <span class="nav-icon">📚</span>
         <span>Funnel Library</span>
+      </button>
+      <button class="nav-item" data-tab="discover">
+        <span class="nav-icon">🌐</span>
+        <span>Discover Sites</span>
       </button>
       <button class="nav-item" data-tab="ai-tools">
         <span class="nav-icon">🤖</span>
@@ -52,6 +56,10 @@
         <span class="nav-icon">⚙️</span>
         <span>Settings</span>
       </button>
+      <button class="nav-item nav-admin" data-tab="admin" id="nav-admin" style="display:none;">
+        <span class="nav-icon">👑</span>
+        <span>Admin</span>
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -60,7 +68,7 @@
         <div class="plan-credits" id="sidebar-credits">2 clones remaining</div>
         <button class="btn-upgrade" id="btn-upgrade-sidebar">Upgrade →</button>
       </div>
-      <div id="devmode-badge" style="display:none; font-size:10px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); border-radius:4px; padding:2px 8px; margin-top:6px; text-align:center;">⚡ DEV MODE — Unlimited</div>
+      <div id="devmode-badge" style="display:none; font-size:10px; font-weight:700; color:#F0BB2D; background:rgba(240,187,45,0.12); border:1px solid rgba(240,187,45,0.3); border-radius:4px; padding:2px 8px; margin-top:6px; text-align:center;">⚡ DEV MODE — Unlimited</div>
       <label style="margin-top:6px; font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-muted, #9CA3AF);">
         <input type="checkbox" id="sidebar-devmode-toggle">
         <span>Dev Mode (unlimited clones)</span>
@@ -73,7 +81,7 @@
       </div>
       <!-- Owner badge — shown only when in owner plan -->
       <div id="owner-badge" style="display:none; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
-        <div style="font-size:10px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border:1px solid rgba(249,115,22,0.3); border-radius:4px; padding:2px 8px; text-align:center; margin-bottom:6px;">👑 OWNER — Unlimited</div>
+        <div style="font-size:10px; font-weight:700; color:#F0BB2D; background:rgba(240,187,45,0.12); border:1px solid rgba(240,187,45,0.3); border-radius:4px; padding:2px 8px; text-align:center; margin-bottom:6px;">👑 OWNER — Unlimited</div>
         <button id="btn-owner-lock" style="background:none; border:none; padding:0; font-size:11px; color:#6B7280; cursor:pointer; font-family:inherit;">🔒 Lock owner access</button>
       </div>
     </div>
@@ -166,28 +174,33 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">Funnel Library</h1>
-          <p class="page-sub">15+ high-converting templates across niches</p>
+          <p class="page-sub">20+ production-ready templates across niches</p>
         </div>
       </div>
 
       <div class="filters-row">
         <select class="filter-select" id="library-niche-filter">
           <option value="">All Niches</option>
-          <option value="plumber">Plumber</option>
-          <option value="electrician">Electrician</option>
-          <option value="hvac">HVAC</option>
-          <option value="roofing">Roofing</option>
-          <option value="cleaning">Cleaning</option>
-          <option value="landscaping">Landscaping</option>
-          <option value="solar">Solar</option>
-          <option value="real_estate">Real Estate</option>
-          <option value="gym">Gym / Fitness</option>
-          <option value="dental">Dental</option>
-          <option value="coaching">Coaching</option>
-          <option value="insurance">Insurance</option>
-          <option value="legal">Legal</option>
-          <option value="marketing_agency">Marketing Agency</option>
-          <option value="weight_loss">Weight Loss</option>
+          <option value="chiropractor">Chiropractor</option>
+          <option value="medspa">MedSpa</option>
+          <option value="salon">Salon</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="auto_detailing">Auto Detailing</option>
+          <option value="pest_control">Pest Control</option>
+          <option value="mortgage_broker">Mortgage Broker</option>
+          <option value="financial_advisor">Financial Advisor</option>
+          <option value="plastic_surgery">Plastic Surgery</option>
+          <option value="photography">Photography</option>
+          <option value="wedding_planner">Wedding Planner</option>
+          <option value="pool_service">Pool Service</option>
+          <option value="moving_company">Moving Company</option>
+          <option value="tutoring">Tutoring</option>
+          <option value="veterinary">Veterinary</option>
+          <option value="accounting">Accounting / CPA</option>
+          <option value="ecommerce">Ecommerce</option>
+          <option value="saas">SaaS</option>
+          <option value="interior_design">Interior Design</option>
+          <option value="painter">Painter</option>
         </select>
         <select class="filter-select" id="library-type-filter">
           <option value="">All Types</option>
@@ -719,7 +732,7 @@
             </div>
           </div>
           <button class="btn-primary btn-full" id="btn-gen-logo">🎨 Generate Logo</button>
-          <p class="logo-note">Requires OpenAI API key with DALL-E 3 access. Each generation uses ~$0.04 in API credits.</p>
+          <p class="logo-note" id="logo-quota-note">Requires OpenAI API key with DALL-E 3 access. Each generation uses ~$0.04 in API credits.</p>
         </div>
 
         <div class="logo-result-card" id="logo-result" style="display:none;">
@@ -768,6 +781,35 @@
               <div class="analytics-label">Videos Generated</div>
               <div class="analytics-value" id="acct-videos">—</div>
             </div>
+          </div>
+          <div class="acct-sparkline-wrap">
+            <div class="acct-sparkline-label">Activity, last 30 days</div>
+            <canvas id="acct-sparkline" width="600" height="90"></canvas>
+          </div>
+        </div>
+
+        <!-- Billing & Invoices -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🧾</span>
+            <div>
+              <div class="settings-card-title">Billing &amp; Invoices</div>
+              <div class="settings-card-sub">Your payment history and downloadable invoices</div>
+            </div>
+            <button class="btn-secondary" id="btn-load-invoices" style="margin-left:auto;">↻ Refresh</button>
+          </div>
+          <div class="settings-status" id="invoices-status-badge"></div>
+          <div class="invoice-table-wrap" id="invoice-table-wrap">
+            <table class="invoice-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Invoice #</th><th>Plan</th><th>Amount</th><th>Status</th><th>Download</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-tbody">
+                <tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text3);">No invoices yet. Subscribe to a paid plan to see your billing history here.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -857,6 +899,18 @@
 
           <div class="settings-actions" style="margin-top:10px;">
             <button class="btn-primary" id="btn-save-preferences">Save Preferences</button>
+          </div>
+
+          <div class="section-label" style="color:#dc3545;">Danger Zone</div>
+          <p class="field-hint">Permanently delete your Clone2GHL account and associated server-side data (synced funnels, usage, preferences). This cannot be undone. Local browser data is removed separately via Clear Data or by uninstalling.</p>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Confirm Password</label>
+              <input type="password" class="field-input" id="profile-delete-password" placeholder="Enter your password to confirm">
+            </div>
+          </div>
+          <div class="settings-actions" style="margin-top:10px;">
+            <button class="btn-danger" id="btn-delete-account">Delete My Account</button>
           </div>
         </div>
 
@@ -960,6 +1014,27 @@
           </div>
         </div>
 
+        <!-- Affiliate / Referral -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🎁</span>
+            <div>
+              <div class="settings-card-title">Your Referral Link</div>
+              <div class="settings-card-sub">Share your GoHighLevel affiliate link and earn on every referral</div>
+            </div>
+          </div>
+          <div class="settings-status" id="affiliate-status-badge"></div>
+          <div class="form-row">
+            <label class="field-label">Affiliate / Referral URL</label>
+            <input type="text" class="field-input" id="affiliate-url" placeholder="https://clone2ghl.com/?ref=YOURCODE">
+            <p class="field-hint">Paste the affiliate link from your GoHighLevel Affiliate Manager. Anyone who signs up through it is attributed to you.</p>
+          </div>
+          <div class="settings-actions">
+            <button class="btn-primary" id="btn-save-affiliate">Save</button>
+            <button class="btn-secondary" id="btn-copy-affiliate">Copy Link</button>
+          </div>
+        </div>
+
         <!-- Backend Auth + Sync -->
         <div class="settings-card">
           <div class="settings-card-header">
@@ -992,9 +1067,55 @@
             <button class="btn-primary" id="btn-backend-login">Sign In</button>
             <button class="btn-secondary" id="btn-backend-logout">Sign Out</button>
           </div>
+          <div style="margin-top:8px;">
+            <button class="link-button" id="btn-forgot-password" style="background:none;border:0;color:#6ea8ff;cursor:pointer;font-size:12px;padding:0;">Forgot password?</button>
+          </div>
+
+          <!-- Forgot / reset password (hidden until "Forgot password?") -->
+          <div id="forgot-password-panel" style="display:none;margin-top:10px;padding:12px;border:1px solid var(--border);border-radius:8px;">
+            <div class="settings-card-sub" style="margin-bottom:8px;">Enter your email to get a reset code, then set a new password.</div>
+            <div class="settings-actions" style="margin-bottom:10px;">
+              <button class="btn-secondary" id="btn-send-reset-code">Send reset code</button>
+            </div>
+            <div class="form-row-2">
+              <div>
+                <label class="field-label">Reset Code</label>
+                <input type="text" class="field-input" id="reset-code" placeholder="XXXX-XXXX">
+              </div>
+              <div>
+                <label class="field-label">New Password</label>
+                <input type="password" class="field-input" id="reset-new-password" placeholder="Min 8 characters">
+              </div>
+            </div>
+            <div class="settings-actions" style="margin-top:10px;">
+              <button class="btn-primary" id="btn-reset-password">Set new password</button>
+            </div>
+          </div>
           <div class="settings-actions" style="margin-top:10px;">
             <button class="btn-secondary" id="btn-backend-usage">Refresh Usage</button>
             <button class="btn-secondary" id="btn-backend-sync">Sync Funnels</button>
+          </div>
+
+          <div style="margin:16px 0 12px;border-top:1px solid var(--border);"></div>
+          <div class="settings-card-sub" style="margin-bottom:10px;">
+            🎟 Bought a plan? Activate with the code from your purchase email.
+          </div>
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Purchase Email</label>
+              <input type="email" class="field-input" id="ghl-activate-email" placeholder="you@example.com">
+            </div>
+            <div>
+              <label class="field-label">Activation Code</label>
+              <input type="text" class="field-input" id="ghl-activate-code" placeholder="XXXX-XXXX">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="field-label">Set a Password <span style="opacity:.6;">(optional — for future sign-in)</span></label>
+            <input type="password" class="field-input" id="ghl-activate-password" placeholder="Min 8 characters (optional)">
+          </div>
+          <div class="settings-actions" style="margin-top:12px;">
+            <button class="btn-primary" id="btn-ghl-activate">Activate Plan</button>
           </div>
         </div>
 
@@ -1012,58 +1133,505 @@
           <div class="pricing-grid">
             <div class="pricing-card">
               <div class="pricing-tier">Free</div>
-              <div class="pricing-price">$0</div>
+              <div class="pricing-price">$0<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ 6 clones/month</div>
-                <div>✓ Basic AI optimization</div>
-                <div>✗ No funnel library</div>
-                <div>✗ No logo generation</div>
+                <div>✓ 6 pages per month</div>
+                <div>✓ Limited AI optimization</div>
+                <div>✓ Basic funnel access</div>
               </div>
             </div>
             <div class="pricing-card">
               <div class="pricing-tier">Starter</div>
               <div class="pricing-price">$27<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ 24 clones/month</div>
+                <div>✓ 24 pages per month</div>
                 <div>✓ Basic AI rewrite</div>
                 <div>✓ Standard funnel access</div>
-                <div>✗ No logo generation</div>
               </div>
-              <button class="btn-secondary btn-full" id="btn-upgrade-starter">Upgrade to Starter</button>
+              <button class="btn-secondary btn-full" id="btn-upgrade-starter">Start Starter Plan</button>
             </div>
             <div class="pricing-card featured">
               <div class="pricing-badge">Most Popular</div>
               <div class="pricing-tier">Pro</div>
-              <div class="pricing-price">$97<span>/mo</span></div>
+              <div class="pricing-price">$147<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ 300 clones/month</div>
-                <div>✓ Full AI optimizer</div>
-                <div>✓ 50 logo generations/mo</div>
-                <div>✓ Funnel library</div>
-                <div>✓ Ad intelligence</div>
+                <div>✓ 300 page clones</div>
+                <div>✓ 50 AI logo generations/mo</div>
+                <div>✓ Full AI funnel optimization</div>
+                <div>✓ Access to Funnel Library</div>
+                <div>✓ Ad Intelligence</div>
               </div>
-              <button class="btn-primary btn-full" id="btn-upgrade-pro">Upgrade to Pro</button>
+              <button class="btn-primary btn-full" id="btn-upgrade-pro">Start Pro Plan</button>
             </div>
             <div class="pricing-card">
               <div class="pricing-tier">Agency</div>
-              <div class="pricing-price">$199<span>/mo</span></div>
+              <div class="pricing-price">$297<span>/mo</span></div>
               <div class="pricing-features">
-                <div>✓ Unlimited cloning</div>
-                <div>✓ 200 logo generations/mo</div>
-                <div>✓ Full AI suite</div>
-                <div>✓ Team access</div>
-                <div>✓ Priority support</div>
+                <div>✓ Unlimited page cloning</div>
+                <div>✓ 200 AI logo generations/mo</div>
+                <div>✓ Full AI optimization suite</div>
+                <div>✓ Library + Ad Intelligence</div>
+                <div>✓ Team access &amp; Priority support</div>
                 <div>✓ DFY discounts</div>
               </div>
-              <button class="btn-secondary btn-full" id="btn-upgrade-agency">Upgrade to Agency</button>
+              <button class="btn-secondary btn-full" id="btn-upgrade-agency">Start Agency Plan</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Discovery Search (Optional) -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-icon">🔍</span>
+            <div>
+              <div class="settings-card-title">Discovery Search <span style="font-size:11px;font-weight:400;color:var(--text4);">(Optional)</span></div>
+              <div class="settings-card-sub">Enable live web search in the Discover Sites tab</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Google Custom Search API Key</label>
+            <div class="input-row">
+              <input type="password" class="field-input" id="discover-api-key" placeholder="AIzaSy…">
+              <button class="btn-icon" id="toggle-discover-key" title="Show/hide">👁</button>
+            </div>
+            <p class="field-hint">Get from <a href="https://developers.google.com/custom-search/v1/overview" target="_blank" style="color:var(--purple-light);">Google Custom Search API</a> — free 100 queries/day</p>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label">Search Engine ID (cx)</label>
+            <input type="text" class="field-input" id="discover-cx" placeholder="017576662512468239146:omuauf_lfve">
+            <p class="field-hint">Create a Search Engine at <a href="https://programmablesearchengine.google.com" target="_blank" style="color:var(--purple-light);">programmablesearchengine.google.com</a></p>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn-primary" id="btn-save-discover">Save</button>
           </div>
         </div>
 
       </div>
     </div>
 
+    <!-- ═══ Discover Sites Tab ═══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-discover">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Discover Sites</h1>
+          <p class="page-sub">Browse high-converting websites by niche → Preview → Clone to GHL in one click</p>
+        </div>
+        <div class="discover-stats" id="discover-stats" style="display:none;">
+          <span class="discover-stat-pill" id="discover-site-count">0 sites</span>
+        </div>
+      </div>
+
+      <!-- Subtab toggle: Featured (curated) vs My Sites (user CRUD) -->
+      <div class="discover-subtabs" role="tablist">
+        <button class="discover-subtab active" data-subtab="featured" role="tab" aria-selected="true">⭐ Featured</button>
+        <button class="discover-subtab" data-subtab="mine" role="tab" aria-selected="false">📌 My Sites</button>
+      </div>
+
+      <!-- ───── My Sites view (hidden by default) ───── -->
+      <div id="discover-mysites-panel" style="display:none;">
+        <div class="mysites-toolbar">
+          <button class="btn-primary" id="btn-mysite-add">＋ Add Site</button>
+          <span class="mysites-count" id="mysites-count">0 sites</span>
+        </div>
+        <div class="mysites-list" id="mysites-list"></div>
+        <div class="mysites-empty" id="mysites-empty" style="display:none;">
+          <div class="mysites-empty-icon">📌</div>
+          <div class="mysites-empty-title">No saved sites yet</div>
+          <div class="mysites-empty-sub">Add any website you want to clone. Sites stay synced across your devices when you're signed in.</div>
+        </div>
+      </div>
+
+      <!-- ───── Featured view ───── -->
+      <div id="discover-featured-panel">
+
+      <!-- Niche pills with icons -->
+      <div id="discover-niche-pills" class="discover-niche-pills"></div>
+
+      <!-- Search row -->
+      <div class="discover-search-row">
+        <div class="discover-search-wrap">
+          <span class="discover-search-icon">🔍</span>
+          <input type="text" id="discover-search-input" class="discover-search-field" placeholder="Search by name, domain, or keyword…">
+        </div>
+        <button class="btn-secondary" id="btn-discover-live-search">🌐 Search Online</button>
+        <div id="discover-suggest-dropdown" role="listbox" aria-label="Search suggestions"></div>
+      </div>
+
+      <!-- Live status banner -->
+      <div id="discover-live-status" class="discover-live-status" style="display:none;"></div>
+
+      <!-- Results grid -->
+      <div class="discover-grid" id="discover-grid">
+        <div class="discover-empty" id="discover-empty">
+          <div class="discover-empty-icon">🌐</div>
+          <div class="discover-empty-title">Select a niche to browse websites</div>
+          <div class="discover-empty-sub">Pick a category above to see curated high-converting sites you can clone into GHL</div>
+          <div class="discover-niche-hint">
+            <span>🏠 Roofing</span><span>⚡ Electrician</span><span>🔧 Plumbing</span><span>🌿 Landscaping</span><span>🦷 Dental</span>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /discover-featured-panel -->
+
+      <!-- Add / Edit Site modal -->
+      <div id="mysite-modal" class="modal-overlay" style="display:none;">
+        <div class="modal" style="max-width:520px;">
+          <div class="modal-header">
+            <h2 class="modal-title" id="mysite-modal-title">Add Site</h2>
+            <button class="modal-close" id="mysite-modal-close">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <label class="field-label">Website URL <span style="color:var(--red);">*</span></label>
+              <input type="url" class="field-input" id="mysite-input-url" placeholder="https://example.com">
+            </div>
+            <div class="form-row">
+              <label class="field-label">Name</label>
+              <input type="text" class="field-input" id="mysite-input-name" placeholder="Auto-detected from domain">
+            </div>
+            <div class="form-row" style="display:flex; gap:10px;">
+              <div style="flex:1;">
+                <label class="field-label">Niche</label>
+                <select class="field-input" id="mysite-input-niche">
+                  <option value="general">General</option>
+                  <option value="plumber">Plumber</option>
+                  <option value="electrician">Electrician</option>
+                  <option value="hvac">HVAC</option>
+                  <option value="roofing">Roofing</option>
+                  <option value="cleaning">Cleaning</option>
+                  <option value="landscaping">Landscaping</option>
+                  <option value="solar">Solar</option>
+                  <option value="real_estate">Real Estate</option>
+                  <option value="gym">Gym / Fitness</option>
+                  <option value="dental">Dental</option>
+                  <option value="coaching">Coaching</option>
+                  <option value="insurance">Insurance</option>
+                  <option value="legal">Legal</option>
+                  <option value="marketing_agency">Marketing Agency</option>
+                  <option value="weight_loss">Weight Loss</option>
+                </select>
+              </div>
+              <div style="flex:1;">
+                <label class="field-label">Tags (comma-separated)</label>
+                <input type="text" class="field-input" id="mysite-input-tags" placeholder="lead-gen, hero, video">
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="field-label">Notes</label>
+              <textarea class="field-input" id="mysite-input-notes" rows="3" placeholder="Why you saved it, what to test, etc."></textarea>
+            </div>
+            <div id="mysite-modal-error" class="mysite-modal-error" style="display:none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" id="mysite-modal-cancel">Cancel</button>
+            <button class="btn-primary" id="mysite-modal-save">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Admin Tab (owner-only) ═══════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-admin">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">👑 Admin Dashboard</h1>
+          <p class="page-sub">Owner view — monitor users, plans, usage, and revenue across the platform</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="admin-owner-pill" id="admin-owner-email">—</span>
+          <button class="btn-secondary" id="btn-admin-refresh">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- Admin sub-nav -->
+      <div class="admin-subnav">
+        <button class="admin-subtab active" data-admintab="overview">📊 Overview</button>
+        <button class="admin-subtab" data-admintab="users">👥 Users</button>
+        <button class="admin-subtab" data-admintab="business">💼 Business</button>
+        <button class="admin-subtab" data-admintab="analytics">📈 Analytics</button>
+        <button class="admin-subtab" data-admintab="invoices">🧾 Invoices</button>
+        <button class="admin-subtab" data-admintab="audit">🛡 Audit</button>
+        <button class="admin-subtab" data-admintab="devmode">⚡ Dev Mode</button>
+      </div>
+
+      <!-- Overview panel -->
+      <div class="admin-panel" id="admin-panel-overview">
+        <div class="admin-kpi-grid">
+          <div class="admin-kpi"><div class="admin-kpi-label">Total Users</div><div class="admin-kpi-value" id="kpi-users">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Active Subscriptions</div><div class="admin-kpi-value" id="kpi-subs">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">MRR Estimate</div><div class="admin-kpi-value" id="kpi-mrr">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Total Clones</div><div class="admin-kpi-value" id="kpi-clones">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Total Funnels</div><div class="admin-kpi-value" id="kpi-funnels">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Videos Generated</div><div class="admin-kpi-value" id="kpi-videos">—</div></div>
+        </div>
+        <div class="admin-section-title">Plan Breakdown</div>
+        <div class="admin-plan-breakdown" id="admin-plan-breakdown"></div>
+      </div>
+
+      <!-- Users panel -->
+      <div class="admin-panel" id="admin-panel-users" style="display:none;">
+        <div class="admin-users-toolbar">
+          <input type="text" class="field-input" id="admin-users-search" placeholder="Search by email or name…" style="max-width:280px;">
+          <select class="field-input" id="admin-users-plan-filter" style="max-width:160px;">
+            <option value="">All plans</option>
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+            <option value="agency">Agency</option>
+            <option value="owner">Owner</option>
+          </select>
+          <span class="admin-users-count" id="admin-users-count"></span>
+          <button class="btn-secondary" id="btn-admin-export-csv" style="margin-left:auto;">⬇ Export CSV</button>
+        </div>
+        <!-- Bulk action bar (shown when rows are selected) -->
+        <div class="admin-bulk-bar" id="admin-bulk-bar" style="display:none; align-items:center; gap:8px; margin:8px 0; padding:8px 12px; background:var(--surface2,#1b2238); border-radius:8px;">
+          <span id="admin-bulk-count" style="font-size:13px;"></span>
+          <select class="field-input" id="admin-bulk-action" style="max-width:200px;">
+            <option value="suspend">Suspend</option>
+            <option value="unsuspend">Unsuspend</option>
+            <option value="extend">Extend 31 days</option>
+            <option value="plan:pro">Set plan: Pro</option>
+            <option value="plan:agency">Set plan: Agency</option>
+            <option value="plan:free">Set plan: Free</option>
+          </select>
+          <button class="btn-primary" id="btn-admin-bulk-apply" style="padding:7px 14px;font-size:12px;">Apply</button>
+          <button class="btn-secondary" id="btn-admin-bulk-clear" style="padding:7px 14px;font-size:12px;">Clear</button>
+        </div>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead>
+              <tr>
+                <th style="width:28px;"><input type="checkbox" id="admin-users-select-all" aria-label="Select all users"></th>
+                <th>Email</th><th>Name</th><th>Plan</th><th>Clones (mo)</th><th>Funnels</th><th>Last Active</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody"><tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text3);">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-users-pager" id="admin-users-pager"></div>
+      </div>
+
+      <!-- Business panel: renewals/churn + AI spend -->
+      <div class="admin-panel" id="admin-panel-business" style="display:none;">
+        <div class="admin-kpi-grid">
+          <div class="admin-kpi"><div class="admin-kpi-label">MRR (active)</div><div class="admin-kpi-value" id="biz-mrr">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Expiring ≤7d</div><div class="admin-kpi-value" id="biz-expiring">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">Lapsed</div><div class="admin-kpi-value" id="biz-lapsed">—</div></div>
+          <div class="admin-kpi"><div class="admin-kpi-label">AI spend (mo, est.)</div><div class="admin-kpi-value" id="biz-aicost">—</div></div>
+        </div>
+        <div class="admin-section-title">Expiring soon</div>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th>Email</th><th>Plan</th><th>Renews</th><th>Status</th></tr></thead>
+            <tbody id="biz-expiring-tbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3);">—</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-section-title" style="margin-top:18px;">Top AI consumers (this month)</div>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th>Email</th><th>Plan</th><th>AI calls</th><th>Est. cost</th></tr></thead>
+            <tbody id="biz-aicost-tbody"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3);">—</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Audit panel -->
+      <div class="admin-panel" id="admin-panel-audit" style="display:none;">
+        <div class="admin-users-toolbar">
+          <span class="admin-users-count" id="admin-audit-count"></span>
+        </div>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th></tr></thead>
+            <tbody id="admin-audit-tbody"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3);">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- User detail drawer -->
+      <div id="admin-user-drawer" class="admin-drawer" role="dialog" aria-modal="true" aria-label="User detail" tabindex="-1" style="display:none; position:fixed; top:0; right:0; width:420px; max-width:92vw; height:100vh; background:var(--surface,#141a2e); border-left:1px solid var(--border,#2a3350); box-shadow:-8px 0 30px rgba(0,0,0,.4); z-index:2000; overflow-y:auto; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <h3 style="margin:0; font-size:16px;">User detail</h3>
+          <button class="btn-secondary" id="admin-drawer-close" aria-label="Close" style="padding:4px 10px;">✕</button>
+        </div>
+        <div id="admin-drawer-body"><p style="color:var(--text3);">Loading…</p></div>
+      </div>
+
+      <!-- Analytics panel -->
+      <div class="admin-panel" id="admin-panel-analytics" style="display:none;">
+        <div class="admin-analytics-toolbar">
+          <label class="field-label" style="margin-bottom:0;">Range:</label>
+          <select class="field-input" id="admin-analytics-range" style="max-width:140px;">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="180">Last 180 days</option>
+          </select>
+        </div>
+        <div class="admin-chart-wrap">
+          <canvas id="admin-chart-canvas" width="800" height="320"></canvas>
+        </div>
+      </div>
+
+      <!-- Invoices panel -->
+      <div class="admin-panel" id="admin-panel-invoices" style="display:none;">
+        <div class="admin-users-toolbar">
+          <input type="text" class="field-input" id="admin-invoices-search" placeholder="Search by email or invoice #…" style="max-width:280px;">
+          <select class="field-input" id="admin-invoices-status-filter" style="max-width:160px;">
+            <option value="">All statuses</option>
+            <option value="paid">Paid</option>
+            <option value="failed">Failed</option>
+          </select>
+          <span class="admin-users-count" id="admin-invoices-count"></span>
+          <span class="admin-invoices-total" id="admin-invoices-total"></span>
+        </div>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead>
+              <tr><th>Date</th><th>Customer</th><th>Invoice #</th><th>Plan</th><th>Amount</th><th>Status</th><th>Receipt</th></tr>
+            </thead>
+            <tbody id="admin-invoices-tbody"><tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text3);">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-users-pager" id="admin-invoices-pager"></div>
+      </div>
+
+      <!-- Dev Mode panel -->
+      <div class="admin-panel" id="admin-panel-devmode" style="display:none;">
+        <div class="admin-devmode-card">
+          <h3>Dev Mode</h3>
+          <p>Bypasses all credit checks and plan limits. Use only when developing or testing — never on a real customer account.</p>
+          <label class="admin-devmode-toggle">
+            <input type="checkbox" id="admin-devmode-checkbox">
+            <span>Enable Dev Mode for this device</span>
+          </label>
+        </div>
+        <div class="admin-devmode-card">
+          <h3>Owner Unlimited</h3>
+          <p>Owner accounts automatically bypass all quotas. Owner status comes from <code>OWNER_EMAILS</code> on the backend — currently this account is <strong id="admin-owner-status">unknown</strong>.</p>
+        </div>
+      </div>
+    </div>
+
   </main>
+
+  <!-- ─── Edit Plan Modal (admin) ───────────────────────────────────────── -->
+  <div class="modal-overlay" id="admin-plan-modal" style="display:none;">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Change plan</h2>
+        <button class="modal-close" id="admin-plan-modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label class="field-label">User</label>
+          <div id="admin-plan-modal-user" style="font-size:13px; color:var(--text3);">—</div>
+        </div>
+        <div class="form-row">
+          <label class="field-label">New plan</label>
+          <select class="field-input" id="admin-plan-modal-select">
+            <option value="free">Free</option>
+            <option value="starter">Starter — $27</option>
+            <option value="pro">Pro — $147</option>
+            <option value="agency">Agency — $297</option>
+            <option value="owner">Owner (unlimited)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="admin-plan-modal-cancel">Cancel</button>
+        <button class="btn-primary" id="admin-plan-modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Clone Progress Modal ─────────────────────────────────────────── -->
+  <div class="modal-overlay" id="clone-progress-modal" style="display:none;">
+    <div class="clone-progress-panel">
+      <div class="cpp-header">
+        <div class="cpp-icon">⚡</div>
+        <div>
+          <div class="cpp-title">Cloning Website to GHL</div>
+          <div class="cpp-url" id="cpp-url">Opening site…</div>
+        </div>
+        <button class="cpp-cancel" id="cpp-cancel" title="Cancel">✕</button>
+      </div>
+
+      <div class="cpp-steps" id="cpp-steps">
+        <div class="cpp-step" id="cpp-step-1" data-step="1">
+          <div class="cpp-step-dot"></div>
+          <div class="cpp-step-text">Opening website</div>
+        </div>
+        <div class="cpp-step" id="cpp-step-2" data-step="2">
+          <div class="cpp-step-dot"></div>
+          <div class="cpp-step-text">Scanning structure</div>
+        </div>
+        <div class="cpp-step" id="cpp-step-3" data-step="3">
+          <div class="cpp-step-dot"></div>
+          <div class="cpp-step-text">Collecting assets</div>
+        </div>
+        <div class="cpp-step" id="cpp-step-4" data-step="4">
+          <div class="cpp-step-dot"></div>
+          <div class="cpp-step-text">Building GHL layout</div>
+        </div>
+        <div class="cpp-step" id="cpp-step-5" data-step="5">
+          <div class="cpp-step-dot"></div>
+          <div class="cpp-step-text">Saving funnel</div>
+        </div>
+      </div>
+
+      <div class="cpp-progress-track">
+        <div class="cpp-progress-fill" id="cpp-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="cpp-progress-label" id="cpp-progress-label">Starting…</div>
+
+      <!-- Success state (hidden until done) -->
+      <div class="cpp-success" id="cpp-success" style="display:none;">
+        <div class="cpp-success-icon">✓</div>
+        <div class="cpp-success-title">Clone Complete!</div>
+        <div class="cpp-success-sub" id="cpp-success-sub">Funnel saved successfully</div>
+        <div class="cpp-success-actions">
+          <button class="btn-primary" id="cpp-view-funnel">View in My Funnels</button>
+          <button class="btn-secondary" id="cpp-push-ghl">→ Push to GHL</button>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div class="cpp-error" id="cpp-error" style="display:none;">
+        <div class="cpp-error-icon">✗</div>
+        <div class="cpp-error-msg" id="cpp-error-msg">Something went wrong</div>
+        <button class="btn-secondary" id="cpp-error-close" style="margin-top:12px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Site Preview Modal ─────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="site-preview-modal" style="display:none;">
+    <div class="site-preview-panel">
+      <div class="spp-header">
+        <div class="spp-info">
+          <div class="spp-title" id="spp-title">Site Preview</div>
+          <div class="spp-url" id="spp-url"></div>
+        </div>
+        <div class="spp-actions">
+          <button class="btn-primary" id="spp-clone-btn">⚡ Clone to GHL</button>
+          <button class="btn-secondary" id="spp-open-btn">↗ Open Site</button>
+          <button class="spp-close" id="spp-close">✕</button>
+        </div>
+      </div>
+      <div class="spp-body">
+        <iframe id="spp-iframe" class="spp-iframe" sandbox="allow-scripts allow-same-origin" src=""></iframe>
+        <div class="spp-loading" id="spp-loading">
+          <div class="spp-loading-spinner"></div>
+          <div>Loading preview…</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ─── Funnel Detail Modal ─────────────────────────────────────────────── -->
   <div class="modal-overlay" id="funnel-modal" style="display:none;">
@@ -1135,6 +1703,8 @@
     </div>
   </div>
 
+  <script src="compat.js"></script>
+  <script src="upgradeLogic.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

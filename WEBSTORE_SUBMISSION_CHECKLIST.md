@@ -1,7 +1,7 @@
 # Chrome Web Store Submission Checklist
 
 **Extension Name:** Clone2GHL – Funnel Intelligence Platform  
-**Version:** 1.0.1  
+**Version:** 1.0.3  
 **Submission Date:** [To be filled by user]  
 **Status:** [In Progress / Submitted / Approved]
 
@@ -11,7 +11,7 @@
 
 ### ✅ Step 1: Extension Package
 
-- [ ] ZIP file created: `webstore-kit/Clone2GHL_v1.0.1_webstore.zip`
+- [ ] ZIP file created: `webstore-kit/Clone2GHL_v1.0.3_webstore.zip`
 - [ ] Location: `webstore-kit/`
 - [ ] Size: Verified reasonable size (≤200MB)
 - [ ] Contents verified: manifest.json at root (not nested in extension/ folder)
@@ -28,7 +28,7 @@
 **Command to verify ZIP contents:**
 ```bash
 # On Windows PowerShell:
-Expand-Archive -Path webstore-kit/Clone2GHL_v1.0.1_webstore.zip -DestinationPath ./verify
+Expand-Archive -Path webstore-kit/Clone2GHL_v1.0.3_webstore.zip -DestinationPath ./verify
 Get-ChildItem ./verify | head -20  # Should show manifest.json, popup.html, etc.
 ```
 
@@ -135,10 +135,10 @@ Get-ChildItem ./verify | head -20  # Should show manifest.json, popup.html, etc.
 ### ✅ Step 4: Privacy Policy
 
 - [ ] **Privacy Policy created:** `webstore-kit/privacy-policy.html`
-- [ ] **Privacy Policy hosted:** https://preview-1777215622669307854.vibepreview.com/
+- [ ] **Privacy Policy hosted:** https://clone2ghl.com/privacy-policy
   - Option A: GitHub Pages
   - Option B: External hosting (privacychecklist.com, etc.)
-  - **URL to add in submission:** `https://preview-1777215622669307854.vibepreview.com/`
+  - **URL to add in submission:** `https://clone2ghl.com/privacy-policy`
 - [ ] **Policy covers:**
   - [ ] What data is collected
   - [ ] How data is stored (local browser storage)
@@ -158,7 +158,7 @@ Get-ChildItem ./verify | head -20  # Should show manifest.json, popup.html, etc.
   - [ ] scripting
   - [ ] storage
   - [ ] tabs
-  - [ ] notifications
+  - [ ] alarms
   - [ ] <all_urls>
   - [ ] https://services.leadconnectorhq.com/*
   - [ ] https://rest.gohighlevel.com/*
@@ -275,7 +275,7 @@ URL: `https://chrome.google.com/webstore/devconsole`
 **Step 2: Click "+ New Item"**
 
 **Step 3: Upload Your ZIP**
-- Upload: `webstore-kit/Clone2GHL_v1.0.1_webstore.zip`
+- Upload: `webstore-kit/Clone2GHL_v1.0.3_webstore.zip`
 
 **Step 4: Fill Out Store Listing**
 
@@ -286,7 +286,7 @@ URL: `https://chrome.google.com/webstore/devconsole`
 | Description | [Full description from Step 2] | [ ] |
 | Category | Productivity | [ ] |
 | Language | English | [ ] |
-| Privacy Policy URL | https://preview-1777215622669307854.vibepreview.com/ | [ ] |
+| Privacy Policy URL | https://clone2ghl.com/privacy-policy | [ ] |
 
 **Step 5: Upload Screenshots**
 - [ ] Screenshot 1: My Funnels (1280×800)
@@ -321,8 +321,8 @@ Complete these in order on the CWS edit page, then click Save Draft after each s
 - [ ] `A justification for host permission use is required`  
   Action: Privacy practices tab → add host permission use justification from `WEBSTORE_SUBMISSION.md` Step 7A.
 
-- [ ] `A justification for notifications is required`  
-  Action: Privacy practices tab → add notifications justification from `WEBSTORE_SUBMISSION.md` Step 7A.
+- [ ] `A justification for alarms is required`  
+  Action: Privacy practices tab → add alarms justification from `WEBSTORE_SUBMISSION.md` Step 7A.
 
 - [ ] `A justification for remote code use is required`  
   Action: Privacy practices tab → add remote code use justification from `WEBSTORE_SUBMISSION.md` Step 7A.
@@ -435,7 +435,7 @@ Once your extension is **approved and live:**
 
 | File | Purpose | Path | Status |
 |------|---------|------|--------|
-| Clone2GHL_v1.0.1.zip | Extension package | Root folder | ✅ |
+| Clone2GHL_v1.0.3.zip | Extension package | Root folder | ✅ |
 | PRIVACY_POLICY.md | Privacy policy document | `/Clone2GHL_CE/` | ✅ |
 | PERMISSIONS_JUSTIFICATION.md | Permission explanations | `/extension/` | ✅ |
 | USER_GUIDE.md | Comprehensive user guide (Markdown) | `/Clone2GHL_CE/` | ✅ |

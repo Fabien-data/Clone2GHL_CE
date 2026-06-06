@@ -1,0 +1,35 @@
+# ── Secrets — NEVER commit ────────────────────────────────────────────────
+.env
+*.env
+backend/.env
+# (…but keep the example templates)
+!*.env.example
+
+# ── Dependencies ──────────────────────────────────────────────────────────
+node_modules/
+
+# ── Build output ──────────────────────────────────────────────────────────
+dist/
+extension/dist/
+
+# ── Runtime database & cached assets (created at runtime / on the server) ──
+backend/data/db.json
+backend/data/db.json.tmp
+backend/data/db.json.bak
+backend/data/assets/
+backend/data/video-cache/
+
+# ── OS / editor / download junk ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.crdownload
+File created successfully
+
+# ── Loose binaries / handover artifacts (kept on disk, not in the code repo) ─
+demo.mp4
+Image1.png
+GHL_Clone_Extension_Blueprint.docx
+113f742c-f055-4e17-9fbb-7892ad450b95_Clone_to_GHL_Changes_.pdf
+
+# ── Separate nested project (has its own git repo) ────────────────────────
+Clone2GHL_2.0/

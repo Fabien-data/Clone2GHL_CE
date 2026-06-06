@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Authentic Dining & Catering</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=Lora:wght@400;500;600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Lora',Georgia,serif;background:#FEF3C7;color:#1C1917;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:#1C1917}
+img,svg{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+.container{max-width:1180px;margin:0 auto;padding:0 24px}
+.btn-primary{display:inline-block;background:#B91C1C;color:#FEF3C7;font-family:'Lora',serif;font-weight:600;padding:16px 38px;border-radius:50px;letter-spacing:.5px;border:2px solid #B91C1C;transition:all .3s ease;cursor:pointer;font-size:16px}
+.btn-primary:hover{background:#7F1D1D;border-color:#7F1D1D;transform:translateY(-3px);box-shadow:0 12px 28px rgba(127,29,29,.35)}
+.btn-secondary{display:inline-block;background:transparent;color:#FEF3C7;font-family:'Lora',serif;font-weight:600;padding:16px 38px;border-radius:50px;border:2px solid #FBBF24;transition:all .3s ease;font-size:16px}
+.btn-secondary:hover{background:#FBBF24;color:#7F1D1D}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.5)}50%{box-shadow:0 0 0 20px rgba(251,191,36,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+nav{position:sticky;top:0;background:rgba(254,243,199,.97);backdrop-filter:blur(10px);z-index:100;padding:18px 0;border-bottom:1px solid rgba(127,29,29,.1)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#7F1D1D;letter-spacing:.5px}
+.logo span{color:#B91C1C;font-style:italic}
+nav .btn-primary{padding:11px 26px;font-size:14px}
+.hero{background:linear-gradient(135deg,#7F1D1D 0%,#B91C1C 40%,#991B1B 80%,#7F1D1D 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#FEF3C7;padding:120px 0 140px;position:relative;overflow:hidden;text-align:center}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(251,191,36,.18),transparent 45%),radial-gradient(circle at 80% 80%,rgba(251,191,36,.12),transparent 50%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'Lora',serif;font-style:italic;color:#FBBF24;font-size:18px;letter-spacing:3px;margin-bottom:18px;opacity:0;animation:fadeInUp .8s ease forwards}
+.hero h1{font-size:clamp(40px,6vw,76px);font-weight:900;margin-bottom:20px;opacity:0;animation:fadeInUp 1s ease .15s forwards;letter-spacing:-1px;color:#FEF3C7}
+.hero p{font-size:clamp(17px,2vw,21px);max-width:680px;margin:0 auto 38px;opacity:0;animation:fadeInUp 1s ease .3s forwards;color:rgba(254,243,199,.92)}
+.hero-ctas{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .45s forwards}
+.trust-strip{margin-top:60px;display:flex;gap:48px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .6s forwards;font-family:'Playfair Display',serif;font-style:italic;color:rgba(254,243,199,.78);font-size:15px;letter-spacing:1.5px}
+.divider{position:relative;text-align:center;margin:24px 0;color:#B91C1C;font-size:24px;letter-spacing:8px}
+.divider::before,.divider::after{content:'';display:inline-block;width:60px;height:1px;background:#B91C1C;vertical-align:middle;margin:0 14px}
+section{padding:100px 0;position:relative}
+.section-tag{font-family:'Lora',serif;font-style:italic;color:#B91C1C;font-size:15px;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;text-align:center}
+.section-title{text-align:center;font-size:clamp(32px,4.5vw,52px);margin-bottom:14px}
+.section-sub{text-align:center;font-size:18px;color:#57534E;max-width:640px;margin:0 auto 60px}
+.trust{background:#7F1D1D;color:#FEF3C7;padding:32px 0}
+.trust .row{display:flex;flex-wrap:wrap;justify-content:space-around;align-items:center;gap:30px;font-family:'Playfair Display',serif;font-style:italic;font-size:16px;letter-spacing:1.5px;text-align:center;opacity:.92}
+.trust .row span{position:relative}
+.problems{background:#FEF3C7}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.problem-card{background:#fff;padding:38px 30px;border-radius:8px;border-top:4px solid #B91C1C;transition:all .35s ease;text-align:center}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(127,29,29,.18)}
+.problem-card .emoji{font-size:48px;margin-bottom:18px;display:block}
+.problem-card h3{font-size:22px;margin-bottom:10px;color:#7F1D1D}
+.problem-card p{color:#57534E;font-size:15px}
+.solution{background:#fff}
+.solution .split{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.solution h2{text-align:left;margin-bottom:18px}
+.solution .visual{height:480px;background:linear-gradient(135deg,#B91C1C 0%,#7F1D1D 100%);border-radius:12px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 60px rgba(127,29,29,.25)}
+.solution .visual::before{content:'';position:absolute;width:280px;height:280px;border:2px solid #FBBF24;border-radius:50%;animation:float 6s ease-in-out infinite}
+.solution .visual::after{content:'\1F374';font-size:120px;animation:float 6s ease-in-out infinite}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:14px 0 14px 38px;position:relative;font-size:17px;border-bottom:1px solid #FEF3C7}
+.checklist li::before{content:'\2713';position:absolute;left:0;top:14px;width:24px;height:24px;background:#FBBF24;color:#7F1D1D;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.menu-section{background:#FEF3C7}
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.menu-card{background:#fff;padding:32px 26px;border-radius:8px;text-align:center;transition:all .35s ease;border:1px solid rgba(127,29,29,.08)}
+.menu-card:hover{transform:translateY(-8px);box-shadow:0 22px 44px rgba(127,29,29,.18);border-color:#FBBF24}
+.menu-card .emoji{font-size:42px;margin-bottom:14px;display:block}
+.menu-card h3{font-size:22px;margin-bottom:8px;color:#7F1D1D;font-style:italic}
+.menu-card p{color:#57534E;font-size:14px}
+.steps{background:#fff}
+.steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:60px;position:relative}
+.step{text-align:center;position:relative}
+.step-num{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#B91C1C,#7F1D1D);color:#FBBF24;font-family:'Playfair Display',serif;font-size:30px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;box-shadow:0 12px 26px rgba(127,29,29,.3)}
+.step h3{font-size:22px;margin-bottom:10px;color:#7F1D1D}
+.step p{color:#57534E;font-size:15px}
+.testimonials{background:#FEF3C7}
+.testimonial-carousel{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 4px 28px;scrollbar-width:thin}
+.testimonial{flex:0 0 min(420px,90%);scroll-snap-align:start;background:#fff;padding:38px 32px;border-radius:8px;box-shadow:0 12px 30px rgba(127,29,29,.1);border-top:3px solid #FBBF24}
+.testimonial .stars{color:#FBBF24;font-size:18px;margin-bottom:14px;letter-spacing:2px}
+.testimonial .quote{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:#1C1917;margin-bottom:22px;line-height:1.55}
+.testimonial .who{font-weight:600;color:#7F1D1D;font-size:15px}
+.testimonial .who small{display:block;color:#78716C;font-weight:400;font-style:italic;margin-top:3px}
+.stats-section{background:#7F1D1D;color:#FEF3C7;padding:80px 0;background-image:linear-gradient(135deg,#7F1D1D,#451A03)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.stat .num{font-family:'Playfair Display',serif;font-size:60px;font-weight:900;color:#FBBF24;line-height:1}
+.stat .label{font-style:italic;margin-top:8px;font-size:15px;letter-spacing:1px;color:rgba(254,243,199,.85)}
+.pricing{background:#fff}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.price-card{background:#FEF3C7;padding:44px 32px;border-radius:8px;text-align:center;transition:all .35s ease;border:2px solid transparent;position:relative}
+.price-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(127,29,29,.18)}
+.price-card.featured{background:linear-gradient(180deg,#7F1D1D,#B91C1C);color:#FEF3C7;border-color:#FBBF24;transform:scale(1.03)}
+.price-card.featured h3,.price-card.featured .price{color:#FBBF24}
+.featured-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#FBBF24;color:#7F1D1D;padding:6px 18px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.price-card h3{font-size:26px;margin-bottom:10px;color:#7F1D1D;font-style:italic}
+.price-card .price{font-family:'Playfair Display',serif;font-size:46px;font-weight:900;color:#B91C1C;margin:14px 0}
+.price-card .price small{font-size:16px;font-weight:400;font-style:italic}
+.price-card ul{list-style:none;text-align:left;margin:22px 0 28px}
+.price-card ul li{padding:8px 0 8px 24px;position:relative;font-size:15px}
+.price-card ul li::before{content:'\2756';position:absolute;left:0;color:#FBBF24;font-size:14px}
+.faq{background:#FEF3C7}
+.faq-wrap{max-width:780px;margin:0 auto}
+details{background:#fff;border-radius:8px;margin-bottom:14px;border:1px solid rgba(127,29,29,.1);overflow:hidden;transition:box-shadow .3s ease}
+details[open]{box-shadow:0 12px 30px rgba(127,29,29,.12)}
+summary{padding:22px 26px;cursor:pointer;font-family:'Playfair Display',serif;font-weight:600;font-size:18px;color:#7F1D1D;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{font-size:20px;color:#B91C1C;transition:transform .3s ease}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 26px 22px;color:#57534E;font-size:15.5px}
+.cta-final{background:linear-gradient(135deg,#7F1D1D 0%,#B91C1C 50%,#7F1D1D 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#FEF3C7;padding:110px 0}
+.cta-final h2{text-align:center;color:#FEF3C7;font-size:clamp(32px,4.5vw,52px);margin-bottom:14px}
+.cta-final p{text-align:center;color:rgba(254,243,199,.9);font-size:18px;max-width:620px;margin:0 auto 44px}
+form{max-width:640px;margin:0 auto;background:#FEF3C7;padding:40px;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,.3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+form input,form select{width:100%;padding:14px 16px;border:1.5px solid #E7E5E4;border-radius:6px;font-family:'Lora',serif;font-size:15px;background:#fff;color:#1C1917;transition:border-color .25s ease;margin-bottom:16px}
+.form-row input{margin-bottom:0}
+form input:focus,form select:focus{outline:none;border-color:#B91C1C}
+form button{width:100%;background:#B91C1C;color:#FEF3C7;border:none;padding:18px;border-radius:50px;font-family:'Playfair Display',serif;font-weight:700;font-size:18px;cursor:pointer;letter-spacing:1px;transition:all .3s ease;animation:pulse 2.4s ease-in-out infinite;font-style:italic}
+form button:hover{background:#7F1D1D;transform:translateY(-2px)}
+footer{background:#1C1917;color:#A8A29E;padding:60px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:40px}
+footer h4{color:#FBBF24;font-size:18px;margin-bottom:18px;font-style:italic}
+footer p,footer a{color:#A8A29E;font-size:14.5px;line-height:1.85;display:block}
+footer a:hover{color:#FBBF24}
+.social-row{display:flex;gap:14px;margin-top:18px}
+.social-row a{width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,.1);display:flex;align-items:center;justify-content:center;color:#FBBF24;transition:all .25s ease}
+.social-row a:hover{background:#FBBF24;color:#7F1D1D}
+.copyright{border-top:1px solid #292524;padding-top:24px;text-align:center;font-size:13px;font-style:italic}
+@media (max-width:768px){
+.problem-grid,.menu-grid,.pricing-grid,.steps-row,.stats-grid,.footer-grid{grid-template-columns:1fr}
+.solution .split{grid-template-columns:1fr;gap:40px}
+.form-row{grid-template-columns:1fr;gap:0}
+.hero{padding:80px 0 100px}
+section{padding:70px 0}
+form{padding:28px 20px}
+.trust-strip{gap:20px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<div class="logo">{{location.name}}<span>.</span></div>
+<a href="#contact" class="btn-primary">Reserve a Table</a>
+</div>
+</nav>
+
+<header class="hero">
+<div class="container">
+<span class="hero-tag">— A CULINARY EXPERIENCE —</span>
+<h1>Authentic.<br>Memorable.<br>Unforgettable.</h1>
+<p>Reservations open for our chef's tasting menu. Private events and catering also available.</p>
+<div class="hero-ctas">
+<a href="#contact" class="btn-primary">Reserve a Table</a>
+<a href="#menu" class="btn-secondary">View Our Menu</a>
+</div>
+<div class="trust-strip">
+<span>FEATURED IN EATER</span>
+<span>NEW YORK TIMES</span>
+<span>MICHELIN RECOMMENDED</span>
+<span>4.8 OPENTABLE</span>
+</div>
+</div>
+</header>
+
+<section class="trust">
+<div class="container">
+<div class="row">
+<span>Open 7 Days &middot; 5pm – 11pm</span>
+<span>Located in {{location.city}}</span>
+<span>Private Dining Available</span>
+<span>Full Bar &middot; Sommelier on Staff</span>
+</div>
+</div>
+</section>
+
+<section class="problems">
+<div class="container">
+<div class="section-tag">The Modern Diner's Dilemma</div>
+<h2 class="section-title">Tired of Forgettable Meals?</h2>
+<div class="divider">&#10047;</div>
+<div class="problem-grid">
+<div class="problem-card"><span class="emoji">&#127869;</span><h3>Same Old Menus</h3><p>Chain restaurants and copy-paste menus that all taste the same. You want a meal that surprises you.</p></div>
+<div class="problem-card"><span class="emoji">&#9203;</span><h3>Rushed Service</h3><p>Loud rooms, hurried servers, no time to actually enjoy the moment. Dining out should feel like an event.</p></div>
+<div class="problem-card"><span class="emoji">&#129382;</span><h3>Where's the Hospitality?</h3><p>A great meal is more than food. It's warm welcomes, attentive service, and being made to feel at home.</p></div>
+</div>
+</div>
+</section>
+
+<section class="solution">
+<div class="container">
+<div class="split">
+<div>
+<div class="section-tag" style="text-align:left">Our Promise</div>
+<h2>A Table Set With Intention.</h2>
+<p style="margin-bottom:20px;color:#57534E;font-size:17px">Every dish is crafted by our chef, every ingredient sourced locally, every plate presented with care. We don't rush you. We host you.</p>
+<ul class="checklist">
+<li>Daily-changing seasonal menu, sourced from local farms</li>
+<li>Award-winning wine pairings by our in-house sommelier</li>
+<li>Intimate 48-seat dining room — never crowded, always warm</li>
+<li>Private dining room for celebrations of 12–30 guests</li>
+<li>Off-site catering for events of 50 to 500 guests</li>
+</ul>
+</div>
+<div class="visual"></div>
+</div>
+</div>
+</section>
+
+<section class="menu-section" id="menu">
+<div class="container">
+<div class="section-tag">Chef's Signatures</div>
+<h2 class="section-title">From Our Kitchen</h2>
+<div class="divider">&#10047;</div>
+<p class="section-sub">Six signature dishes that capture who we are. Menu rotates seasonally.</p>
+<div class="menu-grid">
+<div class="menu-card"><span class="emoji">&#129385;</span><h3>Wagyu Tartare</h3><p>Hand-cut A5 wagyu, smoked egg yolk, sourdough toast points.</p></div>
+<div class="menu-card"><span class="emoji">&#127844;</span><h3>Heirloom Beet Carpaccio</h3><p>Roasted heirloom beets, whipped goat cheese, pistachio dust.</p></div>
+<div class="menu-card"><span class="emoji">&#129372;</span><h3>Diver Scallops</h3><p>Pan-seared sea scallops, cauliflower purée, brown butter caper sauce.</p></div>
+<div class="menu-card"><span class="emoji">&#129385;</span><h3>Dry-Aged Ribeye</h3><p>45-day dry-aged prime ribeye, bone-marrow butter, charred shallot.</p></div>
+<div class="menu-card"><span class="emoji">&#127837;</span><h3>Truffle Risotto</h3><p>Carnaroli risotto, black winter truffle, aged parmigiano-reggiano.</p></div>
+<div class="menu-card"><span class="emoji">&#127853;</span><h3>Olive Oil Cake</h3><p>House olive oil cake, mascarpone, citrus segments, honey drizzle.</p></div>
+</div>
+</div>
+</section>
+
+<section class="steps">
+<div class="container">
+<div class="section-tag">Your Evening With Us</div>
+<h2 class="section-title">How It Works</h2>
+<div class="divider">&#10047;</div>
+<div class="steps-row">
+<div class="step"><div class="step-num">I</div><h3>Reserve</h3><p>Book a table, call ahead, or inquire about private events through the form below.</p></div>
+<div class="step"><div class="step-num">II</div><h3>Arrive</h3><p>Be greeted at the door, walked to your table, and offered the wine list and seasonal menu.</p></div>
+<div class="step"><div class="step-num">III</div><h3>Indulge</h3><p>Settle in for an unhurried evening of plates designed to be shared, savored, and remembered.</p></div>
+</div>
+</div>
+</section>
+
+<section class="testimonials">
+<div class="container">
+<div class="section-tag">Words From Our Guests</div>
+<h2 class="section-title">What Diners Say</h2>
+<div class="divider">&#10047;</div>
+<div class="testimonial-carousel">
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"The tasting menu was the best meal we've had in {{location.city}} in years. The wine pairings were thoughtful and the service felt like family."</div><div class="who">Eleanor &amp; James M.<small>Anniversary Dinner</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"We hosted our company holiday party in the private dining room. From the menu planning to the night of, every detail was perfect. Truly elevated."</div><div class="who">Sandra R.<small>Corporate Event</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"They catered our wedding for 120 guests. Months later, people are still talking about the lamb course. Worth every dollar and then some."</div><div class="who">Marcus &amp; Olivia T.<small>Wedding Catering</small></div></div>
+</div>
+</div>
+</section>
+
+<section class="stats-section">
+<div class="container">
+<div class="stats-grid">
+<div class="stat"><div class="num">12</div><div class="label">Years In Business</div></div>
+<div class="stat"><div class="num">48</div><div class="label">Seats &middot; Always Intimate</div></div>
+<div class="stat"><div class="num">4.8&#9733;</div><div class="label">OpenTable Rating</div></div>
+<div class="stat"><div class="num">500+</div><div class="label">Events Catered</div></div>
+</div>
+</div>
+</section>
+
+<section class="pricing">
+<div class="container">
+<div class="section-tag">Dining Options</div>
+<h2 class="section-title">Choose Your Experience</h2>
+<div class="divider">&#10047;</div>
+<div class="pricing-grid">
+<div class="price-card"><h3>Chef's Tasting</h3><div class="price">$95<small>/per person</small></div><ul><li>7-course seasonal menu</li><li>Optional wine pairing +$65</li><li>2.5 hour experience</li><li>Available Tue – Sun</li><li>Vegetarian option available</li></ul><a href="#contact" class="btn-primary">Reserve Tasting</a></div>
+<div class="price-card featured"><div class="featured-badge">Most Popular</div><h3>Private Dining</h3><div class="price">12–30<small> guests</small></div><ul><li>Dedicated private room</li><li>Custom prix-fixe menu</li><li>Personal sommelier</li><li>Birthdays, anniversaries, corporate</li><li>$120–$185 per person</li></ul><a href="#contact" class="btn-primary">Inquire Now</a></div>
+<div class="price-card"><h3>Off-Site Catering</h3><div class="price">50+<small> guests</small></div><ul><li>Weddings &amp; large events</li><li>Custom menu development</li><li>Full-service staff included</li><li>Bar &amp; beverage program</li><li>Quote on consultation</li></ul><a href="#contact" class="btn-primary">Request Quote</a></div>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<div class="container">
+<div class="section-tag">Common Questions</div>
+<h2 class="section-title">Before You Visit</h2>
+<div class="divider">&#10047;</div>
+<div class="faq-wrap">
+<details><summary>How far in advance should I make a reservation?<span class="chevron">&#9662;</span></summary><p>For weeknights, 1–2 weeks ahead is typically fine. Friday and Saturday evenings book 3–4 weeks out, and holiday weekends can fill 6+ weeks in advance. For private dining or catering, please inquire as early as possible.</p></details>
+<details><summary>Do you accommodate dietary restrictions?<span class="chevron">&#9662;</span></summary><p>Absolutely. We offer vegetarian, vegan, and gluten-free variations of our tasting menu with 48 hours' notice. Please mention any allergies or restrictions when booking and we'll do our best to delight you.</p></details>
+<details><summary>What is the dress code?<span class="chevron">&#9662;</span></summary><p>Smart casual or business attire. No athletic wear or shorts in the main dining room. We want you to feel comfortable, but also feel that you're somewhere special.</p></details>
+<details><summary>Is there a cancellation policy?<span class="chevron">&#9662;</span></summary><p>Reservations may be canceled or modified up to 24 hours in advance with no charge. Tasting menus and private dining have a $50 per person hold that is fully refunded with timely cancellation.</p></details>
+<details><summary>Do you offer gift cards?<span class="chevron">&#9662;</span></summary><p>Yes — physical and digital gift cards in any denomination. They never expire and are redeemable for dining, catering, or wine purchases. Email {{location.email}} to order.</p></details>
+<details><summary>Can I host an event with more than 30 guests?<span class="chevron">&#9662;</span></summary><p>For events of 30–48 guests, we can offer full restaurant buyouts on select evenings. For 50+ guests, our off-site catering program brings the experience to your venue of choice. Inquire below for details.</p></details>
+</div>
+</div>
+</section>
+
+<section class="cta-final">
+<div class="container">
+<h2>Reserve Your Table</h2>
+<p>Fill out the form and our hospitality team will confirm your reservation within 2 hours.</p>
+<form id="contact" method="post">
+<input type="text" name="full_name" placeholder="Your Full Name" required>
+<div class="form-row">
+<input type="email" name="email" placeholder="Email Address" required>
+<input type="tel" name="phone" placeholder="Phone Number" required>
+</div>
+<div class="form-row">
+<select name="party_size" required>
+<option value="">Party Size</option>
+<option>1 – 2 guests</option>
+<option>3 – 4 guests</option>
+<option>5 – 6 guests</option>
+<option>7 – 10 guests</option>
+<option>10+ (Private Event)</option>
+</select>
+<input type="date" name="reservation_date" required>
+</div>
+<select name="occasion" required>
+<option value="">Occasion</option>
+<option>Dinner</option>
+<option>Anniversary</option>
+<option>Birthday</option>
+<option>Business Dinner</option>
+<option>Private Event</option>
+<option>Catering Inquiry</option>
+</select>
+<button type="submit">Request Reservation &rarr;</button>
+</form>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="logo" style="color:#FBBF24;margin-bottom:14px">{{location.name}}<span style="color:#B91C1C">.</span></div>
+<p>An intimate culinary destination in {{location.city}}. Reservations recommended. Walk-ins welcomed at the bar.</p>
+<div class="social-row">
+<a href="#" aria-label="Instagram">IG</a>
+<a href="#" aria-label="Facebook">FB</a>
+<a href="#" aria-label="TripAdvisor">TA</a>
+<a href="#" aria-label="OpenTable">OT</a>
+</div>
+</div>
+<div>
+<h4>Visit</h4>
+<p>{{location.fullAddress}}</p>
+<p>{{location.city}}</p>
+</div>
+<div>
+<h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<a href="#contact">Reservations</a>
+</div>
+</div>
+<div class="copyright">&copy; {{location.name}}. All rights reserved. &nbsp;&middot;&nbsp; Crafted with care.</div>
+</div>
+</footer>
+
+</body>
+</html>

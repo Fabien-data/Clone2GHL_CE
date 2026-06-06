@@ -10,8 +10,18 @@ function defaultPreferences(userId) {
     theme: 'dark',
     defaultNiche: 'general',
     notifications: true,
+    affiliateUrl: '', // the user's own GHL affiliate/referral link (shareable)
     updatedAt: new Date().toISOString(),
   };
+}
+
+function isHttpUrl(value) {
+  try {
+    const u = new URL(String(value));
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 router.get('/', authRequired, async (req, res) => {
@@ -21,7 +31,11 @@ router.get('/', authRequired, async (req, res) => {
 });
 
 router.patch('/', authRequired, async (req, res) => {
-  const { theme, defaultNiche, notifications } = req.body || {};
+  const { theme, defaultNiche, notifications, affiliateUrl } = req.body || {};
+
+  if (affiliateUrl != null && affiliateUrl !== '' && !isHttpUrl(affiliateUrl)) {
+    return res.status(400).json({ error: 'affiliateUrl must be a valid http(s) URL.' });
+  }
 
   await writeDb((draft) => {
     let prefs = draft.preferences.find(p => p.userId === req.user.userId);
@@ -38,6 +52,9 @@ router.patch('/', authRequired, async (req, res) => {
     }
     if (typeof notifications === 'boolean') {
       prefs.notifications = notifications;
+    }
+    if (typeof affiliateUrl === 'string') {
+      prefs.affiliateUrl = affiliateUrl.trim().slice(0, 500);
     }
 
     prefs.updatedAt = new Date().toISOString();

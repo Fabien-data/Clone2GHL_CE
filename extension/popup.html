@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Clone2GHL</title>
+  <link rel="icon" type="image/png" href="icons/logo.png">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -12,23 +13,22 @@
     <!-- Header -->
     <div class="popup-header">
       <div class="brand">
-        <span class="brand-icon">⚡</span>
-        <span class="brand-name">Clone<span class="brand-accent">2</span>GHL</span>
+        <img src="icons/logo.png" alt="Clone2GHL" class="brand-logo">
       </div>
       <div class="plan-badge" id="plan-badge">FREE</div>
     </div>
 
     <!-- Current Page Card -->
     <div class="page-card">
-      <div class="page-card-label">Current page</div>
+      <div class="page-card-label" data-i18n="currentPage">Current page</div>
       <div class="page-title" id="page-title">Loading…</div>
       <div class="page-url" id="page-url">—</div>
     </div>
 
     <!-- Niche Selector -->
     <div class="field-group">
-      <label class="field-label">Niche / Industry</label>
-      <select class="field-select" id="niche-select">
+      <label class="field-label" for="niche-select" data-i18n="nicheIndustry">Niche / Industry</label>
+      <select class="field-select" id="niche-select" data-i18n-aria="nicheIndustry">
         <option value="general">Auto-detect</option>
         <option value="plumber">Plumber</option>
         <option value="electrician">Electrician</option>
@@ -52,42 +52,44 @@
     <div class="options-row">
       <div class="option-toggle">
         <div class="option-info">
-          <div class="option-label">AI Optimize</div>
-          <div class="option-sub">Rewrite copy with GPT-4o</div>
+          <div class="option-label" data-i18n="aiOptimize">AI Optimize</div>
+          <div class="option-sub" data-i18n="aiOptimizeSub">Rewrite copy with GPT-4o</div>
         </div>
         <label class="toggle">
-          <input type="checkbox" id="ai-toggle">
+          <input type="checkbox" id="ai-toggle" aria-label="Toggle AI copy optimization" data-i18n-aria="aiOptimize">
           <span class="toggle-slider"></span>
         </label>
       </div>
     </div>
 
     <!-- Status -->
-    <div class="status-box" id="status-box" style="display:none;"></div>
+    <div class="status-box" id="status-box" role="status" aria-live="polite" style="display:none;"></div>
 
     <!-- Main CTA -->
-    <button class="btn-clone" id="btn-clone">
+    <button class="btn-clone" id="btn-clone" data-i18n="clonePage">
       ⚡ Clone This Page
     </button>
 
     <!-- Credits -->
-    <div class="credits-bar" id="credits-bar"></div>
+    <div class="credits-bar" id="credits-bar" role="status" aria-live="polite"></div>
 
     <!-- Nav Links -->
-    <div class="nav-links">
-      <button class="nav-link" id="btn-dashboard">
+    <nav class="nav-links" aria-label="Quick navigation">
+      <button class="nav-link" id="btn-dashboard" data-i18n="openDashboard">
         📊 Dashboard
       </button>
-      <button class="nav-link" id="btn-library">
+      <button class="nav-link" id="btn-library" data-i18n="library">
         📚 Library
       </button>
-      <button class="nav-link" id="btn-settings">
+      <button class="nav-link" id="btn-settings" data-i18n="settings">
         ⚙️ Settings
       </button>
-    </div>
+    </nav>
 
   </div>
 
+  <script src="compat.js"></script>
+  <script src="upgradeLogic.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

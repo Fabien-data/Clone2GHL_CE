@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} | Professional Moving Company</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1C1917;background:#FFF7ED;line-height:1.6}
+h1,h2,h3,h4{font-family:'Manrope',sans-serif;letter-spacing:-.02em;color:#431407}
+a{color:inherit;text-decoration:none}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(251,146,60,.55)}50%{box-shadow:0 0 0 22px rgba(251,146,60,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes drive{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+@keyframes shake{0%,100%{transform:translateY(0)}25%{transform:translateY(-2px)}75%{transform:translateY(2px)}}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:2px solid #FFEDD5;padding:14px 0;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Manrope',sans-serif;font-weight:900;font-size:22px;color:#7C2D12}
+.logo-mark{width:42px;height:42px;background:linear-gradient(135deg,#7C2D12,#FB923C);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;box-shadow:0 4px 10px rgba(124,45,18,.3)}
+.nav-cta{display:flex;align-items:center;gap:14px}
+.nav-cta .phone{color:#7C2D12;font-weight:700;font-size:15px}
+.nav .btn-primary{padding:10px 22px;font-size:14px;animation:none}
+
+/* BUTTONS */
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#FB923C,#F97316);color:#fff;font-weight:800;padding:16px 32px;border-radius:10px;transition:all .3s;border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:15px;animation:pulse 2.4s infinite;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 6px 18px rgba(251,146,60,.3)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(251,146,60,.5)}
+.btn-secondary{display:inline-block;background:transparent;color:#fff;font-weight:700;padding:14px 30px;border-radius:10px;border:2px solid rgba(255,255,255,.4);transition:all .3s}
+.btn-secondary:hover{border-color:#FB923C;color:#FB923C;background:rgba(0,0,0,.2)}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#431407 0%,#7C2D12 40%,#9A3412 70%,#431407 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;padding:90px 0 130px;position:relative;overflow:hidden}
+.hero::before{content:"📦";position:absolute;font-size:380px;right:-40px;bottom:-60px;opacity:.05;animation:float 7s ease-in-out infinite}
+.hero::after{content:"🚛";position:absolute;font-size:50px;left:0;bottom:30px;animation:drive 18s linear infinite;opacity:.25}
+.hero-inner{position:relative;z-index:2;max-width:780px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(251,146,60,.18);color:#FDBA74;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:22px;border:1px solid rgba(251,146,60,.4);animation:fadeInUp .8s ease}
+.hero h1{font-size:clamp(38px,5.4vw,66px);font-weight:900;line-height:1.05;color:#fff;margin-bottom:22px;animation:fadeInUp .8s .1s both}
+.hero h1 em{font-style:normal;color:#FB923C;display:inline-block;position:relative}
+.hero h1 em::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:8px;background:rgba(251,146,60,.25);z-index:-1;border-radius:4px}
+.hero-sub{font-size:20px;color:#FED7AA;margin-bottom:34px;animation:fadeInUp .8s .2s both;max-width:600px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;animation:fadeInUp .8s .3s both}
+.trust-strip{margin-top:42px;display:flex;gap:24px;flex-wrap:wrap;animation:fadeInUp .8s .4s both}
+.trust-pill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);backdrop-filter:blur(6px);padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.15)}
+
+/* BADGE BAR */
+.badges{background:#fff;padding:36px 0;border-bottom:1px solid #FFEDD5}
+.badges-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;text-align:center}
+.badge-item{padding:8px}
+.badge-num{font-family:'Manrope',sans-serif;font-size:32px;font-weight:900;color:#7C2D12;line-height:1;display:block}
+.badge-label{font-size:13px;color:#57534E;font-weight:600;margin-top:4px;display:block}
+
+/* SECTIONS */
+.section{padding:90px 0}
+.section-head{text-align:center;max-width:740px;margin:0 auto 56px}
+.section-head h2{font-size:clamp(30px,4vw,48px);font-weight:900;color:#431407;margin-bottom:14px;line-height:1.15}
+.section-head p{font-size:18px;color:#57534E}
+.tag{display:inline-block;color:#FB923C;font-weight:800;font-size:13px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:14px;background:#FFEDD5;padding:6px 16px;border-radius:6px;border:1px solid #FED7AA}
+
+/* PAIN */
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pain-card{background:#fff;padding:36px 28px;border-radius:14px;border:1px solid #FFEDD5;border-left:5px solid #FB923C;transition:all .35s;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.pain-card:hover{transform:translateY(-8px);box-shadow:0 18px 36px rgba(124,45,18,.12)}
+.pain-icon{font-size:42px;margin-bottom:14px;display:inline-block}
+.pain-card h3{font-size:21px;margin-bottom:10px}
+.pain-card p{color:#57534E}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#fff 0%,#FFF7ED 100%)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.split h2{font-size:42px;margin-bottom:18px}
+.split p{font-size:17px;color:#57534E}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:14px 0 14px 40px;position:relative;font-size:17px;border-bottom:1px solid #FED7AA;color:#1C1917}
+.checklist li::before{content:"";position:absolute;left:0;top:16px;width:26px;height:26px;background:#FB923C;border-radius:6px;transform:rotate(45deg)}
+.checklist li::after{content:"✓";position:absolute;left:7px;top:14px;color:#fff;font-weight:900;font-size:14px}
+.truck-visual{aspect-ratio:1.1;background:linear-gradient(135deg,#7C2D12 0%,#431407 100%);border-radius:18px;position:relative;overflow:hidden;box-shadow:0 30px 60px rgba(124,45,18,.3);display:flex;align-items:center;justify-content:center}
+.truck-visual::before{content:"";position:absolute;bottom:0;left:0;right:0;height:80px;background:repeating-linear-gradient(90deg,#FB923C,#FB923C 20px,#431407 20px,#431407 40px);opacity:.4}
+.truck-visual::after{content:"";position:absolute;top:30%;left:0;right:0;height:1px;background:rgba(251,146,60,.3)}
+.truck-emoji{font-size:160px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.4));z-index:2;animation:float 5s ease-in-out infinite}
+
+/* SERVICES */
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.service-card{background:#fff;padding:32px 26px;border-radius:14px;transition:all .35s;border:1px solid #FFEDD5;position:relative;overflow:hidden}
+.service-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:4px;background:linear-gradient(90deg,#FB923C,#F97316);transform:scaleX(0);transform-origin:left;transition:transform .35s}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(124,45,18,.12)}
+.service-card:hover::before{transform:scaleX(1)}
+.service-icon{width:60px;height:60px;background:linear-gradient(135deg,#7C2D12,#FB923C);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:18px;color:#fff}
+.service-card h3{font-size:19px;margin-bottom:8px}
+.service-card p{color:#57534E;font-size:15px}
+
+/* STEPS */
+.steps{background:#431407;color:#fff;position:relative;overflow:hidden}
+.steps::before{content:"";position:absolute;top:30%;left:-10%;width:120%;height:2px;background:repeating-linear-gradient(90deg,#FB923C,#FB923C 10px,transparent 10px,transparent 20px);opacity:.3}
+.steps .section-head h2{color:#fff}
+.steps .section-head p{color:#FED7AA}
+.steps .tag{background:rgba(251,146,60,.2);color:#FB923C;border-color:rgba(251,146,60,.4)}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative;z-index:2}
+.step{text-align:center;padding:36px 24px;background:rgba(255,255,255,.04);border-radius:14px;border:1px solid rgba(255,255,255,.1);transition:all .35s}
+.step:hover{background:rgba(255,255,255,.08);transform:translateY(-6px)}
+.step-num{width:76px;height:76px;background:linear-gradient(135deg,#FB923C,#F97316);color:#fff;border-radius:14px;font-family:'Manrope',sans-serif;font-weight:900;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 20px rgba(251,146,60,.4);animation:float 5s ease-in-out infinite}
+.step:nth-child(2) .step-num{animation-delay:.5s}
+.step:nth-child(3) .step-num{animation-delay:1s}
+.step h3{font-size:22px;margin-bottom:8px;color:#fff}
+.step p{color:#FED7AA}
+
+/* TESTIMONIALS */
+.testimonials-scroll{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 4px 24px}
+.test-card{flex:0 0 380px;scroll-snap-align:start;background:#fff;padding:32px;border-radius:14px;border:1px solid #FFEDD5;border-top:4px solid #FB923C;box-shadow:0 6px 18px rgba(124,45,18,.06)}
+.stars{color:#FB923C;font-size:18px;margin-bottom:12px;letter-spacing:2px}
+.test-card blockquote{font-size:16px;color:#1C1917;line-height:1.6;margin-bottom:20px;font-style:italic}
+.test-author{display:flex;align-items:center;gap:12px}
+.test-avatar{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#7C2D12,#FB923C);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Manrope',sans-serif}
+.test-name{font-weight:700;font-size:15px;color:#431407}
+.test-meta{font-size:13px;color:#78716C}
+
+/* STATS */
+.stats{background:linear-gradient(135deg,#7C2D12,#431407);color:#fff;position:relative;overflow:hidden}
+.stats::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(251,146,60,.12),transparent 60%)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;position:relative;z-index:2}
+.stat-num{font-family:'Manrope',sans-serif;font-size:54px;font-weight:900;color:#FB923C;line-height:1}
+.stat-label{margin-top:8px;color:#FED7AA;font-size:15px}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}
+.price-card{background:#fff;border-radius:16px;padding:36px 30px;border:2px solid #FFEDD5;transition:all .35s;position:relative;display:flex;flex-direction:column}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 24px 50px rgba(124,45,18,.12)}
+.price-card.featured{border-color:#FB923C;background:linear-gradient(180deg,#fff,#FFF7ED);transform:scale(1.04);box-shadow:0 18px 40px rgba(251,146,60,.2)}
+.price-card.featured:hover{transform:scale(1.04) translateY(-6px)}
+.featured-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#FB923C,#F97316);color:#fff;font-weight:900;font-size:12px;padding:6px 18px;border-radius:6px;letter-spacing:1.5px}
+.price-name{font-family:'Manrope',sans-serif;font-size:22px;font-weight:800;color:#431407;margin-bottom:6px}
+.price-tagline{font-size:14px;color:#78716C;margin-bottom:14px}
+.price-includes{font-family:'Manrope',sans-serif;font-size:18px;font-weight:700;color:#7C2D12;margin:12px 0 18px;padding:14px;background:#FFF7ED;border-radius:8px;text-align:center}
+.price-features{list-style:none;margin-bottom:26px;flex-grow:1}
+.price-features li{padding:8px 0 8px 28px;position:relative;font-size:15px;color:#1C1917}
+.price-features li::before{content:"✓";position:absolute;left:0;color:#FB923C;font-weight:900;font-size:18px}
+.price-card .btn-primary{width:100%;text-align:center;animation:none}
+
+/* FAQ */
+.faq{max-width:820px;margin:0 auto}
+.faq details{background:#fff;border-radius:12px;margin-bottom:14px;border:1px solid #FFEDD5;overflow:hidden;transition:all .3s}
+.faq details[open]{border-color:#FB923C;box-shadow:0 8px 20px rgba(251,146,60,.12)}
+.faq summary{padding:22px 26px;font-family:'Manrope',sans-serif;font-weight:700;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;list-style:none;color:#431407}
+.faq summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .3s;color:#FB923C;font-weight:900;font-size:22px}
+.faq details[open] .chevron{transform:rotate(180deg)}
+.faq-body{padding:0 26px 24px;color:#57534E;line-height:1.7}
+
+/* CTA FORM */
+.cta-section{background:linear-gradient(135deg,#7C2D12 0%,#FB923C 50%,#7C2D12 100%);background-size:200% 200%;animation:gradient 10s ease infinite;color:#fff;padding:100px 0}
+.cta-section h2{font-size:clamp(32px,4.5vw,48px);text-align:center;margin-bottom:12px;color:#fff}
+.cta-section .sub{text-align:center;font-size:18px;max-width:680px;margin:0 auto 40px;color:#FED7AA}
+.form-card{max-width:680px;margin:0 auto;background:#fff;color:#1C1917;border-radius:16px;padding:44px;box-shadow:0 30px 60px rgba(67,20,7,.3)}
+.form-card h3{font-family:'Manrope',sans-serif;font-size:24px;color:#431407;margin-bottom:8px;text-align:center;font-weight:800}
+.form-card .sub-form{color:#78716C;text-align:center;font-size:15px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.form-card input,.form-card select{width:100%;padding:14px 16px;border-radius:10px;border:2px solid #FFEDD5;background:#FFF7ED;color:#1C1917;font-size:15px;font-family:inherit;margin-bottom:14px;transition:all .2s}
+.form-card input:focus,.form-card select:focus{outline:none;border-color:#FB923C;background:#fff}
+.form-card .btn-primary{width:100%;padding:18px;font-size:16px;animation:pulse 2.4s infinite}
+.form-disclaimer{text-align:center;color:#78716C;font-size:13px;margin-top:14px}
+
+/* FOOTER */
+.footer{background:#1C1410;color:#FED7AA;padding:60px 0 26px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px}
+.footer h4{color:#fff;font-size:15px;margin-bottom:14px;text-transform:uppercase;letter-spacing:1px}
+.footer a,.footer p{display:block;color:#FED7AA;padding:4px 0;font-size:14px}
+.footer a:hover{color:#FB923C}
+.social-row{display:flex;gap:10px;margin-top:12px}
+.social-row a{width:36px;height:36px;background:#431407;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0;font-weight:700}
+.social-row a:hover{background:#FB923C;color:#1C1410}
+.copy{border-top:1px solid #431407;padding-top:24px;text-align:center;font-size:13px}
+
+@media (max-width:768px){
+  .badges-grid,.pain-grid,.services-grid,.steps-grid,.stats-grid,.pricing-grid{grid-template-columns:1fr}
+  .split,.footer-grid{grid-template-columns:1fr;gap:32px}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .section{padding:60px 0}
+  .hero{padding:60px 0 80px}
+  .price-card.featured{transform:none}
+  .price-card.featured:hover{transform:translateY(-6px)}
+  .badges-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-cta .phone{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo"><span class="logo-mark">📦</span> {{location.name}}</a>
+    <div class="nav-cta">
+      <a href="tel:{{location.phoneRaw}}" class="phone">📞 {{location.phone}}</a>
+      <a href="#contact" class="btn-primary">Free Quote</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow">▸ Local · Long-Distance · Commercial</span>
+    <h1>Move Stress-Free. <em>Save 30%.</em></h1>
+    <p class="hero-sub">Local & long-distance movers you can trust. Flat-rate pricing, professional crews, free packing supplies.</p>
+    <div class="hero-cta">
+      <a href="#contact" class="btn-primary">Get My Instant Quote</a>
+      <a href="tel:{{location.phoneRaw}}" class="btn-secondary">Call {{location.phone}}</a>
+    </div>
+    <div class="trust-strip">
+      <span class="trust-pill">🚛 DOT-Licensed</span>
+      <span class="trust-pill">🛡️ Fully Insured</span>
+      <span class="trust-pill">⭐ 4.8★ Rating</span>
+      <span class="trust-pill">🏛️ BBB A+</span>
+    </div>
+  </div>
+</section>
+
+<section class="badges">
+  <div class="container badges-grid">
+    <div class="badge-item"><span class="badge-num">15K+</span><span class="badge-label">Moves Completed</span></div>
+    <div class="badge-item"><span class="badge-num">4.8★</span><span class="badge-label">Customer Rating</span></div>
+    <div class="badge-item"><span class="badge-num">DOT</span><span class="badge-label">Federally Licensed</span></div>
+    <div class="badge-item"><span class="badge-num">BBB</span><span class="badge-label">A+ Accredited</span></div>
+    <div class="badge-item"><span class="badge-num">100%</span><span class="badge-label">Damage Coverage</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Why Moving Is Stressful</span>
+      <h2>Most Moving Companies Make It Worse.</h2>
+      <p>Hidden fees. Late trucks. Damaged furniture. We're rewriting the industry.</p>
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <span class="pain-icon">💸</span>
+        <h3>Hourly-Rate Surprises</h3>
+        <p>"$110/hour, 2-hour minimum" — and 9 hours later they hand you a $1,300 invoice with mystery fees stacked on top.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">📦</span>
+        <h3>Broken & Lost Items</h3>
+        <p>Grandma's china in pieces. Boxes labeled "fragile" treated like footballs. Lowball claims you fight for months.</p>
+      </div>
+      <div class="pain-card">
+        <span class="pain-icon">⏰</span>
+        <h3>No-Shows & Delays</h3>
+        <p>Crew arrives 4 hours late. Truck is too small. You miss your apartment closing because their schedule blew up.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <span class="tag">The {{location.name}} Way</span>
+        <h2>Flat-Rate Pricing. On-Time Crews. Zero Drama.</h2>
+        <p>Tell us what you're moving, where it's going, and we'll quote a flat price — guaranteed. No surprises, no upcharges, no nickel-and-diming.</p>
+        <ul class="checklist">
+          <li>Binding flat-rate quote — locked in writing</li>
+          <li>Background-checked, uniformed crews</li>
+          <li>FREE wardrobe boxes, blankets & tape</li>
+          <li>Full-value protection on every item</li>
+          <li>On-time guarantee or your move is FREE</li>
+        </ul>
+        <div style="margin-top:30px"><a href="#contact" class="btn-primary">Get My Flat-Rate Quote</a></div>
+      </div>
+      <div class="truck-visual"><div class="truck-emoji">🚛</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Moving Services</span>
+      <h2>Whatever You're Moving — We Handle It</h2>
+      <p>From a studio across town to a mansion across the country — we've moved it all.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card"><div class="service-icon">🏠</div><h3>Local Moving</h3><p>Same-day or scheduled local moves within 100 miles. Flat-rate pricing, no hourly surprises.</p></div>
+      <div class="service-card"><div class="service-icon">🌎</div><h3>Long-Distance</h3><p>State-to-state moves with dedicated trucks, GPS tracking, and binding price guarantees.</p></div>
+      <div class="service-card"><div class="service-icon">📦</div><h3>Packing Services</h3><p>Full-pack or partial-pack by professional crews. All materials and labor included.</p></div>
+      <div class="service-card"><div class="service-icon">🏢</div><h3>Commercial Moving</h3><p>Offices, retail, restaurants. After-hours scheduling, IT-safe handling, business-continuity focus.</p></div>
+      <div class="service-card"><div class="service-icon">🗄️</div><h3>Storage Solutions</h3><p>Climate-controlled short and long-term storage. Inventoried, palletized, 24/7 monitored.</p></div>
+      <div class="service-card"><div class="service-icon">🎹</div><h3>Specialty Items</h3><p>Pianos, safes, gun cabinets, antiques, art. Custom crating and specialized equipment.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section steps">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">How It Works</span>
+      <h2>3 Steps to a Stress-Free Move</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step"><div class="step-num">1</div><h3>Get Your Quote</h3><p>Fill out the form or call us. We give you a flat-rate binding quote in 30 minutes — no in-home visit required.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Lock Your Date</h3><p>Pick a date that works. We confirm crew, truck size, and timing. Free moving supplies delivered.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>We Handle Moving Day</h3><p>Uniformed crew arrives on time. Loads, drives, unloads, reassembles. You direct, we work.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#FFF7ED">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Customer Stories</span>
+      <h2>Real Moves. Real Reviews.</h2>
+    </div>
+    <div class="testimonials-scroll">
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"3BR house move with a piano and a 700lb safe. They quoted $2,150 — final bill was $2,150. On time, careful with the floors, finished an hour early. Best move I've ever done."</blockquote>
+        <div class="test-author"><div class="test-avatar">RJ</div><div><div class="test-name">Rebecca J.</div><div class="test-meta">Full Service · 3BR Local</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Moved Texas to Florida. They tracked the truck in real time, kept me updated, delivered exactly when promised. Not a single scratch on anything. Worth every penny."</blockquote>
+        <div class="test-author"><div class="test-avatar">CT</div><div><div class="test-name">Carlos T.</div><div class="test-meta">White Glove · Long-Distance</div></div></div>
+      </div>
+      <div class="test-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Office relocation, 22 employees, weekend timeline, zero downtime Monday. Their commercial team is unreal. Already booked them for our second location."</blockquote>
+        <div class="test-author"><div class="test-avatar">PM</div><div><div class="test-name">Priya M.</div><div class="test-meta">Commercial · Office Move</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div><div class="stat-num">15K+</div><div class="stat-label">Successful Moves</div></div>
+      <div><div class="stat-num">98%</div><div class="stat-label">On-Time Rate</div></div>
+      <div><div class="stat-num">4.8★</div><div class="stat-label">Avg Customer Rating</div></div>
+      <div><div class="stat-num">$0</div><div class="stat-label">Hidden Fees, Ever</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Service Tiers</span>
+      <h2>Pick the Move Experience That Fits</h2>
+      <p>Three flat-rate packages. No hourly surprises. All include insurance and supplies.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Basic Move</div>
+        <div class="price-tagline">Truck + crew, you pack</div>
+        <div class="price-includes">Truck + 2 Movers<br><span style="font-weight:500;font-size:14px;color:#78716C">+ blankets, dollies, supplies</span></div>
+        <ul class="price-features">
+          <li>Pro-grade truck (16'-26')</li>
+          <li>2 background-checked movers</li>
+          <li>All loading & unloading</li>
+          <li>Furniture wrapping</li>
+          <li>Free dollies & blankets</li>
+          <li>Basic damage protection</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Quote Basic Move</a>
+      </div>
+      <div class="price-card featured">
+        <span class="featured-tag">MOST POPULAR</span>
+        <div class="price-name">Full Service</div>
+        <div class="price-tagline">Everything packed for you</div>
+        <div class="price-includes">Basic + Packing<br><span style="font-weight:500;font-size:14px;color:#78716C">3 movers + all packing materials</span></div>
+        <ul class="price-features">
+          <li>Everything in Basic +</li>
+          <li>3-mover professional crew</li>
+          <li>All packing materials FREE</li>
+          <li>Full pack: kitchen, closets, art</li>
+          <li>Furniture disassembly</li>
+          <li>Full-value protection (FVP)</li>
+          <li>Priority moving date</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Quote Full Service</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">White Glove</div>
+        <div class="price-tagline">Doorstep to doorstep, done</div>
+        <div class="price-includes">Full Service + Unpack<br><span style="font-weight:500;font-size:14px;color:#78716C">+ setup at new home</span></div>
+        <ul class="price-features">
+          <li>Everything in Full Service +</li>
+          <li>Unpacking & box removal</li>
+          <li>Furniture reassembly</li>
+          <li>Closet & kitchen setup</li>
+          <li>TV / electronics reconnect</li>
+          <li>Concierge move coordinator</li>
+          <li>30-day post-move support</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Quote White Glove</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:#FFF7ED">
+  <div class="container">
+    <div class="section-head">
+      <span class="tag">Common Questions</span>
+      <h2>Moving FAQ</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Is your quote really binding? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes. Once you accept our quote, that's the maximum price you pay — period. The only way it changes is if YOU add services or items not on the original inventory.</div>
+      </details>
+      <details>
+        <summary>What's your damage policy? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Every move includes Released Liability ($0.60/lb basic). Full Service and White Glove tiers include Full Value Protection — we repair, replace, or reimburse damaged items at full replacement value. Claims processed within 30 days.</div>
+      </details>
+      <details>
+        <summary>Are packing supplies actually free? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Yes. Standard supplies (small/medium/large boxes, packing paper, tape, wardrobe boxes, blankets, dollies) are 100% free. Specialty items like custom crates for art or pianos may carry a fee — quoted up front, never surprise.</div>
+      </details>
+      <details>
+        <summary>How fast can you move us? <span class="chevron">▾</span></summary>
+        <div class="faq-body">For local moves, often same-day or next-day. For long-distance, typically within 5-10 business days from request. Peak season (May-September) books faster — request a quote early.</div>
+      </details>
+      <details>
+        <summary>What if the move takes longer than expected? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Doesn't matter. Your flat-rate quote covers the entire move regardless of duration. If our crew is slow, that's on us — not your wallet.</div>
+      </details>
+      <details>
+        <summary>Are you licensed and insured? <span class="chevron">▾</span></summary>
+        <div class="faq-body">Fully. We're federally licensed (USDOT), state-licensed, fully insured for cargo and general liability, workers' comp covered, BBB A+ accredited. Our license numbers are on every contract and our website.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Get Your Flat-Rate Moving Quote</h2>
+    <p class="sub">Binding price in 30 minutes. No in-home visit needed. No high-pressure sales.</p>
+    <div class="form-card">
+      <h3>Tell Us About Your Move</h3>
+      <p class="sub-form">We'll respond within 30 minutes with a binding flat-rate quote.</p>
+      <form>
+        <div class="form-row">
+          <input type="text" name="full_name" placeholder="Full Name *" required>
+          <input type="tel" name="phone" placeholder="Phone *" required>
+        </div>
+        <input type="email" name="email" placeholder="Email Address *" required>
+        <div class="form-row">
+          <input type="text" name="move_from_zip" placeholder="Moving FROM (ZIP) *" required>
+          <input type="text" name="move_to_zip" placeholder="Moving TO (ZIP) *" required>
+        </div>
+        <div class="form-row">
+          <input type="date" name="move_date" required>
+          <select name="home_size" required>
+            <option value="">Home Size *</option>
+            <option value="Studio">Studio</option>
+            <option value="1BR">1 Bedroom</option>
+            <option value="2BR">2 Bedrooms</option>
+            <option value="3BR">3 Bedrooms</option>
+            <option value="4BR+">4+ Bedrooms</option>
+          </select>
+        </div>
+        <select name="service_type" required>
+          <option value="">Service Type *</option>
+          <option value="Local">Local Move</option>
+          <option value="Long-Distance">Long-Distance Move</option>
+          <option value="Storage">Storage Only</option>
+          <option value="Commercial">Commercial / Office</option>
+        </select>
+        <button type="submit" class="btn-primary">Get My Free Quote</button>
+        <p class="form-disclaimer">🛡️ Binding quote · No spam · No obligation</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="logo" style="margin-bottom:12px;color:#fff"><span class="logo-mark">📦</span> {{location.name}}</div>
+        <p>Trusted moving company serving {{location.city}} and beyond. Flat-rate pricing, professional crews, and 15,000+ successful moves.</p>
+        <div class="social-row">
+          <a href="#">f</a><a href="#">ig</a><a href="#">in</a><a href="#">yt</a>
+        </div>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <a href="#">Local Moving</a>
+        <a href="#">Long-Distance</a>
+        <a href="#">Packing</a>
+        <a href="#">Storage</a>
+        <a href="#">Commercial</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Hours</h4>
+        <p>Mon–Sat: 7am–8pm</p>
+        <p>Sun: 9am–5pm</p>
+        <p>24/7 quote hotline</p>
+      </div>
+    </div>
+    <div class="copy">© {{location.name}}. All rights reserved. · USDOT Licensed · Fully Insured · BBB A+</div>
+  </div>
+</footer>
+
+</body>
+</html>

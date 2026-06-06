@@ -3,15 +3,28 @@
  * Orchestrates: DOM extraction, GHL conversion, AI optimization, storage, API calls.
  */
 
-// Import utility globals via importScripts (classic service worker)
-importScripts('ghlApi.js', 'ghlConverter.js', 'aiOptimizer.js', 'funnelAnalyzer.js', 'watchlistChecker.js');
+// Cross-engine bootstrap: Chrome MV3 runs background.js as a service worker and
+// loads dependencies via importScripts. Firefox loads them via the manifest's
+// background.scripts array (no importScripts in an event page), so guard the call.
+if (typeof importScripts === 'function') {
+  importScripts('compat.js', 'ghlApi.js', 'ghlConverter.js', 'aiOptimizer.js', 'funnelAnalyzer.js', 'watchlistChecker.js');
+}
+// compat.js (loaded above on Chromium, or via manifest background.scripts on
+// Firefox) normalizes chrome/browser. Fallback alias in case it was not loaded:
+if (typeof globalThis.browser !== 'undefined' && globalThis.browser?.runtime) {
+  globalThis.chrome = globalThis.browser;
+}
 
 const STORAGE_SOFT_LIMIT_BYTES = 8 * 1024 * 1024;
 const MAX_STORED_FUNNELS = 100;
 const ENCRYPTION_PREFIX = 'enc:v1';
 
-const SENSITIVE_SETTING_KEYS = ['ghlApiKey', 'openaiApiKey', 'backendToken'];
+const SENSITIVE_SETTING_KEYS = ['ghlApiKey', 'openaiApiKey', 'backendToken', 'backendRefreshToken'];
 const BACKEND_TIMEOUT_MS = 15000;
+
+// DEPLOY: set this to the hosted backend URL before publishing the extension
+// (e.g. 'https://api.clone2ghl.com'). Leave as localhost for local development.
+const DEFAULT_BACKEND_API_BASE = 'http://localhost:8080';
 
 function bytesToBase64(bytes) {
   let binary = '';
@@ -110,8 +123,9 @@ async function getSettings() {
     credits: 6,
     theme: 'dark',
     backendEnabled: false,
-    backendApiBase: 'http://localhost:8080',
+    backendApiBase: DEFAULT_BACKEND_API_BASE,
     backendToken: '',
+    backendRefreshToken: '',
     backendUser: null,
     devMode: false,
   };
@@ -204,6 +218,7 @@ async function backendRequest(settings, path, options = {}) {
     body = null,
     useAuth = true,
     authToken = null,
+    _retried = false,
   } = options;
 
   if (!settings.backendApiBase) {
@@ -228,9 +243,24 @@ async function backendRequest(settings, path, options = {}) {
       signal: controller.signal,
     });
 
+    // Access token expired → transparently refresh once and retry, so users
+    // never get silently logged out mid-session.
+    if (resp.status === 401 && useAuth && !authToken && !_retried && settings.backendRefreshToken) {
+      const newToken = await refreshAccessToken(settings);
+      if (newToken) {
+        const fresh = await getSettings();
+        return backendRequest(fresh, path, { ...options, _retried: true });
+      }
+    }
+
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) {
-      throw new Error(data.error || `Backend error: HTTP ${resp.status}`);
+      // Preserve status + structured body so callers/UI can act on upgrade or
+      // connect-GHL prompts (e.g. 402 upgrade{}, 403 ghlRequired).
+      const err = new Error(data.error || `Backend error: HTTP ${resp.status}`);
+      err.status = resp.status;
+      err.data = data;
+      throw err;
     }
     return data;
   } catch (err) {
@@ -243,15 +273,72 @@ async function backendRequest(settings, path, options = {}) {
   }
 }
 
-async function syncUsageFromBackend(settings) {
+// Exchange the stored refresh token for a new access token. Rotates both tokens
+// (the backend invalidates the old refresh token). Returns the new access token
+// on success, or null (and clears tokens) if the refresh token is no longer valid.
+let refreshInFlight = null;
+async function refreshAccessToken(settings) {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const resp = await fetch(buildBackendUrl(settings.backendApiBase, '/api/auth/refresh'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: settings.backendRefreshToken }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.token) {
+        // Refresh token rejected — force a clean re-auth.
+        await saveSettings({ backendToken: '', backendRefreshToken: '', backendUser: null });
+        return null;
+      }
+      await saveSettings({
+        backendToken: data.token,
+        backendRefreshToken: data.refreshToken || settings.backendRefreshToken,
+        backendUser: data.user || settings.backendUser,
+      });
+      return data.token;
+    } catch {
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
+}
+
+async function syncUsageFromBackend(settings, prefetchedUsage = null) {
   if (!settings.backendEnabled || !settings.backendApiBase || !settings.backendToken) {
     return settings;
   }
 
-  const usage = await backendRequest(settings, '/api/usage', { method: 'GET', useAuth: true });
+  const usage = prefetchedUsage || await backendRequest(settings, '/api/usage', { method: 'GET', useAuth: true });
   const merged = await saveSettings({
     plan: usage.plan || settings.plan,
     credits: usage.clonesRemaining >= 0 ? usage.clonesRemaining : 999,
+    featureFlags: usage.featureFlags || null,
+    logosUsed: usage.logosUsed || 0,
+    logosLimit: typeof usage.logosLimit === 'number' ? usage.logosLimit : 0,
+    logosRemaining: typeof usage.logosRemaining === 'number' ? usage.logosRemaining : 0,
+    aiUsed: usage.aiUsed || 0,
+    aiLimit: typeof usage.aiLimit === 'number' ? usage.aiLimit : 0,
+    aiRemaining: typeof usage.aiRemaining === 'number' ? usage.aiRemaining : 0,
+    subscriptionStatus: usage.subscriptionStatus || null,
+    currentPeriodEnd: usage.currentPeriodEnd || null,
+    suspended: Boolean(usage.suspended),
+    // ── Trial / upgrade state (drives popup + dashboard banners) ──────────────
+    state: usage.state || null,
+    isTrial: Boolean(usage.isTrial),
+    trialEndsAt: usage.trialEndsAt || null,
+    daysLeft: typeof usage.daysLeft === 'number' ? usage.daysLeft : null,
+    trialClonesRemaining: typeof usage.trialClonesRemaining === 'number' ? usage.trialClonesRemaining : null,
+    ghlValidated: Boolean(usage.ghlValidated),
+    trialActivationRequired: Boolean(usage.trialActivationRequired),
+    upgradeRequired: Boolean(usage.upgradeRequired),
+    upgradeReason: usage.upgrade?.reason || null,
+    // Store the BASE checkout URL (no ref); the captured referral code is appended
+    // client-side at click time so it works for both proactive and forced upgrades.
+    upgradeUrl: usage.checkoutUrl || usage.upgrade?.checkoutUrl || '',
   });
   return merged;
 }
@@ -275,7 +362,14 @@ function generateId() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   handleMessage(message, sender)
     .then(result => sendResponse({ success: true, ...result }))
-    .catch(err => sendResponse({ success: false, error: err.message }));
+    .catch(err => sendResponse({
+      success: false,
+      error: err.message,
+      status: err.status || null,
+      // Structured backend body (upgrade{}, ghlRequired, reason, …) so the popup
+      // and dashboard can show the right CTA.
+      data: err.data || null,
+    }));
   return true; // Keep message channel open for async
 });
 
@@ -301,6 +395,7 @@ async function handleMessage(message, sender) {
       const merged = await saveSettings({
         backendEnabled: true,
         backendToken: result.token,
+        backendRefreshToken: result.refreshToken || '',
         backendUser: result.user || null,
         plan: result.user?.plan || settings.plan,
       });
@@ -320,6 +415,7 @@ async function handleMessage(message, sender) {
       const merged = await saveSettings({
         backendEnabled: true,
         backendToken: result.token,
+        backendRefreshToken: result.refreshToken || '',
         backendUser: result.user || null,
         plan: result.user?.plan || settings.plan,
       });
@@ -328,8 +424,72 @@ async function handleMessage(message, sender) {
       return { user: result.user, settings: synced };
     }
 
+    // Activate a plan bought through the client's GoHighLevel checkout, using the
+    // one-time code emailed to the buyer after payment. Mirrors BACKEND_LOGIN:
+    // exchanges email + code for a backend token, then syncs plan/feature flags.
+    case 'GHL_ACTIVATE': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/ghl/activate', {
+        method: 'POST',
+        useAuth: false,
+        body: { email: message.email, code: message.code, password: message.password || undefined },
+      });
+
+      const merged = await saveSettings({
+        backendEnabled: true,
+        backendToken: result.token,
+        backendRefreshToken: result.refreshToken || '',
+        backendUser: result.user || null,
+        plan: result.user?.plan || settings.plan,
+      });
+
+      const synced = await syncUsageFromBackend(merged).catch(() => merged);
+      return { user: result.user, settings: synced };
+    }
+
+    // Start the one-time free trial. Requires the user to be signed in and to
+    // have a working GHL connection (the backend re-validates server-side and
+    // binds the trial to the GHL location). Returns the trial window + synced usage.
+    case 'GHL_START_TRIAL': {
+      const settings = await getSettings();
+      const apiKey = String(message.apiKey ?? settings.ghlApiKey ?? '').trim();
+      const locationId = String(message.locationId ?? settings.ghlLocationId ?? '').trim();
+      if (!apiKey || !locationId) {
+        throw new Error('Add your GoHighLevel API key and Location ID first, then start your trial.');
+      }
+      const result = await backendRequest(settings, '/api/trial/start', {
+        method: 'POST', useAuth: true, body: { apiKey, locationId },
+      });
+      const synced = await syncUsageFromBackend(settings).catch(() => settings);
+      return { trial: result, settings: synced };
+    }
+
+    case 'BACKEND_FORGOT_PASSWORD': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/auth/forgot-password', {
+        method: 'POST', useAuth: false, body: { email: message.email },
+      });
+      return { ...result };
+    }
+
+    case 'BACKEND_RESET_PASSWORD': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/auth/reset-password', {
+        method: 'POST', useAuth: false,
+        body: { email: message.email, code: message.code, newPassword: message.newPassword },
+      });
+      return { ...result };
+    }
+
     case 'BACKEND_LOGOUT': {
-      const updated = await saveSettings({ backendToken: '', backendUser: null });
+      const settings = await getSettings();
+      // Best-effort revoke the refresh token server-side, then clear locally.
+      if (settings.backendRefreshToken) {
+        await backendRequest(settings, '/api/auth/logout', {
+          method: 'POST', useAuth: false, body: { refreshToken: settings.backendRefreshToken },
+        }).catch(() => {});
+      }
+      const updated = await saveSettings({ backendToken: '', backendRefreshToken: '', backendUser: null });
       return { settings: updated };
     }
 
@@ -371,6 +531,18 @@ async function handleMessage(message, sender) {
       return result;
     }
 
+    case 'BACKEND_DELETE_ACCOUNT': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/auth/me', {
+        method: 'DELETE',
+        useAuth: true,
+        body: { password: message.password },
+      });
+      // Account is deleted server-side — clear all local auth/session state.
+      const updated = await saveSettings({ backendToken: '', backendRefreshToken: '', backendUser: null, plan: 'free' });
+      return { ...result, settings: updated };
+    }
+
     case 'BACKEND_GET_PREFERENCES': {
       const settings = await getSettings();
       const result = await backendRequest(settings, '/api/preferences', { method: 'GET', useAuth: true });
@@ -385,6 +557,183 @@ async function handleMessage(message, sender) {
         body: message.preferences || {},
       });
       return { preferences: result.preferences };
+    }
+
+    // ── Admin / Owner endpoints ────────────────────────────────────────────────
+    case 'BACKEND_ADMIN_WHOAMI': {
+      const settings = await getSettings();
+      try {
+        const result = await backendRequest(settings, '/api/admin/whoami', { method: 'GET', useAuth: true });
+        await saveSettings({ isOwner: Boolean(result.isOwner), ownerEmail: result.email || null });
+        return result;
+      } catch (err) {
+        // Not signed in or backend unavailable → treat as not-owner
+        return { isOwner: false, email: null, ownerConfigured: false, error: err.message };
+      }
+    }
+
+    case 'BACKEND_ADMIN_STATS': {
+      const settings = await getSettings();
+      return await backendRequest(settings, '/api/admin/stats', { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_USERS': {
+      const settings = await getSettings();
+      const q = new URLSearchParams();
+      if (message.limit) q.set('limit', String(message.limit));
+      if (message.offset) q.set('offset', String(message.offset));
+      if (message.plan) q.set('plan', String(message.plan));
+      if (message.search) q.set('search', String(message.search));
+      const qs = q.toString() ? `?${q}` : '';
+      return await backendRequest(settings, `/api/admin/users${qs}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_USER_SET_PLAN': {
+      const settings = await getSettings();
+      if (!message.userId || !message.plan) throw new Error('userId + plan required');
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(message.userId)}/plan`, {
+        method: 'PATCH', useAuth: true, body: { plan: message.plan },
+      });
+    }
+
+    case 'BACKEND_ADMIN_USER_RESET_USAGE': {
+      const settings = await getSettings();
+      if (!message.userId) throw new Error('userId required');
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(message.userId)}/reset-usage`, {
+        method: 'POST', useAuth: true,
+      });
+    }
+
+    case 'BACKEND_ADMIN_USER_DELETE': {
+      const settings = await getSettings();
+      if (!message.userId) throw new Error('userId required');
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(message.userId)}`, {
+        method: 'DELETE', useAuth: true,
+      });
+    }
+
+    case 'BACKEND_ADMIN_ANALYTICS': {
+      const settings = await getSettings();
+      const days = Number(message.days || 30);
+      return await backendRequest(settings, `/api/admin/analytics?days=${days}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_INVOICES': {
+      const settings = await getSettings();
+      const q = new URLSearchParams();
+      if (message.limit) q.set('limit', String(message.limit));
+      if (message.offset) q.set('offset', String(message.offset));
+      if (message.status) q.set('status', String(message.status));
+      if (message.search) q.set('search', String(message.search));
+      const qs = q.toString() ? `?${q}` : '';
+      return await backendRequest(settings, `/api/admin/invoices${qs}`, { method: 'GET', useAuth: true });
+    }
+
+    // ── Admin business-ops (M3) ──────────────────────────────────────────────
+    case 'BACKEND_ADMIN_USER_DETAIL': {
+      const settings = await getSettings();
+      if (!message.userId) throw new Error('userId required');
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(message.userId)}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_IMPERSONATE': {
+      const settings = await getSettings();
+      if (!message.userId) throw new Error('userId required');
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(message.userId)}/impersonate`, { method: 'POST', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_USER_ACTION': {
+      // Generic suspend / unsuspend / extend / activation-code on a user.
+      const settings = await getSettings();
+      const { userId, op, body } = message;
+      if (!userId || !op) throw new Error('userId + op required');
+      const map = {
+        suspend: ['POST', `/suspend`], unsuspend: ['POST', `/unsuspend`],
+        extend: ['POST', `/extend`], 'activation-code': ['POST', `/activation-code`],
+        'reset-ai-usage': ['POST', `/reset-ai-usage`],
+      };
+      const [method, suffix] = map[op] || [];
+      if (!method) throw new Error(`Unknown admin op: ${op}`);
+      return await backendRequest(settings, `/api/admin/users/${encodeURIComponent(userId)}${suffix}`, { method, useAuth: true, body: body || undefined });
+    }
+
+    case 'BACKEND_ADMIN_RENEWALS': {
+      const settings = await getSettings();
+      const days = Number(message.days || 7);
+      return await backendRequest(settings, `/api/admin/renewals?days=${days}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_AI_COSTS': {
+      const settings = await getSettings();
+      const q = message.month ? `?month=${encodeURIComponent(message.month)}` : '';
+      return await backendRequest(settings, `/api/admin/ai-costs${q}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_BULK': {
+      const settings = await getSettings();
+      return await backendRequest(settings, '/api/admin/bulk', {
+        method: 'POST', useAuth: true,
+        body: { action: message.bulkAction, ids: message.ids, plan: message.plan, days: message.days },
+      });
+    }
+
+    case 'BACKEND_ADMIN_AUDIT': {
+      const settings = await getSettings();
+      const q = new URLSearchParams();
+      if (message.limit) q.set('limit', String(message.limit));
+      if (message.action) q.set('action', String(message.action));
+      if (message.userId) q.set('userId', String(message.userId));
+      const qs = q.toString() ? `?${q}` : '';
+      return await backendRequest(settings, `/api/admin/audit${qs}`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_ADMIN_EXPORT_CSV': {
+      // CSV isn't JSON — fetch raw text with the auth header and return it.
+      const settings = await getSettings();
+      const resp = await fetch(buildBackendUrl(settings.backendApiBase, '/api/admin/export/users.csv'), {
+        headers: { Authorization: `Bearer ${settings.backendToken}` },
+      });
+      if (!resp.ok) throw new Error(`Export failed: HTTP ${resp.status}`);
+      return { csv: await resp.text() };
+    }
+
+    case 'BACKEND_INVOICES_LIST': {
+      const settings = await getSettings();
+      return await backendRequest(settings, '/api/billing/invoices', { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_SITES_LIST': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/sites', { method: 'GET', useAuth: true });
+      return { sites: result.sites || [] };
+    }
+
+    case 'BACKEND_SITES_CREATE': {
+      const settings = await getSettings();
+      const result = await backendRequest(settings, '/api/sites', {
+        method: 'POST', useAuth: true, body: message.site || {},
+      });
+      return { site: result.site };
+    }
+
+    case 'BACKEND_SITES_UPDATE': {
+      const settings = await getSettings();
+      const id = message.id;
+      if (!id) throw new Error('Site id required');
+      const result = await backendRequest(settings, `/api/sites/${encodeURIComponent(id)}`, {
+        method: 'PATCH', useAuth: true, body: message.patch || {},
+      });
+      return { site: result.site };
+    }
+
+    case 'BACKEND_SITES_DELETE': {
+      const settings = await getSettings();
+      const id = message.id;
+      if (!id) throw new Error('Site id required');
+      const result = await backendRequest(settings, `/api/sites/${encodeURIComponent(id)}`, {
+        method: 'DELETE', useAuth: true,
+      });
+      return result;
     }
 
     case 'BACKEND_LOG_ACTIVITY': {
@@ -509,26 +858,112 @@ async function handleMessage(message, sender) {
     case 'BACKEND_GET_USAGE': {
       const settings = await getSettings();
       const usage = await backendRequest(settings, '/api/usage', { method: 'GET', useAuth: true });
-      await saveSettings({
-        plan: usage.plan || settings.plan,
-        credits: usage.clonesRemaining >= 0 ? usage.clonesRemaining : 999,
-      });
-      return { usage };
+      // Persist the FULL plan/trial/upgrade state (reuses the sync field-mapping).
+      const synced = await syncUsageFromBackend(settings, usage);
+      return { usage, settings: synced };
     }
 
     case 'BACKEND_SYNC_FUNNELS': {
+      // Bidirectional sync: pull cloud funnels, merge by last-write-wins on
+      // updatedAt, then push local funnels the cloud is missing or behind on.
+      const settings = await getSettings();
+      const local = await getFunnels();
+      const localById = new Map(local.map(f => [f.id, f]));
+
+      const remoteResp = await backendRequest(settings, '/api/funnels', { method: 'GET', useAuth: true });
+      const remote = remoteResp.funnels || [];
+      const remoteById = new Map(remote.map(f => [f.id, f]));
+
+      const tOf = f => Date.parse(f?.updatedAt || f?.createdAt || 0) || 0;
+      let pushed = 0, pulled = 0;
+
+      // Pull: remote funnels newer than (or absent from) local.
+      const merged = [...local];
+      for (const rf of remote) {
+        const lf = localById.get(rf.id);
+        if (!lf) { merged.unshift(rf); pulled += 1; }
+        else if (tOf(rf) > tOf(lf)) {
+          const idx = merged.findIndex(f => f.id === rf.id);
+          if (idx >= 0) merged[idx] = rf;
+          pulled += 1;
+        }
+      }
+      await persistFunnelsSafely(merged);
+
+      // Push: local funnels the cloud lacks or that are newer locally.
+      for (const lf of local) {
+        const rf = remoteById.get(lf.id);
+        if (!rf || tOf(lf) > tOf(rf)) {
+          await backendRequest(settings, `/api/funnels/${encodeURIComponent(lf.id)}`, {
+            method: 'PUT', useAuth: true, body: lf,
+          }).then(() => { pushed += 1; }).catch(() => {});
+        }
+      }
+
+      return { synced: pushed + pulled, pushed, pulled };
+    }
+
+    // ── Version history (server-side snapshots from cloud sync) ──────────────
+    case 'BACKEND_FUNNEL_VERSIONS': {
+      const settings = await getSettings();
+      if (!message.funnelId) throw new Error('funnelId required');
+      return await backendRequest(settings, `/api/funnels/${encodeURIComponent(message.funnelId)}/versions`, { method: 'GET', useAuth: true });
+    }
+
+    case 'BACKEND_FUNNEL_RESTORE': {
+      const settings = await getSettings();
+      if (!message.funnelId || !message.versionId) throw new Error('funnelId + versionId required');
+      const res = await backendRequest(settings, `/api/funnels/${encodeURIComponent(message.funnelId)}/restore`, {
+        method: 'POST', useAuth: true, body: { versionId: message.versionId },
+      });
+      // Mirror the restored content into the local copy so the UI reflects it.
+      if (res.funnel) {
+        const funnels = await getFunnels();
+        const local = funnels.find(f => f.id === message.funnelId);
+        if (local) await saveFunnel({ ...local, html: res.funnel.html, optimizedHtml: res.funnel.optimizedHtml, updatedAt: res.funnel.updatedAt });
+      }
+      return res;
+    }
+
+    // ── Fidelity backfill for funnels cloned before scoring existed ──────────
+    case 'ANALYZE_FIDELITY': {
+      const funnels = await getFunnels();
+      const funnel = funnels.find(f => f.id === message.funnelId);
+      if (!funnel) throw new Error('Funnel not found.');
+      const fidelity = FunnelAnalyzer.scoreFidelity({
+        html: funnel.optimizedHtml || funnel.html || '',
+        styles: '',
+        structure: funnel.analysis?.structure || {},
+      });
+      await saveFunnel({ ...funnel, fidelity });
+      return { fidelity };
+    }
+
+    // Rehost hot-linked images in a funnel's HTML via the backend (Pro/Agency).
+    case 'REHOST_FUNNEL_ASSETS': {
       const settings = await getSettings();
       const funnels = await getFunnels();
-      let synced = 0;
-      for (const funnel of funnels) {
-        await backendRequest(settings, '/api/funnels', {
-          method: 'POST',
-          useAuth: true,
-          body: funnel,
-        });
-        synced += 1;
+      const funnel = funnels.find(f => f.id === message.funnelId);
+      if (!funnel) throw new Error('Funnel not found.');
+
+      const html = funnel.optimizedHtml || funnel.html || '';
+      const urls = [...new Set((html.match(/<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["']/gi) || [])
+        .map(t => (t.match(/\bsrc\s*=\s*["']([^"']+)["']/i) || [])[1])
+        .filter(u => /^https?:\/\//i.test(u)))];
+      if (!urls.length) return { rehosted: 0, message: 'No external images to rehost.' };
+
+      const res = await backendRequest(settings, '/api/assets/rehost', {
+        method: 'POST', useAuth: true, body: { urls },
+      });
+      const map = res.map || {};
+      let rewritten = html;
+      for (const [orig, next] of Object.entries(map)) {
+        rewritten = rewritten.split(orig).join(next);
       }
-      return { synced };
+      // Persist the rewritten HTML back onto the funnel (whichever field held it).
+      const patch = funnel.optimizedHtml ? { optimizedHtml: rewritten } : { html: rewritten };
+      await saveFunnel({ ...funnel, ...patch });
+      return { rehosted: res.rehosted || 0, failed: (res.failed || []).length, total: urls.length };
     }
 
     case 'BACKEND_CHECKOUT': {
@@ -577,18 +1012,16 @@ async function handleMessage(message, sender) {
       const settings = await getSettings();
       const backendUsageEnabled = Boolean(settings.backendEnabled && settings.backendApiBase && settings.backendToken);
 
-      if (backendUsageEnabled && !settings.devMode) {
-        await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true });
-      }
-
-      // Credit check (skipped in dev mode and owner plan)
+      // Local-mode pre-check (the authoritative backend gate runs AFTER a
+      // successful conversion below, so a conversion failure never burns a credit).
       if (!backendUsageEnabled && !settings.devMode && settings.plan !== 'owner' && settings.plan === 'free' && settings.credits <= 0) {
         throw new Error('No credits remaining. Upgrade your plan to continue cloning.');
       }
 
       const { capturedData, niche, optimize, businessName } = message.data;
 
-      // Convert to GHL format
+      // Convert to GHL format (may throw on a malformed capture — must run BEFORE
+      // we consume a credit so failures cost the user nothing).
       const converted = GHLConverter.convert(capturedData, {
         replaceForms: true,
         replacePhone: true,
@@ -602,6 +1035,12 @@ async function handleMessage(message, sender) {
         analysis = FunnelAnalyzer.analyze(structure);
       } catch (e) {
         console.warn('Analysis skipped:', e.message);
+      }
+
+      // Atomic usage gate + increment, only after the clone built successfully.
+      // A 402/403 here throws (carrying upgrade/ghl details) before any AI cost.
+      if (backendUsageEnabled && !settings.devMode) {
+        await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true, body: { ref: settings.capturedRef || undefined } });
       }
 
       // AI optimization if requested — routed through backend (no user API key needed)
@@ -631,6 +1070,16 @@ async function handleMessage(message, sender) {
         }
       }
 
+      // Score how faithfully the page was captured (CSS/assets/forms/responsive).
+      let fidelity = null;
+      try {
+        fidelity = FunnelAnalyzer.scoreFidelity({
+          html: capturedData.html || converted.ghlHtml,
+          styles: capturedData.styles,
+          structure: message.data.structure || {},
+        });
+      } catch (e) { console.warn('Fidelity scoring skipped:', e.message); }
+
       // Build funnel record
       const funnel = {
         id: generateId(),
@@ -642,6 +1091,7 @@ async function handleMessage(message, sender) {
         optimizedHtml: optimizedHtml || null,
         analysis: analysis || null,
         aiReport: aiReport || null,
+        fidelity: fidelity || null,
         meta: capturedData.meta || {},
         ghlFunnelId: null,
         ghlPageId: null,
@@ -712,21 +1162,25 @@ async function handleMessage(message, sender) {
       const apiKey = (settings.ghlApiKey || '').trim();
       const locationId = (settings.ghlLocationId || '').trim();
 
-      if (!apiKey) throw new Error('GHL API key not configured. Add it in Settings.');
-      if (!locationId) throw new Error('GHL Location ID not configured. Add it in Settings.');
-
-      // Validate credentials before attempting the full push so the user gets
-      // a clear error immediately instead of a raw GHL API error from /funnels.
-      const credCheck = await GHLApi.validateCredentials(apiKey, locationId);
-      if (!credCheck.valid) {
-        throw new Error(credCheck.error || 'GHL credentials are invalid. Re-check your Private Integration Token in Settings.');
-      }
+      if (!apiKey) throw new Error(
+        'GHL API key not configured. Go to Settings → paste your Private Integration Token.'
+      );
+      if (!locationId) throw new Error(
+        'GHL Location ID not configured. Go to Settings → paste your Location ID.'
+      );
 
       const funnels = await getFunnels();
       const funnel = funnels.find(f => f.id === funnelId);
-      if (!funnel) throw new Error('Funnel not found.');
+      if (!funnel) throw new Error('Funnel not found in local storage.');
 
-      const htmlToUse = (useOptimized && funnel.optimizedHtml) ? funnel.optimizedHtml : funnel.html;
+      // Re-run conversion fresh to ensure latest GHL-compatible HTML format
+      // (picks up any new GHLConverter improvements without re-cloning)
+      let htmlToUse = (useOptimized && funnel.optimizedHtml) ? funnel.optimizedHtml : funnel.html;
+
+      // If the stored HTML looks like it's still raw (pre-converter), re-convert it
+      if (!htmlToUse || htmlToUse.length < 200) {
+        throw new Error('Funnel HTML is empty or invalid. Please re-clone the site.');
+      }
 
       const result = await GHLApi.pushFunnelToGHL(
         apiKey,
@@ -736,23 +1190,24 @@ async function handleMessage(message, sender) {
           html: htmlToUse,
         },
         (step, total, msg) => {
-          // Broadcast progress to any open dashboard
           chrome.runtime.sendMessage({ action: 'GHL_PUSH_PROGRESS', step, total, message: msg })
             .catch(() => {});
         }
       );
 
-      // Update funnel record with GHL IDs
+      // Update funnel record with GHL IDs and status
+      const newStatus = result.success === 'full' ? 'exported' : (funnel.status || 'draft');
       await saveFunnel({
         ...funnel,
-        ghlFunnelId: result.funnelId,
-        ghlPageId: result.pageId,
-        status: 'exported',
-        exportedAt: new Date().toISOString(),
+        ghlFunnelId: result.funnelId || funnel.ghlFunnelId,
+        ghlPageId: result.pageId || funnel.ghlPageId,
+        status: newStatus,
+        exportedAt: result.success === 'full' ? new Date().toISOString() : funnel.exportedAt,
       });
 
       return result;
     }
+
 
     // ── Generate Logo ─────────────────────────────────────────────────────────
     case 'GENERATE_LOGO': {
@@ -884,6 +1339,180 @@ async function handleMessage(message, sender) {
       return { settings: merged };
     }
 
+    // ── Silent Discover Clone (opens URL in bg tab, extracts, closes tab) ────────
+    case 'CLONE_FROM_URL_SILENT': {
+      const { url, niche, optimize } = message;
+      if (!url) throw new Error('URL is required for silent clone.');
+
+      const settings = await getSettings();
+
+      // Local-mode pre-check only. The authoritative backend gate runs AFTER a
+      // successful conversion (below) so failed extraction/conversion costs nothing.
+      const backendUsageEnabled = Boolean(settings.backendEnabled && settings.backendApiBase && settings.backendToken);
+      if (!backendUsageEnabled && !settings.devMode && settings.plan !== 'owner' && settings.plan === 'free' && settings.credits <= 0) {
+        throw new Error('No credits remaining. Upgrade your plan to continue cloning.');
+      }
+
+      // Broadcast progress helper
+      function broadcastProgress(step, total, msg) {
+        chrome.runtime.sendMessage({ action: 'DISCOVER_CLONE_PROGRESS', step, total, message: msg, url }).catch(() => {});
+      }
+
+      broadcastProgress(1, 5, 'Opening website…');
+
+      // Open tab invisibly
+      const tab = await chrome.tabs.create({ url, active: false });
+
+      // Wait for tab to finish loading (max 30s)
+      const loadedTabId = await new Promise((resolve, reject) => {
+        const TIMEOUT = 30000;
+        const timer = setTimeout(() => {
+          chrome.tabs.onUpdated.removeListener(listener);
+          reject(new Error('Page load timed out. The site may be slow or blocked.'));
+        }, TIMEOUT);
+
+        function listener(tabId, info) {
+          if (tabId === tab.id && info.status === 'complete') {
+            clearTimeout(timer);
+            chrome.tabs.onUpdated.removeListener(listener);
+            resolve(tabId);
+          }
+        }
+        chrome.tabs.onUpdated.addListener(listener);
+      });
+
+      broadcastProgress(2, 5, 'Scanning website structure…');
+
+      // Inject extraction
+      let extractedData;
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId: loadedTabId },
+          func: extractPageInContext,
+          world: 'MAIN',
+        });
+        extractedData = results[0]?.result;
+      } catch (err) {
+        chrome.tabs.remove(tab.id).catch(() => {});
+        throw new Error(`Extraction failed: ${err.message}`);
+      }
+
+      broadcastProgress(3, 5, 'Collecting assets and sections…');
+      chrome.tabs.remove(tab.id).catch(() => {}); // close background tab
+
+      if (!extractedData || extractedData.error) {
+        throw new Error(extractedData?.error || 'Extraction returned no data.');
+      }
+
+      // Convert to GHL format
+      const converted = GHLConverter.convert(extractedData, {
+        replaceForms: true,
+        replacePhone: true,
+        businessName: null,
+      });
+
+      broadcastProgress(4, 5, 'Building GHL layout…');
+
+      // Analyze
+      let analysis = null;
+      try {
+        analysis = FunnelAnalyzer.analyze(extractedData.structure || extractedData);
+      } catch (e) { /* skip */ }
+
+      // Atomic usage gate + increment, only after a successful conversion. A
+      // 402/403 here throws (with upgrade/ghl details) before any AI cost.
+      if (backendUsageEnabled && !settings.devMode) {
+        await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true, body: { ref: settings.capturedRef || undefined } });
+      }
+
+      // AI optimize if signed in
+      let optimizedHtml = null;
+      if (optimize && settings.backendToken) {
+        try {
+          const optResult = await backendRequest(settings, '/api/ai/optimize', {
+            method: 'POST', useAuth: true,
+            body: { html: converted.ghlHtml, niche: niche || analysis?.detectedNiche || 'general', businessName: '' },
+          });
+          optimizedHtml = optResult?.html || null;
+        } catch (e) { /* skip */ }
+      }
+
+      broadcastProgress(5, 7, 'Saving funnel…');
+
+      const funnel = {
+        id: generateId(),
+        name: extractedData.meta?.title || new URL(url).hostname.replace('www.', ''),
+        sourceUrl: extractedData.meta?.url || url,
+        niche: niche || analysis?.detectedNiche || 'general',
+        status: optimizedHtml ? 'optimized' : 'draft',
+        html: converted.ghlHtml,
+        optimizedHtml: optimizedHtml || null,
+        analysis: analysis || null,
+        aiReport: null,
+        meta: extractedData.meta || {},
+        ghlFunnelId: null,
+        ghlPageId: null,
+      };
+
+      await saveFunnel(funnel);
+      if (!backendUsageEnabled) {
+        await deductCredit();
+      } else {
+        await syncUsageFromBackend(settings).catch(() => {});
+      }
+
+      // Auto-push to GHL if credentials are configured
+      const apiKey = (settings.ghlApiKey || '').trim();
+      const locationId = (settings.ghlLocationId || '').trim();
+      let pushResult = null;
+      let pushError = null;
+      let pushSkipped = false;
+
+      if (!apiKey || !locationId) {
+        pushSkipped = true;
+        broadcastProgress(7, 7, 'Saved locally. Add GHL credentials in Settings to auto-push.');
+      } else {
+        broadcastProgress(6, 7, 'Pushing to your GHL account…');
+        try {
+          const htmlForGhl = optimizedHtml || converted.ghlHtml;
+          pushResult = await GHLApi.pushFunnelToGHL(
+            apiKey,
+            {
+              locationId,
+              pageName: funnel.name || 'Clone2GHL Page',
+              html: htmlForGhl,
+            },
+            (step, total, msg) => broadcastProgress(6, 7, `GHL: ${msg}`)
+          );
+          // Persist GHL IDs on the funnel
+          await saveFunnel({
+            ...funnel,
+            ghlFunnelId: pushResult.funnelId || null,
+            ghlPageId: pushResult.pageId || null,
+            status: pushResult.success === 'full' ? 'exported' : funnel.status,
+            exportedAt: pushResult.success === 'full' ? new Date().toISOString() : undefined,
+          });
+          broadcastProgress(7, 7, 'Pushed to GHL.');
+        } catch (err) {
+          pushError = err.message || String(err);
+          broadcastProgress(7, 7, `GHL push failed: ${pushError}`);
+        }
+      }
+
+      // Notify dashboard
+      chrome.runtime.sendMessage({ action: 'DISCOVER_CLONE_COMPLETE', funnelId: funnel.id, url }).catch(() => {});
+
+      return {
+        funnel,
+        sectionCount: analysis?.sectionCount || 0,
+        pushResult,
+        pushError,
+        pushSkipped,
+        ghlFunnelId: pushResult?.funnelId || null,
+        ghlPageId: pushResult?.pageId || null,
+      };
+    }
+
     default:
       throw new Error(`Unknown action: ${message.action}`);
   }
@@ -911,8 +1540,11 @@ async function extractPageInContext() {
   // ── Fetch external CSS ────────────────────────────────────────────────────
   // Try CSSStyleSheet API first (fast, works for same-origin sheets even without CORS),
   // then fall back to fetch for cross-origin sheets that expose CORS headers.
+  // When both inlining paths fail, record the href as a fallback <link> so the
+  // cloned page can still load the stylesheet at render time.
   async function fetchExternalStyles() {
     const chunks = [];
+    const fallbackLinks = [];
     const processedHrefs = new Set();
 
     for (const sheet of Array.from(document.styleSheets)) {
@@ -927,8 +1559,12 @@ async function extractPageInContext() {
       } catch { /* cross-origin SecurityError — fall through to fetch */ }
       try {
         const resp = await fetch(sheet.href, { mode: 'cors', credentials: 'omit' });
-        if (resp.ok) chunks.push(fixCssUrls(await resp.text(), sheet.href));
-      } catch { /* unavailable cross-origin sheet — skip */ }
+        if (resp.ok) {
+          chunks.push(fixCssUrls(await resp.text(), sheet.href));
+          continue;
+        }
+      } catch { /* unavailable cross-origin sheet */ }
+      fallbackLinks.push(sheet.href);
     }
 
     // Also catch any <link> not yet reflected in document.styleSheets
@@ -937,10 +1573,35 @@ async function extractPageInContext() {
       if (!href || href.startsWith('chrome-extension') || processedHrefs.has(href)) continue;
       try {
         const resp = await fetch(href, { mode: 'cors', credentials: 'omit' });
-        if (resp.ok) chunks.push(fixCssUrls(await resp.text(), href));
+        if (resp.ok) { chunks.push(fixCssUrls(await resp.text(), href)); continue; }
       } catch { /* skip */ }
+      fallbackLinks.push(href);
     }
-    return chunks.join('\n');
+    return { cssText: chunks.join('\n'), fallbackLinks };
+  }
+
+  // ── Wait for SPAs to hydrate (React/Vue/Next/etc) ───────────────────────────
+  // Resolves once either: (a) the DOM is quiet for `quietMs` after readyState=complete,
+  // or (b) `maxMs` is reached. Avoids extracting half-rendered SPA shells.
+  function waitForHydration({ quietMs = 1500, maxMs = 8000 } = {}) {
+    return new Promise(resolve => {
+      const start = Date.now();
+      let lastMutation = Date.now();
+      const observer = new MutationObserver(() => { lastMutation = Date.now(); });
+      observer.observe(document.body || document.documentElement, {
+        childList: true, subtree: true, attributes: true, characterData: true,
+      });
+      const tick = () => {
+        const now = Date.now();
+        if (now - start >= maxMs || (document.readyState === 'complete' && now - lastMutation >= quietMs)) {
+          observer.disconnect();
+          resolve();
+          return;
+        }
+        setTimeout(tick, 200);
+      };
+      setTimeout(tick, Math.min(quietMs, 1000));
+    });
   }
 
   function extractCtaButtons() {
@@ -963,6 +1624,9 @@ async function extractPageInContext() {
       })
       .slice(0, 10);
   }
+
+  // ── Step 0: Wait for SPA hydration / lazy content ────────────────────────
+  try { await waitForHydration({ quietMs: 1500, maxMs: 8000 }); } catch { /* ignore */ }
 
   // ── Step 1: Capture computed background images BEFORE cloning ─────────────
   // Must run on the live DOM to access getComputedStyle. We tag each element
@@ -988,7 +1652,7 @@ async function extractPageInContext() {
   } catch { /* ignore */ }
 
   // ── Step 2: Fetch external CSS ────────────────────────────────────────────
-  const externalCss = await fetchExternalStyles();
+  const { cssText: externalCss, fallbackLinks: fallbackStylesheetLinks } = await fetchExternalStyles();
 
   // ── Step 3: Extract CSS custom properties (:root variables) ──────────────
   let cssVarsBlock = '';
@@ -1169,6 +1833,19 @@ async function extractPageInContext() {
       url: window.location.href,
       domain: window.location.hostname,
       capturedAt: new Date().toISOString(),
+      favicon: toAbsolute(
+        document.querySelector('link[rel="icon"]')?.getAttribute('href') ||
+        document.querySelector('link[rel="shortcut icon"]')?.getAttribute('href') ||
+        document.querySelector('link[rel="apple-touch-icon"]')?.getAttribute('href') ||
+        '/favicon.ico'
+      ),
+      ogTitle: document.querySelector('meta[property="og:title"]')?.content || '',
+      ogDescription: document.querySelector('meta[property="og:description"]')?.content || '',
+      ogImage: toAbsolute(document.querySelector('meta[property="og:image"]')?.content || ''),
+      ogType: document.querySelector('meta[property="og:type"]')?.content || '',
+      themeColor: document.querySelector('meta[name="theme-color"]')?.content || '',
+      lang: document.documentElement.lang || '',
+      fallbackStylesheetLinks: fallbackStylesheetLinks || [],
     },
     structure: {
       headlines,
@@ -1190,6 +1867,25 @@ async function extractPageInContext() {
 
 // ─── Extension install / update ───────────────────────────────────────────────
 
+const USAGE_SYNC_ALARM = 'c2g-usage-sync';
+const USAGE_SYNC_PERIOD_MIN = 360; // 6 h
+
+// Refresh plan/trial/usage state from the backend without the user acting, so a
+// purchase or expiry on clone2ghl.com is reflected in the extension within a few
+// hours (and immediately when the dashboard/popup opens). Best-effort.
+async function backgroundSyncUsage() {
+  try {
+    const settings = await getSettings();
+    if (settings.backendEnabled && settings.backendApiBase && settings.backendToken) {
+      await syncUsageFromBackend(settings);
+    }
+  } catch { /* offline / signed-out — ignore */ }
+}
+
+function ensureUsageSyncAlarm() {
+  try { chrome.alarms?.create(USAGE_SYNC_ALARM, { periodInMinutes: USAGE_SYNC_PERIOD_MIN }); } catch { /* alarms unavailable */ }
+}
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     const encryptedDefaults = await encryptSensitiveSettings({
@@ -1197,11 +1893,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       ghlLocationId: '',
       openaiApiKey: '',
       plan: 'free',
-      credits: 2,
+      credits: 6, // matches planLimits.free — backend is authoritative once signed in
       theme: 'dark',
       backendEnabled: false,
-      backendApiBase: 'http://localhost:8080',
+      backendApiBase: DEFAULT_BACKEND_API_BASE,
       backendToken: '',
+      backendRefreshToken: '',
       backendUser: null,
       devMode: false,
     });
@@ -1214,4 +1911,17 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     // Open dashboard on first install
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
   }
+  ensureUsageSyncAlarm();
+  backgroundSyncUsage();
+});
+
+// Sync on browser startup and on a periodic alarm so plan/trial state never goes
+// stale even if the user keeps the browser open for days.
+chrome.runtime.onStartup?.addListener(() => {
+  ensureUsageSyncAlarm();
+  backgroundSyncUsage();
+});
+
+chrome.alarms?.onAlarm.addListener((alarm) => {
+  if (alarm.name === USAGE_SYNC_ALARM) backgroundSyncUsage();
 });

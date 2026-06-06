@@ -12,7 +12,8 @@
 
 import express from 'express';
 import { authRequired } from '../middleware/auth.js';
-import { config, logoLimits } from '../config.js';
+import { config, logoLimits, aiLimits, effectivePlan } from '../config.js';
+import { buildUpgrade } from '../lib/entitlement.js';
 import { readDb, writeDb } from '../store.js';
 
 const router = express.Router();
@@ -104,6 +105,37 @@ async function getUserAndPlan(userId) {
   const user = db.users.find(u => u.id === userId);
   if (!user) throw new Error('User not found.');
   return { user, db };
+}
+
+// Enforce + meter a monthly AI call against the user's plan quota. Throws a
+// 402-tagged error when over the cap so a single user can't run up the client's
+// shared OpenAI bill. Checks then increments before the OpenAI call is made.
+async function consumeAiQuota(user) {
+  const plan   = effectivePlan(user);
+  const limit  = aiLimits[plan] ?? 0;
+  const period = currentPeriod();
+
+  const db  = await readDb();
+  const row = db.usage.find(u => u.userId === user.id && u.period === period);
+  const used = row?.aiUsed ?? 0;
+
+  if (limit >= 0 && used >= limit) {
+    const err = new Error('Monthly AI usage limit reached for your plan.');
+    err.status = 402;
+    err.payload = { plan, aiLimit: limit, aiUsed: used, upgradeRequired: true, reason: 'ai_quota', upgrade: buildUpgrade('ai_quota') };
+    throw err;
+  }
+
+  await writeDb((draft) => {
+    let r = draft.usage.find(u => u.userId === user.id && u.period === period);
+    if (!r) {
+      r = { userId: user.id, period, clonesUsed: 0, logosUsed: 0, aiUsed: 0, updatedAt: new Date().toISOString() };
+      draft.usage.push(r);
+    }
+    r.aiUsed = (r.aiUsed ?? 0) + 1;
+    r.updatedAt = new Date().toISOString();
+    return draft;
+  });
 }
 
 // ─── Niche profiles (mirrors aiOptimizer.js) ─────────────────────────────────
@@ -283,6 +315,8 @@ router.post('/optimize', authRequired, async (req, res) => {
       return res.status(400).json({ error: 'html is required.' });
     }
 
+    await consumeAiQuota(user);
+
     const ctx = getNicheContext(niche);
     const systemPrompt = `You are an expert direct-response copywriter specializing in high-converting landing pages and sales funnels.
 Your task is to rewrite funnel copy to maximize conversions for a specific niche.
@@ -341,7 +375,7 @@ ${html.slice(0, 14000)}`;
     return res.json({ html: optimizedHtml, model: config.openaiCopyModel });
   } catch (err) {
     console.error('[ai/optimize]', err.message);
-    return res.status(502).json({ error: err.message || 'AI copy optimization failed.' });
+    return res.status(err.status || 502).json({ error: err.message || 'AI copy optimization failed.', ...(err.payload || {}) });
   }
 });
 
@@ -353,6 +387,8 @@ router.post('/report', authRequired, async (req, res) => {
   try {
     const { user } = await getUserAndPlan(req.user.userId);
     const { html = '', analysis = {} } = req.body;
+
+    await consumeAiQuota(user);
 
     const score    = analysis.score        ?? 'N/A';
     const grade    = analysis.grade        ?? 'N/A';
@@ -404,7 +440,7 @@ Be specific and actionable. Use bullet points. Start with "This funnel [converts
     return res.json({ report, model: config.openaiMiniModel });
   } catch (err) {
     console.error('[ai/report]', err.message);
-    return res.status(502).json({ error: err.message || 'Intelligence report generation failed.' });
+    return res.status(err.status || 502).json({ error: err.message || 'Intelligence report generation failed.', ...(err.payload || {}) });
   }
 });
 
@@ -416,6 +452,8 @@ router.post('/headlines', authRequired, async (req, res) => {
   try {
     const { user } = await getUserAndPlan(req.user.userId);
     const { niche = 'general', offer = '' } = req.body;
+
+    await consumeAiQuota(user);
 
     const content = await openAIChat(
       config.openaiMiniModel,
@@ -465,7 +503,7 @@ Keep each under 12 words. Be specific with numbers where believable.`,
     return res.json({ headlines, model: config.openaiMiniModel });
   } catch (err) {
     console.error('[ai/headlines]', err.message);
-    return res.status(502).json({ error: err.message || 'Headline generation failed.' });
+    return res.status(err.status || 502).json({ error: err.message || 'Headline generation failed.', ...(err.payload || {}) });
   }
 });
 
@@ -476,7 +514,7 @@ Keep each under 12 words. Be specific with numbers where believable.`,
 router.post('/logo', authRequired, async (req, res) => {
   try {
     const { user, db } = await getUserAndPlan(req.user.userId);
-    const plan = user.plan || 'free';
+    const plan = effectivePlan(user);
 
     // ── Plan gating ──────────────────────────────────────────────────────────
     const limit = logoLimits[plan] ?? 0;
@@ -484,6 +522,8 @@ router.post('/logo', authRequired, async (req, res) => {
       return res.status(403).json({
         error: 'Logo generation requires a Pro or Agency plan. Upgrade to unlock this feature.',
         upgradeRequired: true,
+        reason: 'logo_plan',
+        upgrade: buildUpgrade('logo_plan'),
       });
     }
 
@@ -497,6 +537,9 @@ router.post('/logo', authRequired, async (req, res) => {
         error: `You have used all ${limit} logo generations for this month (${plan} plan). Resets on the 1st.`,
         logosUsed,
         logosLimit: limit,
+        upgradeRequired: true,
+        reason: 'logo_quota',
+        upgrade: buildUpgrade('logo_quota'),
       });
     }
 

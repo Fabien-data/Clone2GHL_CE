@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Hair & Beauty Salon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;color:#1F2937;background:#FDF2F8;line-height:1.6}
+h1,h2,h3,h4{font-weight:800;line-height:1.15;color:#9D174D}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(5deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(236,72,153,.6)}50%{box-shadow:0 0 0 24px rgba(236,72,153,0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes wiggle{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes sparkle{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(15px);padding:14px 0;box-shadow:0 4px 20px rgba(236,72,153,.08)}
+.nav-wrap{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;font-size:24px;background:linear-gradient(135deg,#EC4899,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:8px}
+.logo-emoji{font-size:28px;-webkit-text-fill-color:initial}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{color:#9D174D;text-decoration:none;font-weight:600;font-size:15px;transition:color .2s}
+.nav-links a:hover{color:#EC4899}
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#EC4899,#A855F7);color:#fff !important;padding:13px 28px;border-radius:50px;font-weight:700;text-decoration:none;transition:all .3s ease;border:none;cursor:pointer;font-size:15px;font-family:'Poppins',sans-serif;box-shadow:0 8px 24px rgba(236,72,153,.3)}
+.btn-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 32px rgba(236,72,153,.5)}
+.btn-pulse{animation:pulse 2s infinite}
+
+/* HERO */
+.hero{position:relative;padding:90px 0 110px;background:linear-gradient(135deg,#FDF2F8 0%,#FBCFE8 30%,#E9D5FF 70%,#DDD6FE 100%);background-size:300% 300%;animation:gradient 14s ease infinite;overflow:hidden}
+.hero::before{content:'';position:absolute;width:300px;height:300px;background:radial-gradient(circle,#EC4899,transparent 70%);border-radius:50%;top:-100px;left:-100px;opacity:.4;animation:float 7s ease infinite;filter:blur(40px)}
+.hero::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,#A855F7,transparent 70%);border-radius:50%;bottom:-150px;right:-150px;opacity:.35;animation:float 9s ease infinite reverse;filter:blur(50px)}
+.hero-content{position:relative;z-index:2;display:grid;grid-template-columns:1.2fr 1fr;gap:60px;align-items:center}
+.hero-text{animation:fadeInUp 1s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;padding:8px 16px;border-radius:50px;font-size:13px;font-weight:700;color:#EC4899;margin-bottom:20px;box-shadow:0 4px 16px rgba(236,72,153,.15)}
+.hero-badge .dot{width:8px;height:8px;background:#10B981;border-radius:50%;animation:sparkle 1.5s infinite}
+.hero h1{font-size:64px;color:#9D174D;margin-bottom:18px;line-height:1.05;font-weight:900}
+.hero h1 .accent{background:linear-gradient(135deg,#EC4899,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:italic}
+.hero p.sub{font-size:19px;color:#6B21A8;margin-bottom:32px;font-weight:500}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+.btn-secondary{background:#fff;color:#9D174D !important;padding:13px 28px;border-radius:50px;font-weight:700;text-decoration:none;border:2px solid #EC4899;transition:all .3s}
+.btn-secondary:hover{background:#FDF2F8;transform:translateY(-2px)}
+.hero-trust{display:flex;align-items:center;gap:14px;font-size:14px;color:#9D174D;font-weight:600}
+.stars{color:#FBBF24;font-size:18px;letter-spacing:2px}
+.hero-visual{position:relative;aspect-ratio:1;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;background:linear-gradient(135deg,#EC4899,#A855F7,#F472B6);display:flex;align-items:center;justify-content:center;animation:float 6s ease infinite;box-shadow:0 30px 80px rgba(157,23,77,.3)}
+.hero-visual-icon{font-size:200px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.2))}
+.sparkle{position:absolute;font-size:30px;animation:sparkle 2s infinite}
+.sp1{top:10%;right:10%;animation-delay:0s}
+.sp2{bottom:15%;left:5%;animation-delay:.5s}
+.sp3{top:50%;right:-10%;animation-delay:1s}
+
+/* TRUST BAR */
+.trust-bar{background:#fff;padding:30px 0}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.trust-item .num{font-size:38px;font-weight:900;background:linear-gradient(135deg,#EC4899,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;line-height:1}
+.trust-item .lbl{font-size:13px;color:#6B7280;font-weight:600;margin-top:6px;display:block}
+
+/* SECTIONS */
+section{padding:80px 0}
+.section-head{text-align:center;max-width:680px;margin:0 auto 60px}
+.eyebrow{display:inline-block;color:#fff;background:linear-gradient(135deg,#EC4899,#A855F7);padding:6px 16px;border-radius:50px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-size:11px;margin-bottom:16px}
+.section-head h2{font-size:46px;margin-bottom:14px;font-weight:900}
+.section-head h2 .accent{background:linear-gradient(135deg,#EC4899,#A855F7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-style:italic}
+.section-head p{font-size:17px;color:#6B7280}
+
+/* PROBLEM */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pain-card{background:#fff;padding:34px 28px;border-radius:24px;box-shadow:0 8px 30px rgba(157,23,77,.08);transition:all .4s ease;text-align:center;position:relative;overflow:hidden}
+.pain-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#EC4899,#A855F7);transform:scaleX(0);transition:transform .4s ease;transform-origin:left}
+.pain-card:hover{transform:translateY(-10px) rotate(-1deg);box-shadow:0 20px 50px rgba(236,72,153,.2)}
+.pain-card:hover::before{transform:scaleX(1)}
+.pain-card .ico{font-size:54px;margin-bottom:14px;display:inline-block;animation:wiggle 3s ease infinite}
+.pain-card h3{font-size:20px;margin-bottom:10px}
+.pain-card p{color:#6B7280;font-size:15px}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#FDF2F8,#FBCFE8)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.split h2{font-size:42px;margin-bottom:18px;font-weight:900}
+.split p.lead{font-size:17px;color:#6B21A8;margin-bottom:26px;font-weight:500}
+.checklist{list-style:none}
+.checklist li{padding:12px 0;display:flex;align-items:flex-start;gap:12px;font-size:16px;font-weight:500}
+.check{flex-shrink:0;width:30px;height:30px;background:linear-gradient(135deg,#EC4899,#A855F7);border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;box-shadow:0 4px 12px rgba(236,72,153,.4)}
+.visual-block{position:relative;height:440px;border-radius:32px;background:linear-gradient(135deg,#A855F7,#EC4899,#F472B6);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 60px rgba(157,23,77,.25)}
+.visual-block::before{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,.15);border-radius:50%;top:20px;right:20px}
+.visual-icon{font-size:180px;position:relative;z-index:2;animation:float 5s ease infinite}
+
+/* SERVICES */
+.services{background:#fff}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.feat{background:linear-gradient(180deg,#fff,#FDF2F8);padding:32px 28px;border-radius:24px;transition:all .4s ease;border:2px solid #FBCFE8;position:relative}
+.feat:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 20px 50px rgba(236,72,153,.2);border-color:#EC4899}
+.feat-ico{width:64px;height:64px;background:linear-gradient(135deg,#FCE7F3,#F3E8FF);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px}
+.feat h3{font-size:21px;margin-bottom:8px}
+.feat p{color:#6B7280;font-size:15px;margin-bottom:14px}
+.feat .price{color:#EC4899;font-weight:700;font-size:14px}
+
+/* STYLISTS */
+.stylists{background:linear-gradient(180deg,#FBCFE8,#E9D5FF)}
+.stylist-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.stylist{background:#fff;border-radius:28px;overflow:hidden;text-align:center;padding:36px 24px;transition:all .4s ease;box-shadow:0 10px 30px rgba(157,23,77,.1)}
+.stylist:hover{transform:translateY(-10px) rotate(1deg);box-shadow:0 24px 60px rgba(236,72,153,.25)}
+.stylist:nth-child(2):hover{transform:translateY(-10px) rotate(-1deg)}
+.stylist-avatar{width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#A855F7);display:flex;align-items:center;justify-content:center;font-size:64px;margin:0 auto 18px;box-shadow:0 10px 30px rgba(236,72,153,.3)}
+.stylist h3{font-size:22px;margin-bottom:4px}
+.stylist .specialty{color:#A855F7;font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.stylist p{color:#6B7280;font-size:14px}
+.stylist .tag-row{margin-top:14px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.tag{background:#FDF2F8;color:#9D174D;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+
+/* HOW IT WORKS */
+.how{background:#fff}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;position:relative}
+.step{text-align:center;padding:30px 20px;background:linear-gradient(180deg,#FDF2F8,#fff);border-radius:24px;border:2px dashed #FBCFE8;transition:all .3s ease}
+.step:hover{border-color:#EC4899;border-style:solid;transform:translateY(-6px)}
+.step-num{width:70px;height:70px;background:linear-gradient(135deg,#EC4899,#A855F7);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;margin:0 auto 16px;box-shadow:0 8px 24px rgba(236,72,153,.4)}
+.step h3{font-size:21px;margin-bottom:10px}
+.step p{color:#6B7280;font-size:15px}
+
+/* TESTIMONIALS */
+.testimonials{background:linear-gradient(180deg,#E9D5FF,#FDF2F8)}
+.t-scroller{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:24px;padding:8px 4px 28px;scrollbar-width:thin}
+.t-card{flex:0 0 380px;scroll-snap-align:start;background:#fff;padding:32px;border-radius:28px;box-shadow:0 15px 40px rgba(157,23,77,.1);position:relative;transition:transform .3s ease}
+.t-card:hover{transform:translateY(-6px)}
+.t-card .quote-ico{font-size:50px;color:#EC4899;line-height:.8;margin-bottom:6px;font-weight:900}
+.t-card .stars{color:#FBBF24;font-size:18px;margin-bottom:14px;letter-spacing:2px}
+.t-card p.quote{font-size:16px;color:#1F2937;margin-bottom:20px;font-weight:500}
+.t-author{display:flex;align-items:center;gap:12px;padding-top:18px;border-top:2px solid #FDF2F8}
+.t-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#EC4899,#A855F7);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.t-author strong{display:block;font-size:15px;color:#9D174D}
+.t-author span{font-size:13px;color:#A855F7;font-weight:600}
+
+/* STATS */
+.stats{background:linear-gradient(135deg,#9D174D,#EC4899,#A855F7);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:80px 0}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.stat{animation:fadeInUp .8s ease both}
+.stat:nth-child(2){animation-delay:.1s}
+.stat:nth-child(3){animation-delay:.2s}
+.stat:nth-child(4){animation-delay:.3s}
+.stat .big{font-size:58px;font-weight:900;color:#fff;display:block;line-height:1;text-shadow:0 4px 20px rgba(0,0,0,.2)}
+.stat .lbl{font-size:14px;margin-top:8px;display:block;font-weight:600;opacity:.95}
+
+/* OFFER */
+.offer-card{max-width:680px;margin:0 auto;background:#fff;padding:0;border-radius:32px;overflow:hidden;box-shadow:0 30px 80px rgba(236,72,153,.25);position:relative}
+.offer-top{background:linear-gradient(135deg,#EC4899,#A855F7);background-size:200% 200%;animation:gradient 8s ease infinite;color:#fff;padding:36px;text-align:center}
+.offer-tag{display:inline-block;background:#fff;color:#EC4899;padding:6px 18px;border-radius:50px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px}
+.offer-top h3{color:#fff;font-size:28px;margin-bottom:8px}
+.offer-price{font-size:64px;font-weight:900;color:#fff;line-height:1;margin:14px 0 4px;text-shadow:0 4px 20px rgba(0,0,0,.15)}
+.offer-orig{font-size:17px;opacity:.8;text-decoration:line-through}
+.offer-body{padding:36px;text-align:center}
+.offer-includes{list-style:none;text-align:left;max-width:380px;margin:0 auto 24px}
+.offer-includes li{padding:10px 0;display:flex;gap:10px;align-items:center;color:#374151;font-weight:500}
+.offer-includes li::before{content:'✨';font-size:18px}
+
+/* FAQ */
+.faq{background:#FDF2F8}
+.faq-list{max-width:780px;margin:0 auto}
+details{background:#fff;border-radius:18px;margin-bottom:14px;overflow:hidden;border:2px solid transparent;transition:all .3s}
+details[open]{border-color:#EC4899;box-shadow:0 12px 30px rgba(236,72,153,.15)}
+summary{padding:22px 26px;font-weight:700;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#9D174D;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{display:inline-block;transition:transform .3s ease;color:#EC4899;font-size:22px;font-weight:900}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 26px 22px;color:#6B7280;font-size:15px;line-height:1.7}
+
+/* CONTACT */
+.cta-section{background:linear-gradient(135deg,#EC4899 0%,#A855F7 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;text-align:center;position:relative;overflow:hidden}
+.cta-section::before{content:'💖';position:absolute;font-size:200px;opacity:.1;top:10%;left:10%;animation:float 6s ease infinite}
+.cta-section::after{content:'✨';position:absolute;font-size:200px;opacity:.1;bottom:10%;right:10%;animation:float 8s ease infinite reverse}
+.cta-section h2{color:#fff;font-size:46px;margin-bottom:14px;position:relative;z-index:2}
+.cta-section p.sub{font-size:18px;opacity:.95;margin-bottom:36px;max-width:580px;margin-left:auto;margin-right:auto;position:relative;z-index:2}
+form{max-width:560px;margin:0 auto;background:#fff;padding:36px;border-radius:28px;color:#1F2937;text-align:left;box-shadow:0 30px 80px rgba(0,0,0,.25);position:relative;z-index:2}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:#9D174D}
+input,select{width:100%;padding:13px 14px;border:2px solid #FBCFE8;border-radius:14px;font-size:15px;font-family:'Poppins',sans-serif;background:#FDF2F8;transition:all .2s;font-weight:500}
+input:focus,select:focus{outline:none;border-color:#EC4899;background:#fff}
+.submit-btn{width:100%;padding:17px;background:linear-gradient(135deg,#EC4899,#A855F7);color:#fff;border:none;border-radius:50px;font-size:17px;font-weight:800;cursor:pointer;transition:all .3s ease;margin-top:8px;font-family:'Poppins',sans-serif;box-shadow:0 10px 30px rgba(236,72,153,.4)}
+.submit-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 36px rgba(236,72,153,.6)}
+.privacy{font-size:12px;color:#6B7280;text-align:center;margin-top:14px;font-weight:500}
+
+/* FOOTER */
+footer{background:#1F2937;color:#FBCFE8;padding:60px 0 30px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:36px}
+footer h4{color:#fff;font-size:17px;margin-bottom:14px;font-weight:800}
+footer p,footer a{color:#F9A8D4;text-decoration:none;font-size:15px;line-height:1.9;display:block;font-weight:500}
+footer a:hover{color:#EC4899}
+.socials{display:flex;gap:10px;margin-top:14px}
+.social{width:40px;height:40px;background:linear-gradient(135deg,#EC4899,#A855F7);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;font-size:16px;transition:transform .3s;font-weight:700}
+.social:hover{transform:rotate(15deg) scale(1.1)}
+.copy{border-top:1px solid rgba(249,168,212,.2);padding-top:24px;text-align:center;font-size:14px;color:#F9A8D4;font-weight:500}
+
+@media (max-width:768px){
+  .hero{padding:60px 0 80px}
+  .hero h1{font-size:38px}
+  .hero p.sub{font-size:16px}
+  .hero-content{grid-template-columns:1fr;gap:40px}
+  .nav-links{display:none}
+  .section-head h2,.split h2,.cta-section h2{font-size:32px}
+  .problem-grid,.features-grid,.steps,.split,.stats-grid,.foot-grid,.trust-grid,.form-row,.stylist-grid{grid-template-columns:1fr}
+  .trust-grid,.stats-grid{grid-template-columns:repeat(2,1fr)}
+  .t-card{flex:0 0 280px}
+  section{padding:60px 0}
+  .offer-price{font-size:48px}
+  form{padding:24px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-wrap">
+    <div class="logo"><span class="logo-emoji">💇</span>{{location.name}}</div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#stylists">Stylists</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="btn-primary">Book 25% Off</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-text">
+      <div class="hero-badge"><span class="dot"></span>Booking Now · Spots Filling Fast</div>
+      <h1>Walk In a Guest. <span class="accent">Leave a Showstopper.</span></h1>
+      <p class="sub">Color, cut, balayage, extensions — by stylists trained in NYC, LA, and Paris.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn-primary btn-pulse">Book My First Visit (-25%) →</a>
+        <a href="#services" class="btn-secondary">See Services</a>
+      </div>
+      <div class="hero-trust">
+        <div class="stars">★★★★★</div>
+        <div>4.9 stars · 800+ reviews</div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-visual-icon">💁‍♀️</div>
+      <div class="sparkle sp1">✨</div>
+      <div class="sparkle sp2">💖</div>
+      <div class="sparkle sp3">🌟</div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-grid">
+      <div class="trust-item"><span class="num">800+</span><span class="lbl">5-Star Reviews</span></div>
+      <div class="trust-item"><span class="num">12</span><span class="lbl">Senior Stylists</span></div>
+      <div class="trust-item"><span class="num">15K+</span><span class="lbl">Heads Transformed</span></div>
+      <div class="trust-item"><span class="num">3</span><span class="lbl">Cities Trained In</span></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Sound Familiar?</div>
+      <h2>You Deserve <span class="accent">Way Better.</span></h2>
+      <p>Stop settling for "fine" hair days. Your hair tells the world who you are — make sure it's saying the right thing.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="pain-card">
+        <div class="ico">😫</div>
+        <h3>Color Disasters</h3>
+        <p>You showed them the Pinterest photo. You got... something else entirely. Brassy, patchy, or just plain wrong.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">✂️</div>
+        <h3>Same Boring Cut</h3>
+        <p>Every visit feels like Groundhog Day. No one ever suggests a fresh look that actually flatters your face shape.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">🪞</div>
+        <h3>Inconsistent Quality</h3>
+        <p>Great one visit, terrible the next. You never know what you're going to get — and that's no way to feel beautiful.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <div class="eyebrow">Why We're Different</div>
+        <h2>Where Talent Meets <span class="accent">Trend.</span></h2>
+        <p class="lead">Our stylists train at top academies in New York, LA, and Paris — then bring that artistry home to {{location.city}}. Expect bold ideas, real listening, and hair that turns heads.</p>
+        <ul class="checklist">
+          <li><span class="check">✓</span><div><strong>In-depth consultations</strong> — we LISTEN before we cut or color</div></li>
+          <li><span class="check">✓</span><div><strong>Premium products</strong> — Olaplex, Redken, Davines, K18</div></li>
+          <li><span class="check">✓</span><div><strong>Award-winning balayage</strong> — natural, hand-painted dimension</div></li>
+          <li><span class="check">✓</span><div><strong>100% love-it guarantee</strong> — if you don't love it, we'll fix it</div></li>
+          <li><span class="check">✓</span><div><strong>Complimentary refreshments</strong> — wine, coffee, treats on us</div></li>
+        </ul>
+      </div>
+      <div class="visual-block">
+        <div class="visual-icon">💖</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Services</div>
+      <h2>Hair Magic, <span class="accent">Crafted For You</span></h2>
+      <p>From subtle refreshes to total transformations — we do it all (and we do it beautifully).</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat"><div class="feat-ico">✂️</div><h3>Cut & Style</h3><p>Precision cuts that grow out gorgeous and styles that hold all day. Tailored to your face shape and lifestyle.</p><div class="price">From $65</div></div>
+      <div class="feat"><div class="feat-ico">🌅</div><h3>Balayage & Highlights</h3><p>Hand-painted, sun-kissed dimension with zero harsh lines. The kind of color people stop you on the street to ask about.</p><div class="price">From $185</div></div>
+      <div class="feat"><div class="feat-ico">🎨</div><h3>Color Correction</h3><p>Box-dye disaster? Brassy mess? Bring us the hair, leave with the dream. Specialists for the toughest color jobs.</p><div class="price">From $250</div></div>
+      <div class="feat"><div class="feat-ico">💁</div><h3>Hair Extensions</h3><p>Tape-ins, hand-tied wefts, and clip-ins — premium 100% human hair installed by certified specialists.</p><div class="price">From $450</div></div>
+      <div class="feat"><div class="feat-ico">👰</div><h3>Bridal Hair</h3><p>Your wedding day deserves perfection. Trials, day-of glam, and bridal party packages — we handle it all.</p><div class="price">From $180</div></div>
+      <div class="feat"><div class="feat-ico">💧</div><h3>Treatments</h3><p>K18, Olaplex, Brazilian smoothing — repair, hydrate, and transform damaged hair into silk.</p><div class="price">From $85</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="stylists" id="stylists">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Meet The Team</div>
+      <h2>The <span class="accent">Magic Hands</span> Behind The Magic</h2>
+      <p>Each of our master stylists brings their own artistry, training, and signature flair.</p>
+    </div>
+    <div class="stylist-grid">
+      <div class="stylist">
+        <div class="stylist-avatar">💁‍♀️</div>
+        <h3>Alessia M.</h3>
+        <div class="specialty">Master Colorist</div>
+        <p>Paris-trained balayage specialist with 12 years turning ordinary into iconic.</p>
+        <div class="tag-row">
+          <span class="tag">Balayage</span><span class="tag">Color Correction</span><span class="tag">Blonde</span>
+        </div>
+      </div>
+      <div class="stylist">
+        <div class="stylist-avatar">💇‍♀️</div>
+        <h3>Jordan T.</h3>
+        <div class="specialty">Precision Cut Expert</div>
+        <p>NYC-trained, known for sharp bobs, curtain bangs, and the kind of cut that gets compliments forever.</p>
+        <div class="tag-row">
+          <span class="tag">Cuts</span><span class="tag">Curly Hair</span><span class="tag">Bangs</span>
+        </div>
+      </div>
+      <div class="stylist">
+        <div class="stylist-avatar">👩‍🦱</div>
+        <h3>Maya P.</h3>
+        <div class="specialty">Extensions & Bridal</div>
+        <p>LA-trained extension artist and bridal hair queen — making your most important days unforgettable.</p>
+        <div class="tag-row">
+          <span class="tag">Extensions</span><span class="tag">Bridal</span><span class="tag">Updos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Easy Peasy</div>
+      <h2>From <span class="accent">Booking To Beautiful</span></h2>
+      <p>Three simple steps to your best hair day ever.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h3>Book Online</h3><p>Choose your service, pick your stylist, snag your time slot. 60-second booking, zero hold music.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Sip, Consult, Relax</h3><p>Arrive to a warm welcome, a drink on us, and a real conversation about exactly what you want.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Leave Glowing</h3><p>Walk out with hair you love (and the inevitable urge to take selfies in every mirror you pass).</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">The Love Notes</div>
+      <h2>Clients Are <span class="accent">Obsessed</span></h2>
+      <p>Real reviews from real humans who walked out feeling like the main character.</p>
+    </div>
+    <div class="t-scroller">
+      <div class="t-card">
+        <div class="quote-ico">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">Alessia gave me the most stunning balayage I've ever had — and I've been getting my hair done for 15 years. People literally stop me to ask where I get my hair done. I tell every single one of them!</p>
+        <div class="t-author"><div class="t-avatar">TS</div><div><strong>Taylor S.</strong><span>Balayage Client</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="quote-ico">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">Came in after a TERRIBLE box-dye situation. Maya saved my hair and gave me a color I LOVE. The whole vibe of this place is amazing — felt like a girls' day, not just an appointment. Found my forever salon!</p>
+        <div class="t-author"><div class="t-avatar">RV</div><div><strong>Rachel V.</strong><span>Color Correction</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="quote-ico">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">Jordan cut my curly hair and for the first time in my LIFE I have hair I'm obsessed with. He actually understood curls instead of treating them like a problem to fix. Cannot recommend enough!</p>
+        <div class="t-author"><div class="t-avatar">JL</div><div><strong>Jasmine L.</strong><span>Curly Cut Client</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat"><span class="big">15K+</span><span class="lbl">Heads Styled</span></div>
+      <div class="stat"><span class="big">4.9★</span><span class="lbl">Average Rating</span></div>
+      <div class="stat"><span class="big">12</span><span class="lbl">Master Stylists</span></div>
+      <div class="stat"><span class="big">97%</span><span class="lbl">Return Clients</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">New Client Special</div>
+      <h2>Your First Visit, <span class="accent">25% Off</span></h2>
+      <p>Try us risk-free with our love-it guarantee. Limited spots this month — book now.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-top">
+        <div class="offer-tag">★ New Client Exclusive</div>
+        <h3>First Visit Special</h3>
+        <div class="offer-price">25% OFF</div>
+        <div class="offer-orig">Any Service Of Your Choice</div>
+      </div>
+      <div class="offer-body">
+        <ul class="offer-includes">
+          <li>25% off cuts, color, balayage, or treatments</li>
+          <li>Complimentary consultation with senior stylist</li>
+          <li>Free signature scalp massage</li>
+          <li>Wine, coffee, or sparkling water on us</li>
+          <li>100% love-it guarantee — or we fix it free</li>
+        </ul>
+        <a href="#contact" class="btn-primary btn-pulse" style="padding:16px 36px;font-size:16px">Claim My 25% Off →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Real Talk</div>
+      <h2>Questions, <span class="accent">Answered</span></h2>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>How does the 25% off new client offer work? <span class="chevron">⌄</span></summary>
+        <p>Easy! It applies to any service of your choice on your first visit with us. Just mention it when booking — no codes, no fine print. Cannot be combined with other offers.</p>
+      </details>
+      <details>
+        <summary>What if I don't like my hair? <span class="chevron">⌄</span></summary>
+        <p>That's why we have our love-it guarantee. If something isn't quite right, come back within 7 days and we'll adjust it — completely free. Your happiness is everything.</p>
+      </details>
+      <details>
+        <summary>Do I need an appointment, or can I walk in? <span class="chevron">⌄</span></summary>
+        <p>Appointments are strongly recommended — our top stylists book out 2–3 weeks in advance. Walk-ins are accommodated when possible but never guaranteed.</p>
+      </details>
+      <details>
+        <summary>How long do extensions last? <span class="chevron">⌄</span></summary>
+        <p>With proper care, hand-tied extensions last 6–8 months with maintenance every 8–10 weeks. We use only 100% remy human hair — premium quality that looks completely natural.</p>
+      </details>
+      <details>
+        <summary>Do you work with curly or textured hair? <span class="chevron">⌄</span></summary>
+        <p>Absolutely! Several of our stylists specialize in curly and textured hair. Jordan and Maya are both Curl Cut™ certified. Let us know your hair type when booking.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Ready For Your Glow-Up?</h2>
+    <p class="sub">Book your first visit at 25% off — and get ready to fall in love with your hair.</p>
+    <form id="contact">
+      <div class="form-row">
+        <div class="field"><label>Your Name</label><input type="text" name="full_name" placeholder="What should we call you?" required></div>
+        <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="(555) 123-4567" required></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required></div>
+      <div class="form-row">
+        <div class="field"><label>Service Interested In</label>
+          <select name="service" required>
+            <option value="">Pick one</option>
+            <option>Cut & Style</option><option>Balayage / Highlights</option>
+            <option>Color Correction</option><option>Hair Extensions</option>
+            <option>Bridal Hair</option><option>Treatments</option>
+          </select>
+        </div>
+        <div class="field"><label>Preferred Stylist</label>
+          <select name="preferred_stylist">
+            <option value="">No preference</option>
+            <option>Alessia (Color)</option><option>Jordan (Cuts)</option>
+            <option>Maya (Extensions/Bridal)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Preferred Date</label><input type="date" name="preferred_date"></div>
+      <button type="submit" class="submit-btn">Book My 25% Off Visit ✨</button>
+      <p class="privacy">🔒 We'll text you to confirm — never spam, pinky promise.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="logo" style="color:#EC4899;margin-bottom:14px;display:flex;align-items:center;gap:8px;font-weight:900;font-size:24px">
+          <span style="font-size:28px">💇</span>{{location.name}}
+        </div>
+        <p>Where talent meets trend. Bringing NYC, LA, and Paris-level hair artistry to {{location.city}}.</p>
+        <div class="socials">
+          <a href="#" class="social">f</a><a href="#" class="social">ig</a><a href="#" class="social">tt</a><a href="#" class="social">★</a>
+        </div>
+      </div>
+      <div>
+        <h4>Visit Us</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <a href="#services">Services</a>
+        <a href="#stylists">Stylists</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Book Now</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 {{location.name}} · Made with 💖 in {{location.city}}</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+# Render.com blueprint for the Clone2GHL backend.
+# Deploy: push to GitHub → Render → "New Blueprint" → pick this repo.
+# Then set the secret env values (marked sync:false) in the Render dashboard.
+services:
+  - type: web
+    name: clone2ghl-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: clone2ghl-data
+      mountPath: /app/data        # persists db.json + rehosted assets
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      # ── Secrets — set these in the Render dashboard (never commit) ──
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false             # e.g. https://app.yourdomain.com
+      - key: EXTENSION_IDS
+        sync: false             # your published Chrome/Firefox extension id(s)
+      - key: OWNER_EMAILS
+        sync: false
+      - key: ADMIN_SECRET
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: EMAIL_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: GHL_WEBHOOK_SECRET
+        sync: false
+      - key: GHL_PRODUCT_MAP
+        sync: false             # e.g. prod_abc=pro, Agency=agency
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

@@ -1,0 +1,14 @@
+Clone2GHL – Funnel Intelligence Platform
+What's new in v1.0.3
+
+- Redesigned dashboard UI with an updated layout and styling.
+- Improved GoHighLevel export and page-to-funnel conversion reliability.
+- Expanded funnel library with 20+ niche-specific templates (chiropractor,
+  med spa, real estate, dental, HVAC, law firm, solar, coaching, and more).
+- Added a built-in niche website reference list for faster cloning.
+- Refined the popup and cloning flow for a smoother capture experience.
+- Updated owner/account login screen.
+- General bug fixes and stability improvements.
+
+Paste the text above into the Chrome Web Store "What's new" field when
+uploading this version.

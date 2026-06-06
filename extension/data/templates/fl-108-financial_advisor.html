@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Fiduciary Wealth Management & Financial Planning</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:#111827;background:#F0FDF4;line-height:1.7}
+h1,h2,h3,h4{font-family:'Lora',serif;font-weight:600;line-height:1.2;color:#022C22;letter-spacing:-.01em}
+.container{max-width:1200px;margin:0 auto;padding:0 28px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+/* NAV */
+nav{position:sticky;top:0;background:rgba(240,253,244,.92);backdrop-filter:blur(10px);z-index:100;padding:18px 0;border-bottom:1px solid rgba(6,78,59,.08)}
+.nav-inner{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Lora',serif;font-weight:700;font-size:24px;color:#064E3B;letter-spacing:.02em}
+.logo .crest{color:#FBBF24}
+.nav-cta{background:#064E3B;color:#fff;padding:11px 24px;border-radius:2px;text-decoration:none;font-weight:600;font-size:14px;transition:all .3s;letter-spacing:.03em}
+.nav-cta:hover{background:#022C22;letter-spacing:.05em}
+/* HERO */
+.hero{background:linear-gradient(-45deg,#064E3B,#022C22,#065F46,#022C22);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;padding:110px 0;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,rgba(251,191,36,.12),transparent 60%);transform:translate(-50%,-50%);animation:float 8s ease-in-out infinite}
+.hero-inner{position:relative;z-index:2;max-width:850px}
+.eyebrow-gold{display:inline-block;color:#FBBF24;font-size:13px;text-transform:uppercase;letter-spacing:4px;font-weight:600;margin-bottom:20px;opacity:0;animation:fadeInUp .6s ease forwards}
+.eyebrow-gold::before,.eyebrow-gold::after{content:"—";margin:0 12px;color:#FBBF24}
+.hero h1{font-size:64px;font-weight:500;color:#fff;margin-bottom:24px;line-height:1.1;opacity:0;animation:fadeInUp .8s .1s ease forwards;font-style:italic}
+.hero h1 .accent{font-style:normal;font-weight:700;background:linear-gradient(90deg,#FBBF24,#FCD34D,#FBBF24);background-size:200% 100%;background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 4s linear infinite}
+.hero p.sub{font-size:20px;color:#D1FAE5;margin-bottom:36px;opacity:0;animation:fadeInUp .8s .2s ease forwards;max-width:680px}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeInUp .8s .3s ease forwards}
+.btn-primary{background:#FBBF24;color:#022C22;padding:17px 34px;border-radius:2px;text-decoration:none;font-weight:700;display:inline-block;transition:all .3s;letter-spacing:.04em;text-transform:uppercase;font-size:14px;border:2px solid #FBBF24}
+.btn-primary:hover{background:transparent;color:#FBBF24}
+.btn-secondary{background:transparent;color:#fff;padding:17px 34px;border-radius:2px;text-decoration:none;font-weight:600;border:2px solid rgba(255,255,255,.3);transition:all .3s;letter-spacing:.04em;text-transform:uppercase;font-size:14px}
+.btn-secondary:hover{border-color:#FBBF24;color:#FBBF24}
+.trust-strip{margin-top:42px;display:flex;gap:36px;flex-wrap:wrap;opacity:0;animation:fadeInUp .8s .4s ease forwards;padding-top:32px;border-top:1px solid rgba(255,255,255,.1)}
+.trust-strip div{color:#A7F3D0;font-size:13px;text-transform:uppercase;letter-spacing:2px}
+.trust-strip strong{display:block;color:#fff;font-family:'Lora';font-size:24px;font-weight:600;text-transform:none;letter-spacing:0;margin-top:4px}
+/* TRUST BAR */
+.trust-bar{background:#fff;padding:50px 0;border-bottom:1px solid #D1FAE5}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center;align-items:center}
+.credential{padding:0 20px;border-right:1px solid #E5E7EB}
+.credential:last-child{border:none}
+.credential .seal{font-family:'Lora';font-size:32px;font-weight:700;color:#064E3B;margin-bottom:6px}
+.credential .seal-label{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:2px}
+/* SECTIONS */
+section{padding:100px 0}
+.section-head{text-align:center;max-width:720px;margin:0 auto 64px}
+.section-head .eyebrow{color:#064E3B;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:4px;margin-bottom:16px}
+.section-head h2{font-size:46px;margin-bottom:18px;font-weight:500}
+.section-head h2 em{color:#064E3B;font-weight:700}
+.section-head p{color:#4B5563;font-size:18px;font-style:italic}
+.divider{width:50px;height:2px;background:#FBBF24;margin:0 auto 24px}
+/* PROBLEM */
+.problems{background:#fff}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.problem-card{background:#F0FDF4;padding:42px 32px;border-bottom:3px solid #FBBF24;transition:all .3s;position:relative}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 25px 50px rgba(6,78,59,.1)}
+.problem-card .num{font-family:'Lora';font-size:54px;font-weight:600;color:#FBBF24;line-height:1;margin-bottom:16px;font-style:italic}
+.problem-card h3{font-size:22px;margin-bottom:12px}
+.problem-card p{color:#4B5563;font-size:15px}
+/* SOLUTION */
+.solution-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:80px;align-items:center}
+.solution-text .eyebrow{color:#064E3B;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:4px;margin-bottom:16px}
+.solution-text h2{font-size:42px;margin-bottom:20px;font-weight:500}
+.solution-text h2 em{color:#064E3B;font-weight:700}
+.solution-text>p{color:#4B5563;margin-bottom:28px;font-size:17px}
+.benefit-list{list-style:none}
+.benefit-list li{padding:14px 0;display:flex;gap:16px;align-items:flex-start;font-size:16px;color:#111827;border-bottom:1px dotted #D1FAE5}
+.benefit-list li:last-child{border:none}
+.benefit-list li::before{content:"✓";color:#FBBF24;font-size:24px;font-weight:700;flex-shrink:0;line-height:1}
+.solution-visual{background:linear-gradient(135deg,#064E3B,#022C22);padding:50px;color:#fff;position:relative;border-radius:2px;box-shadow:0 30px 60px rgba(2,44,34,.3)}
+.solution-visual::before{content:"";position:absolute;inset:8px;border:1px solid rgba(251,191,36,.3);pointer-events:none}
+.portfolio-h{text-align:center;margin-bottom:30px;position:relative;z-index:2}
+.portfolio-h h3{color:#fff;font-size:24px;margin-bottom:8px}
+.portfolio-h span{color:#FBBF24;font-size:12px;text-transform:uppercase;letter-spacing:3px}
+.alloc-bar{margin-bottom:14px;position:relative;z-index:2}
+.alloc-bar .label{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:#D1FAE5}
+.alloc-bar .label strong{color:#fff}
+.alloc-bar .track{height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.alloc-bar .fill{height:100%;background:linear-gradient(90deg,#FBBF24,#FCD34D);border-radius:4px;animation:shimmer 3s linear infinite;background-size:200% 100%}
+.return-box{margin-top:30px;padding:24px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:2px;text-align:center;position:relative;z-index:2}
+.return-box .big{font-family:'Lora';font-size:42px;color:#FBBF24;font-weight:700;font-style:italic}
+.return-box span{color:#A7F3D0;font-size:13px;letter-spacing:2px;text-transform:uppercase}
+/* SERVICES */
+.services{background:#F0FDF4}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.service-card{background:#fff;padding:38px 30px;border:1px solid #D1FAE5;transition:all .3s;position:relative;overflow:hidden}
+.service-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:0;background:#FBBF24;transition:height .4s ease}
+.service-card:hover{transform:translateY(-6px);box-shadow:0 25px 50px rgba(6,78,59,.1)}
+.service-card:hover::before{height:100%}
+.service-card .icon{font-size:34px;margin-bottom:18px}
+.service-card h3{font-size:21px;margin-bottom:10px}
+.service-card p{color:#4B5563;font-size:14px}
+/* HOW */
+.how{background:#fff}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.step{text-align:center;padding:0 16px;position:relative}
+.step-num{font-family:'Lora';font-size:72px;font-weight:600;color:#FBBF24;line-height:1;font-style:italic;margin-bottom:8px;opacity:.9}
+.step h3{font-size:22px;margin-bottom:10px}
+.step p{color:#4B5563;font-size:15px}
+/* TESTIMONIALS */
+.testimonials{background:#022C22;color:#fff}
+.testimonials .section-head h2,.testimonials .section-head h2 em{color:#fff}
+.testimonials .section-head p{color:#A7F3D0}
+.testimonials .section-head .eyebrow{color:#FBBF24}
+.t-scroll{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 4px 24px;scrollbar-width:thin}
+.t-card{flex:0 0 420px;scroll-snap-align:start;background:rgba(255,255,255,.03);border:1px solid rgba(251,191,36,.2);padding:36px;position:relative}
+.quote-mark{font-family:'Lora';font-size:80px;color:#FBBF24;line-height:.5;opacity:.3;position:absolute;top:30px;right:24px;font-style:italic}
+.stars{color:#FBBF24;font-size:18px;margin-bottom:18px;letter-spacing:4px}
+.t-card blockquote{font-family:'Lora';font-size:18px;color:#fff;font-style:italic;margin-bottom:22px;line-height:1.6}
+.t-author{display:flex;align-items:center;gap:14px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08)}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#F59E0B);color:#022C22;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Lora'}
+.t-author strong{display:block;font-size:15px;color:#fff}
+.t-author span{color:#A7F3D0;font-size:13px;font-style:italic}
+/* RESULTS */
+.results-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.result-card{padding:30px 20px;border-top:2px solid #FBBF24}
+.result-num{font-family:'Lora';font-size:56px;font-weight:600;color:#064E3B;font-style:italic;line-height:1}
+.result-label{color:#4B5563;font-size:14px;margin-top:8px;text-transform:uppercase;letter-spacing:2px}
+/* PRICING */
+.pricing{background:#F0FDF4}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;align-items:stretch}
+.price-card{background:#fff;padding:46px 36px;border:1px solid #D1FAE5;transition:all .3s;display:flex;flex-direction:column;position:relative}
+.price-card:hover{transform:translateY(-6px);box-shadow:0 25px 50px rgba(6,78,59,.12)}
+.price-card.popular{border:2px solid #064E3B;transform:scale(1.04);box-shadow:0 30px 60px rgba(6,78,59,.18)}
+.popular-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#064E3B;color:#FBBF24;padding:8px 22px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px}
+.price-card h3{font-size:24px;margin-bottom:6px;font-weight:500}
+.price-card .min{color:#6B7280;font-size:13px;text-transform:uppercase;letter-spacing:2px;margin-bottom:18px}
+.price-card .price{font-family:'Lora';font-size:38px;color:#064E3B;font-weight:700;margin:6px 0 20px;font-style:italic}
+.price-card .price span{font-size:14px;color:#6B7280;font-style:normal;font-weight:400}
+.price-features{list-style:none;margin:20px 0;flex-grow:1}
+.price-features li{padding:10px 0;color:#4B5563;font-size:14px;border-bottom:1px dotted #E5E7EB}
+.price-features li::before{content:"✓ ";color:#FBBF24;font-weight:700;margin-right:6px}
+.price-card .btn-primary{text-align:center;margin-top:auto}
+/* FAQ */
+.faq{background:#fff}
+.faq-list{max-width:820px;margin:0 auto}
+details{background:#F0FDF4;margin-bottom:14px;overflow:hidden;border-left:3px solid #FBBF24;transition:all .3s}
+details[open]{box-shadow:0 10px 30px rgba(6,78,59,.08)}
+summary{padding:22px 26px;cursor:pointer;font-weight:600;font-size:17px;font-family:'Lora';color:#022C22;display:flex;justify-content:space-between;align-items:center;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{transition:transform .3s;color:#FBBF24;font-weight:700;font-size:14px}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 26px 24px;color:#4B5563;font-size:15px}
+/* CTA */
+.cta-section{background:linear-gradient(-45deg,#064E3B,#022C22,#065F46,#022C22);background-size:300% 300%;animation:gradient 15s ease infinite;color:#fff;padding:110px 0;position:relative}
+.cta-wrap{max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:2}
+.cta-section h2{font-size:50px;color:#fff;margin-bottom:16px;font-weight:500}
+.cta-section h2 em{color:#FBBF24;font-weight:700}
+.cta-section>.cta-wrap>p{color:#D1FAE5;font-size:18px;margin-bottom:40px;font-style:italic}
+form{background:#fff;padding:48px;text-align:left;box-shadow:0 30px 70px rgba(2,44,34,.4);border:1px solid rgba(251,191,36,.4)}
+form h3{color:#022C22;font-size:26px;margin-bottom:8px;font-family:'Lora';font-weight:500}
+form>p{color:#4B5563;font-size:14px;margin-bottom:28px;font-style:italic}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+input,select{width:100%;padding:14px 16px;border:1px solid #D1FAE5;font-family:inherit;font-size:15px;color:#111827;background:#F0FDF4;transition:all .3s}
+input:focus,select:focus{outline:none;border-color:#FBBF24;background:#fff;box-shadow:0 0 0 3px rgba(251,191,36,.15)}
+.form-full{margin-bottom:16px}
+button[type=submit]{width:100%;background:#064E3B;color:#FBBF24;padding:18px;border:none;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;letter-spacing:3px;text-transform:uppercase;transition:all .3s;margin-top:10px}
+button[type=submit]:hover{background:#FBBF24;color:#022C22}
+.form-foot{text-align:center;color:#6B7280;font-size:12px;margin-top:16px;font-style:italic}
+/* FOOTER */
+footer{background:#022C22;color:#A7F3D0;padding:60px 0 28px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:50px;margin-bottom:36px}
+.footer-grid h4{color:#FBBF24;font-size:14px;margin-bottom:18px;text-transform:uppercase;letter-spacing:3px;font-family:'Inter';font-weight:600}
+.footer-grid a{color:#A7F3D0;text-decoration:none;display:block;padding:5px 0;font-size:14px;transition:color .2s}
+.footer-grid a:hover{color:#FBBF24}
+.social-row{display:flex;gap:12px;margin-top:18px}
+.social-row a{width:38px;height:38px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;font-family:'Lora';font-style:italic}
+.social-row a:hover{background:#FBBF24;color:#022C22}
+.copyright{border-top:1px solid rgba(251,191,36,.15);padding-top:24px;text-align:center;font-size:13px}
+.disclosure{font-size:11px;color:#6EE7B7;margin-top:12px;line-height:1.6;max-width:900px;margin-left:auto;margin-right:auto;opacity:.7}
+@media (max-width:768px){
+.hero-inner,.solution-grid,.footer-grid{grid-template-columns:1fr}
+.solution-grid{gap:50px}
+.problem-grid,.services-grid,.how-grid,.results-grid,.pricing-grid,.trust-grid{grid-template-columns:1fr 1fr}
+.hero h1{font-size:40px}
+.section-head h2,.cta-section h2{font-size:32px}
+.form-row{grid-template-columns:1fr}
+.price-card.popular{transform:none}
+.credential{border:none;padding-bottom:20px}
+.trust-strip{gap:20px}
+}
+</style>
+</head>
+<body>
+<nav><div class="container nav-inner"><div class="logo">{{location.name}} <span class="crest">⬥</span></div><a href="#contact" class="nav-cta">Schedule Review</a></div></nav>
+
+<section class="hero"><div class="container"><div class="hero-inner">
+<div class="eyebrow-gold">CFP® FIDUCIARY ADVISORS</div>
+<h1>Build Wealth That <span class="accent">Outlives</span> You.</h1>
+<p class="sub">Fiduciary financial planning for high-net-worth professionals and business owners. CFP®-led, fee-only, and legally bound to put your interests first.</p>
+<div class="hero-ctas"><a href="#contact" class="btn-primary">Schedule a Portfolio Review</a><a href="#services" class="btn-secondary">Our Services</a></div>
+<div class="trust-strip">
+<div>Assets Under Management<strong>$412M</strong></div>
+<div>Client Retention<strong>97.4%</strong></div>
+<div>Years of Practice<strong>22 yrs</strong></div>
+<div>Standard<strong>Fiduciary</strong></div>
+</div>
+</div></div></section>
+
+<section class="trust-bar"><div class="container"><div class="trust-grid">
+<div class="credential"><div class="seal">CFP®</div><div class="seal-label">Board Certified</div></div>
+<div class="credential"><div class="seal">FIDUCIARY</div><div class="seal-label">Legal Standard</div></div>
+<div class="credential"><div class="seal">FEE-ONLY</div><div class="seal-label">No Commissions</div></div>
+<div class="credential"><div class="seal">SEC</div><div class="seal-label">Registered RIA</div></div>
+</div></div></section>
+
+<section class="problems"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">The Wealth Trap</div><h2>You worked too hard to <em>leave money on the table</em></h2><p>The same patterns hurt every high-income household. Here are three of the most expensive.</p></div>
+<div class="problem-grid">
+<div class="problem-card"><div class="num">I.</div><h3>The Tax Drag</h3><p>The wrong account structure can cost 25-40% of your gains over a lifetime. Most advisors never run a tax-alpha analysis on your portfolio.</p></div>
+<div class="problem-card"><div class="num">II.</div><h3>Conflicted Advice</h3><p>Commission-based brokers earn more when you trade more — even when you shouldn't. Their "advice" is legally allowed to favor their wallet, not yours.</p></div>
+<div class="problem-card"><div class="num">III.</div><h3>The Legacy Gap</h3><p>Without a coordinated estate plan, your heirs lose 30-45% to probate, taxes, and family disputes. Most families never recover the wealth.</p></div>
+</div></div></section>
+
+<section><div class="container"><div class="solution-grid">
+<div class="solution-text">
+<div class="eyebrow">The Fiduciary Difference</div>
+<h2>Independent advice, <em>legally bound</em> to your best interest</h2>
+<p>As a fee-only Registered Investment Advisor, we are legally and ethically required to act as fiduciaries — meaning every recommendation must serve your interests first, with full transparency and no hidden commissions.</p>
+<ul class="benefit-list">
+<li>Flat fee or AUM-based pricing — never commissions, never hidden trails</li>
+<li>Comprehensive plan covering investments, taxes, estate, and risk in one document</li>
+<li>CFP®-led team with average 18 years of practice experience</li>
+<li>Quarterly portfolio reviews with you and your CPA at the same table</li>
+<li>Direct phone access to your advisor — no call centers, ever</li>
+</ul>
+</div>
+<div class="solution-visual">
+<div class="portfolio-h"><span>Sample Allocation</span><h3>The Diversified Growth Portfolio</h3></div>
+<div class="alloc-bar"><div class="label"><span>US Equities</span><strong>42%</strong></div><div class="track"><div class="fill" style="width:42%"></div></div></div>
+<div class="alloc-bar"><div class="label"><span>International Equities</span><strong>18%</strong></div><div class="track"><div class="fill" style="width:18%"></div></div></div>
+<div class="alloc-bar"><div class="label"><span>Fixed Income</span><strong>22%</strong></div><div class="track"><div class="fill" style="width:22%"></div></div></div>
+<div class="alloc-bar"><div class="label"><span>Real Estate (REITs)</span><strong>10%</strong></div><div class="track"><div class="fill" style="width:10%"></div></div></div>
+<div class="alloc-bar"><div class="label"><span>Alternatives</span><strong>8%</strong></div><div class="track"><div class="fill" style="width:8%"></div></div></div>
+<div class="return-box"><div class="big">8.7%</div><span>10-Year Net Annualized Return</span></div>
+</div>
+</div></div></section>
+
+<section class="services" id="services"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Complete Wealth Services</div><h2>Every facet of your financial life, <em>under one roof</em></h2><p>We coordinate the entire financial picture — so nothing falls through the cracks.</p></div>
+<div class="services-grid">
+<div class="service-card"><div class="icon">⬢</div><h3>Retirement Planning</h3><p>Income mapping, Social Security optimization, Roth conversion analysis, and tax-efficient withdrawal sequencing.</p></div>
+<div class="service-card"><div class="icon">⬡</div><h3>Investment Management</h3><p>Discretionary portfolio management with quarterly rebalancing, tax-loss harvesting, and direct indexing.</p></div>
+<div class="service-card"><div class="icon">⬣</div><h3>Tax Strategy</h3><p>Multi-year tax projections, Roth conversions, charitable bunching, and coordinated work with your CPA.</p></div>
+<div class="service-card"><div class="icon">⬥</div><h3>Estate Planning</h3><p>Trust structuring, beneficiary review, generation-skipping strategies, and coordinated estate attorney referrals.</p></div>
+<div class="service-card"><div class="icon">◈</div><h3>Business Exit Planning</h3><p>Pre-sale tax structuring, QSBS analysis, installment sales, and post-liquidity investment planning for founders.</p></div>
+<div class="service-card"><div class="icon">◇</div><h3>Insurance & Risk</h3><p>Independent review of life, disability, umbrella, and long-term care policies. We don't sell — we audit.</p></div>
+</div></div></section>
+
+<section class="how"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Our Process</div><h2>A relationship built on <em>three pillars</em></h2></div>
+<div class="how-grid">
+<div class="step"><div class="step-num">i</div><h3>Discovery & Plan</h3><p>A 90-minute consultation where we examine every account, document, and goal. You leave with a formal written plan in 14 days.</p></div>
+<div class="step"><div class="step-num">ii</div><h3>Implement & Optimize</h3><p>We execute the plan — coordinating with your CPA, attorney, and insurance pros. Tax-efficient rebalancing happens quarterly.</p></div>
+<div class="step"><div class="step-num">iii</div><h3>Steward & Review</h3><p>Two formal reviews per year, plus unlimited access. Life changes — your plan adapts. Forever.</p></div>
+</div></div></section>
+
+<section class="testimonials"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Client Voices</div><h2>Trusted by <em>multi-generational families</em></h2><p>Independently verified reviews — names changed for privacy.</p></div>
+<div class="t-scroll">
+<div class="t-card"><div class="quote-mark">"</div><div class="stars">★★★★★</div><blockquote>After selling our manufacturing business, three "advisors" pitched us products that would have cost us six figures in commissions. {{location.name}} structured the proceeds with QSBS and an installment sale — saved us $1.4M in federal tax alone.</blockquote><div class="t-author"><div class="avatar">DR</div><div><strong>Dr. Robert M.</strong><span>Business owner, post-exit</span></div></div></div>
+<div class="t-card"><div class="quote-mark">"</div><div class="stars">★★★★★</div><blockquote>I've worked with two wirehouse brokers over 20 years. The level of clarity, planning depth, and tax coordination here is on another planet. The Roth conversion ladder they built will save my family roughly $480k by age 80.</blockquote><div class="t-author"><div class="avatar">EL</div><div><strong>Elaine L.</strong><span>Retired executive, age 62</span></div></div></div>
+<div class="t-card"><div class="quote-mark">"</div><div class="stars">★★★★★</div><blockquote>What sold me was the second-opinion review — completely free, no pitch. They found a $14k/year drag in my old 401(k) rollover. Three years in, my net return after fees is materially better than my previous advisor's.</blockquote><div class="t-author"><div class="avatar">MW</div><div><strong>Mark W.</strong><span>Tech executive, age 49</span></div></div></div>
+</div></div></section>
+
+<section><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Measured Results</div><h2>Numbers that <em>earn the relationship</em></h2></div>
+<div class="results-grid">
+<div class="result-card"><div class="result-num">$412M</div><div class="result-label">Assets Under Management</div></div>
+<div class="result-card"><div class="result-num">97.4%</div><div class="result-label">Client Retention</div></div>
+<div class="result-card"><div class="result-num">$28M</div><div class="result-label">Estate Tax Avoided (2024)</div></div>
+<div class="result-card"><div class="result-num">22 yrs</div><div class="result-label">Average Advisor Tenure</div></div>
+</div></div></section>
+
+<section class="pricing"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Engagement Options</div><h2>Transparent, <em>fee-only</em> pricing</h2><p>No commissions. No product sales. Ever.</p></div>
+<div class="pricing-grid">
+<div class="price-card"><h3>Plan Only</h3><div class="min">$250k – $500k investable</div><div class="price">$4,800<span>/one-time</span></div>
+<ul class="price-features"><li>Comprehensive written plan</li><li>Retirement income map</li><li>Tax & estate review</li><li>Insurance audit</li><li>Investment policy statement</li><li>2 review meetings (12 months)</li></ul>
+<a href="#contact" class="btn-primary">Schedule Discovery</a></div>
+<div class="price-card popular"><div class="popular-tag">Most Selected</div><h3>Wealth Management</h3><div class="min">$500k – $5M investable</div><div class="price">0.85%<span>/year AUM</span></div>
+<ul class="price-features"><li>Everything in Plan Only</li><li>Discretionary portfolio mgmt</li><li>Quarterly tax-loss harvesting</li><li>Quarterly review meetings</li><li>CPA coordination calls</li><li>Direct line to your advisor</li><li>Annual estate review</li></ul>
+<a href="#contact" class="btn-primary">Schedule Discovery</a></div>
+<div class="price-card"><h3>Family Office</h3><div class="min">$5M+ investable</div><div class="price">0.55%<span>/year AUM</span></div>
+<ul class="price-features"><li>Everything in Wealth Mgmt</li><li>Multi-generational planning</li><li>Concierge bill pay (optional)</li><li>Private investment access</li><li>Trustee services coordination</li><li>Charitable foundation setup</li><li>Quarterly family meetings</li></ul>
+<a href="#contact" class="btn-primary">Schedule Discovery</a></div>
+</div></div></section>
+
+<section class="faq"><div class="container">
+<div class="section-head"><div class="divider"></div><div class="eyebrow">Common Questions</div><h2>What our clients <em>ask first</em></h2></div>
+<div class="faq-list">
+<details open><summary>What does "fiduciary" actually mean?<span class="chevron">▼</span></summary><p>A fiduciary is legally required to act in your best interest at all times. Stockbrokers and many bank "advisors" only have a "suitability" obligation — meaning a product just needs to be suitable, not optimal. As a Registered Investment Advisor, we are bound by SEC fiduciary standards on every recommendation, in writing.</p></details>
+<details><summary>How does fee-only differ from fee-based?<span class="chevron">▼</span></summary><p>Fee-only means we are paid exclusively by clients — no commissions, no kickbacks, no product sales. Fee-based advisors charge a fee AND earn commissions, which creates conflicts of interest. We belong to NAPFA — the largest fee-only advisor organization in the US.</p></details>
+<details><summary>What's the minimum to work with you?<span class="chevron">▼</span></summary><p>Our Plan Only engagement is designed for households between $250k-$500k in investable assets. Ongoing wealth management starts at $500k. Family Office services begin at $5M. We will not take on clients we cannot serve excellently.</p></details>
+<details><summary>How is your investment philosophy different?<span class="chevron">▼</span></summary><p>We are evidence-based, low-cost, and tax-aware. We do not try to time markets or pick hot stocks. Our portfolios are globally diversified across 8,000+ securities, rebalanced systematically, and constantly optimized for after-tax return — which is what actually compounds.</p></details>
+<details><summary>Is the portfolio review really free?<span class="chevron">▼</span></summary><p>Yes — the initial discovery meeting and portfolio review (a $750 value) is offered at no charge to qualified prospects. There is no obligation to engage afterward. About 30% of attendees decide we are not the right fit, and we leave them with actionable insights regardless.</p></details>
+<details><summary>How do I know my assets are safe?<span class="chevron">▼</span></summary><p>We never hold client assets. All accounts are custodied at Charles Schwab and Fidelity — two of the largest, most regulated custodians in the world. We have only discretionary trading authority, never withdrawal authority. You see every statement directly from Schwab/Fidelity.</p></details>
+</div></div></section>
+
+<section class="cta-section" id="contact"><div class="container"><div class="cta-wrap">
+<h2>Begin with a <em>complimentary</em> portfolio review</h2>
+<p>A $750 value, offered at no obligation. We'll identify hidden risks, tax inefficiencies, and missed opportunities — even if you never become a client.</p>
+<form>
+<h3>Schedule Your Complimentary Review</h3>
+<p>A senior advisor will respond personally within one business day.</p>
+<div class="form-row"><input type="text" name="full_name" placeholder="Full Name" required><input type="email" name="email" placeholder="Email Address" required></div>
+<div class="form-row"><input type="tel" name="phone" placeholder="Phone Number" required>
+<select name="investable_assets" required><option value="">Investable Assets</option><option>Under $100,000</option><option>$100,000 – $500,000</option><option>$500,000 – $2M</option><option>$2M – $10M</option><option>Over $10M</option></select></div>
+<div class="form-row"><select name="primary_goal" required><option value="">Primary Goal</option><option>Retirement income planning</option><option>Wealth growth & investing</option><option>Tax reduction strategy</option><option>Legacy & estate planning</option><option>Business exit planning</option></select>
+<select name="preferred_meeting" required><option value="">Preferred Meeting</option><option>Virtual (video)</option><option>In-Person at our office</option><option>Phone call</option></select></div>
+<button type="submit">Request My Portfolio Review</button>
+<div class="form-foot">All inquiries strictly confidential — protected under fiduciary standards.</div>
+</form>
+</div></div></section>
+
+<footer><div class="container">
+<div class="footer-grid">
+<div><div class="logo" style="color:#FBBF24;margin-bottom:18px">{{location.name}} <span style="color:#fff">⬥</span></div>
+<p style="font-size:14px;line-height:1.7;color:#A7F3D0">Fee-only fiduciary wealth management for affluent families and business owners. CFP®-led. SEC Registered RIA. Member NAPFA.</p>
+<div class="social-row"><a href="#">f</a><a href="#">in</a><a href="#">x</a></div></div>
+<div><h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<a href="#">{{location.fullAddress}}</a></div>
+<div><h4>Services</h4><a href="#">Wealth Management</a><a href="#">Retirement Planning</a><a href="#">Estate Strategy</a><a href="#">Business Exit</a></div>
+</div>
+<div class="copyright">© 2025 {{location.name}}. All rights reserved. Registered Investment Advisor.
+<div class="disclosure">Investment advisory services offered through {{location.name}}, a Registered Investment Advisor. CFP® is a registered mark of the Certified Financial Planner Board of Standards Inc. Past performance is not indicative of future results. This material is for informational purposes only and is not a solicitation or offer of any security or investment product.</div>
+</div>
+</div></footer>
+</body></html>

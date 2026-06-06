@@ -17,7 +17,7 @@
 2. Enable **Developer Mode** (toggle in top-right)
 3. Click **"Load unpacked"**
 4. Select the `extension/` folder (the one containing `manifest.json`)
-5. The Clone2GHL extension should appear with the ⚡ purple icon
+5. The Clone2GHL extension should appear with the gold C2 icon on black
 
 ### Step 3: Configure API Keys
 

@@ -3,7 +3,7 @@
 ## Overview
 
 **Extension name:** Clone2GHL – Funnel Intelligence Platform  
-**Version:** 1.0.1  
+**Version:** 1.0.3  
 **Manifest version:** 3  
 **Category:** Productivity  
 **Primary audience:** GoHighLevel agencies, funnel builders, digital marketers, coaches
@@ -87,13 +87,13 @@ Run from the `extension/` directory:
 **PowerShell:**
 ```powershell
 cd "path\to\Clone2GHL_CE\extension"
-Compress-Archive -Path * -DestinationPath "..\Clone2GHL_v1.0.1.zip"
+Compress-Archive -Path * -DestinationPath "..\Clone2GHL_v1.0.3.zip"
 ```
 
 **Mac/Linux:**
 ```bash
 cd path/to/Clone2GHL_CE/extension
-zip -r ../Clone2GHL_v1.0.1.zip . --exclude "*.DS_Store"
+zip -r ../Clone2GHL_v1.0.3.zip . --exclude "*.DS_Store"
 ```
 
 > **Important:** Zip the *contents* of the `extension/` folder, not the folder itself. `manifest.json` must be at the root of the ZIP.
@@ -112,7 +112,7 @@ zip -r ../Clone2GHL_v1.0.1.zip . --exclude "*.DS_Store"
 ### Step 3 — Create a New Item
 
 1. Click **"+ New Item"** in the developer console
-2. Upload `Clone2GHL_v1.0.1.zip`
+2. Upload `Clone2GHL_v1.0.3.zip`
 3. Google will auto-parse `manifest.json`
 
 ---
@@ -328,7 +328,7 @@ Before clicking submit, ensure all draft blockers are green:
 
 ## Updating the Extension (Future Versions)
 
-1. Increment the `version` field in `manifest.json` (e.g., `1.0.1` → `1.0.2`)
+1. Increment the `version` field in `manifest.json` (e.g., `1.0.3` → `1.0.2`)
 2. Repackage the ZIP
 3. In the developer console, click **"Upload new package"** on the existing listing
 4. Add a changelog in the "What's new" field

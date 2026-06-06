@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Private Tutoring That Moves Grades</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#EFF6FF;color:#111827;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;line-height:1.2;color:#0F172A;letter-spacing:-.5px}
+a{color:inherit;text-decoration:none}
+.container{max-width:1180px;margin:0 auto;padding:0 24px}
+.btn-primary{display:inline-block;background:#1E40AF;color:#fff;font-weight:700;padding:15px 32px;border-radius:10px;transition:all .3s ease;font-size:16px;border:none;cursor:pointer}
+.btn-primary:hover{background:#1E3A8A;transform:translateY(-3px);box-shadow:0 14px 30px rgba(30,64,175,.35)}
+.btn-secondary{display:inline-block;background:rgba(255,255,255,.15);color:#fff;font-weight:600;padding:15px 30px;border-radius:10px;border:1.5px solid rgba(255,255,255,.4);transition:all .3s ease;font-size:16px;backdrop-filter:blur(8px)}
+.btn-secondary:hover{background:#fff;color:#1E40AF}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}50%{box-shadow:0 0 0 20px rgba(16,185,129,0)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+nav{position:sticky;top:0;background:rgba(239,246,255,.95);backdrop-filter:blur(12px);z-index:100;padding:16px 0;border-bottom:1px solid rgba(30,64,175,.08)}
+nav .container{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;color:#1E3A8A;display:flex;align-items:center;gap:8px}
+.logo::before{content:'\1F4DA';font-size:24px}
+nav .btn-primary{padding:11px 22px;font-size:14px;border-radius:8px}
+.hero{background:linear-gradient(135deg,#1E3A8A 0%,#1E40AF 40%,#2563EB 80%,#1E3A8A 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:110px 0 130px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,.18),transparent 70%);border-radius:50%;animation:float 8s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-150px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(34,211,238,.12),transparent 70%);border-radius:50%;animation:float 10s ease-in-out infinite reverse}
+.hero .container{position:relative;z-index:2}
+.hero-tag{display:inline-block;background:rgba(16,185,129,.2);color:#10B981;padding:7px 16px;border-radius:50px;font-size:13px;font-weight:600;letter-spacing:.5px;margin-bottom:22px;opacity:0;animation:fadeInUp .8s ease forwards;border:1px solid rgba(16,185,129,.35)}
+.hero h1{font-size:clamp(38px,5.6vw,68px);margin-bottom:20px;opacity:0;animation:fadeInUp 1s ease .15s forwards;color:#fff}
+.hero h1 span{background:linear-gradient(135deg,#10B981,#22D3EE);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:clamp(17px,1.8vw,20px);max-width:620px;margin-bottom:36px;opacity:0;animation:fadeInUp 1s ease .3s forwards;color:rgba(255,255,255,.88)}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .45s forwards}
+.trust-strip{margin-top:54px;display:flex;gap:36px;flex-wrap:wrap;opacity:0;animation:fadeInUp 1s ease .6s forwards}
+.trust-strip .item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);font-size:14px}
+.trust-strip .item::before{content:'\2713';display:inline-flex;width:22px;height:22px;border-radius:50%;background:#10B981;color:#fff;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+section{padding:90px 0}
+.section-tag{display:inline-block;background:#DBEAFE;color:#1E40AF;padding:6px 14px;border-radius:50px;font-size:13px;font-weight:600;letter-spacing:.5px;margin-bottom:14px;text-transform:uppercase}
+.section-title{font-size:clamp(30px,4.2vw,46px);margin-bottom:14px}
+.section-sub{font-size:18px;color:#475569;max-width:640px;margin:0 auto 56px}
+.center{text-align:center}
+.trust{background:#fff;padding:36px 0}
+.trust .row{display:flex;flex-wrap:wrap;justify-content:space-around;align-items:center;gap:20px;color:#64748B;font-weight:600;font-size:14px}
+.trust .row span{padding:6px 14px;background:#F1F5F9;border-radius:8px;color:#1E40AF}
+.problems{background:#EFF6FF}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.problem-card{background:#fff;padding:34px 28px;border-radius:16px;border:1px solid rgba(30,64,175,.08);transition:all .35s ease}
+.problem-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(30,64,175,.12);border-color:#1E40AF}
+.problem-card .emoji{font-size:42px;margin-bottom:18px;display:inline-flex;width:64px;height:64px;background:#DBEAFE;border-radius:14px;align-items:center;justify-content:center}
+.problem-card h3{font-size:20px;margin-bottom:10px}
+.problem-card p{color:#475569;font-size:15px}
+.solution{background:#fff}
+.solution .split{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.solution .visual{height:440px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);border-radius:20px;position:relative;overflow:hidden;padding:30px}
+.solution .visual .card{position:absolute;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 14px 30px rgba(0,0,0,.25)}
+.solution .visual .card1{top:30px;left:30px;width:200px;animation:float 6s ease-in-out infinite}
+.solution .visual .card2{top:120px;right:30px;width:180px;animation:float 6s ease-in-out infinite .8s}
+.solution .visual .card3{bottom:30px;left:60px;width:220px;animation:float 6s ease-in-out infinite 1.6s}
+.solution .visual .card .label{font-size:11px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.solution .visual .card .val{font-size:24px;font-weight:800;color:#1E40AF;font-family:'Plus Jakarta Sans',sans-serif;margin-top:4px}
+.solution .visual .card .bar{height:6px;border-radius:6px;background:#E2E8F0;margin-top:10px;overflow:hidden}
+.solution .visual .card .bar::after{content:'';display:block;height:100%;width:78%;background:linear-gradient(90deg,#10B981,#22D3EE);border-radius:6px}
+.checklist{list-style:none;margin-top:24px}
+.checklist li{padding:12px 0 12px 38px;position:relative;font-size:16.5px;color:#0F172A}
+.checklist li::before{content:'\2713';position:absolute;left:0;top:12px;width:24px;height:24px;background:#10B981;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.subjects{background:#EFF6FF}
+.subject-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.subject{background:#fff;padding:22px 18px;border-radius:14px;text-align:center;transition:all .3s ease;border:1.5px solid transparent}
+.subject:hover{border-color:#1E40AF;transform:translateY(-6px);box-shadow:0 16px 36px rgba(30,64,175,.12)}
+.subject .emoji{font-size:34px;margin-bottom:10px;display:block}
+.subject h3{font-size:16px;color:#1E3A8A}
+.steps{background:#fff}
+.steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:50px}
+.step{text-align:center;padding:32px 24px;background:#EFF6FF;border-radius:16px;position:relative;transition:all .3s ease}
+.step:hover{transform:translateY(-6px)}
+.step-num{width:60px;height:60px;border-radius:14px;background:linear-gradient(135deg,#1E40AF,#1E3A8A);color:#fff;font-size:24px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.step h3{font-size:20px;margin-bottom:8px}
+.step p{color:#475569;font-size:15px}
+.tutors{background:#EFF6FF}
+.tutor-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.tutor-card{background:#fff;padding:28px 22px;border-radius:16px;text-align:center;transition:all .35s ease;border-top:4px solid #10B981}
+.tutor-card:hover{transform:translateY(-8px);box-shadow:0 22px 44px rgba(30,64,175,.15)}
+.tutor-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#1E40AF,#22D3EE);color:#fff;font-size:30px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif}
+.tutor-card h3{font-size:18px;margin-bottom:4px}
+.tutor-card .subj{color:#10B981;font-size:13px;font-weight:600;margin-bottom:10px}
+.tutor-card .cred{color:#64748B;font-size:13px;line-height:1.5}
+.testimonials{background:#fff}
+.testimonial-carousel{display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 4px 28px;scrollbar-width:thin}
+.testimonial{flex:0 0 min(400px,90%);scroll-snap-align:start;background:#EFF6FF;padding:32px 28px;border-radius:16px;border-left:4px solid #10B981}
+.testimonial .stars{color:#F59E0B;font-size:18px;margin-bottom:14px}
+.testimonial .quote{font-size:16px;color:#0F172A;margin-bottom:20px;line-height:1.65}
+.testimonial .who{font-weight:700;color:#1E3A8A;font-size:15px}
+.testimonial .who small{display:block;color:#64748B;font-weight:500;margin-top:3px;font-size:13px}
+.stats-section{background:linear-gradient(135deg,#1E3A8A,#1E40AF);color:#fff;padding:80px 0}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;text-align:center}
+.stat{padding:30px 20px;background:rgba(255,255,255,.06);border-radius:16px;border:1px solid rgba(255,255,255,.1)}
+.stat .num{font-family:'Plus Jakarta Sans',sans-serif;font-size:54px;font-weight:800;background:linear-gradient(135deg,#10B981,#22D3EE);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.stat .label{margin-top:10px;font-size:15px;color:rgba(255,255,255,.85)}
+.pricing{background:#EFF6FF}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{background:#fff;padding:38px 30px;border-radius:18px;transition:all .35s ease;border:2px solid transparent;position:relative}
+.price-card:hover{transform:translateY(-8px);box-shadow:0 22px 50px rgba(30,64,175,.15)}
+.price-card.featured{border-color:#1E40AF;transform:scale(1.04);background:linear-gradient(180deg,#1E3A8A,#1E40AF);color:#fff}
+.price-card.featured h3,.price-card.featured .price{color:#fff}
+.price-card.featured .price-card-sub{color:rgba(255,255,255,.7)}
+.featured-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#10B981;color:#fff;padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.price-card h3{font-size:22px;margin-bottom:6px}
+.price-card-sub{color:#64748B;font-size:14px;margin-bottom:18px}
+.price-card .price{font-family:'Plus Jakarta Sans',sans-serif;font-size:42px;font-weight:800;color:#1E40AF;margin:6px 0}
+.price-card .price small{font-size:15px;font-weight:500;color:#64748B}
+.price-card.featured .price small{color:rgba(255,255,255,.7)}
+.price-card ul{list-style:none;margin:22px 0 28px}
+.price-card ul li{padding:8px 0 8px 26px;position:relative;font-size:14.5px}
+.price-card ul li::before{content:'\2713';position:absolute;left:0;color:#10B981;font-weight:800}
+.price-card.featured ul li::before{color:#22D3EE}
+.price-card .btn-primary{display:block;text-align:center;width:100%}
+.price-card.featured .btn-primary{background:#10B981}
+.price-card.featured .btn-primary:hover{background:#fff;color:#1E40AF}
+.faq{background:#fff}
+.faq-wrap{max-width:780px;margin:0 auto}
+details{background:#EFF6FF;border-radius:12px;margin-bottom:12px;border:1px solid rgba(30,64,175,.1);overflow:hidden;transition:all .3s ease}
+details[open]{background:#fff;box-shadow:0 12px 30px rgba(30,64,175,.1);border-color:#1E40AF}
+summary{padding:20px 24px;cursor:pointer;font-weight:700;font-size:16.5px;color:#0F172A;display:flex;justify-content:space-between;align-items:center;list-style:none;font-family:'Plus Jakarta Sans',sans-serif}
+summary::-webkit-details-marker{display:none}
+.chevron{font-size:18px;color:#1E40AF;transition:transform .3s ease}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 24px 22px;color:#475569;font-size:15px}
+.cta-final{background:linear-gradient(135deg,#1E3A8A 0%,#1E40AF 50%,#1E3A8A 100%);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:100px 0;position:relative;overflow:hidden}
+.cta-final::before{content:'';position:absolute;top:50%;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.12),transparent 70%);transform:translateY(-50%)}
+.cta-final h2{font-size:clamp(30px,4.2vw,46px);margin-bottom:14px;color:#fff;text-align:center}
+.cta-final .lead{font-size:18px;color:rgba(255,255,255,.88);max-width:620px;margin:0 auto 40px;text-align:center}
+.cta-final .free-badge{display:block;text-align:center;color:#10B981;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-size:13px;margin-bottom:14px}
+form{max-width:660px;margin:0 auto;background:#fff;padding:38px 36px;border-radius:18px;box-shadow:0 30px 60px rgba(0,0,0,.3);position:relative;z-index:2}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+form input,form select{width:100%;padding:13px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;background:#F8FAFC;color:#0F172A;transition:all .25s ease;margin-bottom:14px}
+.form-row input,.form-row select{margin-bottom:0}
+form input:focus,form select:focus{outline:none;border-color:#1E40AF;background:#fff;box-shadow:0 0 0 4px rgba(30,64,175,.1)}
+form button{width:100%;background:#10B981;color:#fff;border:none;padding:17px;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px;cursor:pointer;transition:all .3s ease;animation:pulse 2.4s ease-in-out infinite}
+form button:hover{background:#059669;transform:translateY(-2px)}
+footer{background:#0F172A;color:#94A3B8;padding:60px 0 30px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;margin-bottom:40px}
+footer h4{color:#fff;font-size:16px;margin-bottom:18px;font-family:'Plus Jakarta Sans',sans-serif}
+footer p,footer a{color:#94A3B8;font-size:14.5px;line-height:1.9;display:block}
+footer a:hover{color:#22D3EE}
+.social-row{display:flex;gap:10px;margin-top:18px}
+.social-row a{width:36px;height:36px;border-radius:10px;background:rgba(34,211,238,.1);display:flex;align-items:center;justify-content:center;color:#22D3EE;font-size:13px;font-weight:700;transition:all .25s ease}
+.social-row a:hover{background:#22D3EE;color:#0F172A}
+.copyright{border-top:1px solid #1E293B;padding-top:24px;text-align:center;font-size:13px}
+@media (max-width:768px){
+.problem-grid,.subject-grid,.tutor-grid,.pricing-grid,.steps-row,.stats-grid,.footer-grid{grid-template-columns:1fr}
+.solution .split{grid-template-columns:1fr;gap:40px}
+.form-row{grid-template-columns:1fr;gap:0}
+.hero{padding:70px 0 90px}
+section{padding:60px 0}
+form{padding:26px 20px}
+.subject-grid{grid-template-columns:repeat(2,1fr)}
+.tutor-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="container">
+<div class="logo">{{location.name}}</div>
+<a href="#contact" class="btn-primary">Free Assessment</a>
+</div>
+</nav>
+
+<header class="hero">
+<div class="container">
+<span class="hero-tag">&#127919; AVG. +1.5 GRADE-LETTER IMPROVEMENT</span>
+<h1>Personalized Tutoring That <span>Actually Moves Grades.</span></h1>
+<p>1-on-1 expert tutors for K-12, college prep, and test prep. Match with the perfect tutor today.</p>
+<div class="hero-ctas">
+<a href="#contact" class="btn-primary">Book My Free Assessment</a>
+<a href="#how" class="btn-secondary">See How It Works</a>
+</div>
+<div class="trust-strip">
+<div class="item">Free 30-min assessment</div>
+<div class="item">Vetted expert tutors</div>
+<div class="item">Money-back guarantee</div>
+<div class="item">Online &amp; in-person</div>
+</div>
+</div>
+</header>
+
+<section class="trust">
+<div class="container">
+<div class="row">
+<span>Featured in EdSurge</span>
+<span>BBB A+ Rated</span>
+<span>Trusted by 12,000+ families</span>
+<span>4.9&#9733; on Google</span>
+<span>Best of {{location.city}} 2024</span>
+</div>
+</div>
+</section>
+
+<section class="problems">
+<div class="container center">
+<span class="section-tag">The Problem</span>
+<h2 class="section-title">Why Generic Tutoring Doesn't Work</h2>
+<p class="section-sub">Most tutoring is a one-size-fits-all chore. We do it differently — and the results speak for themselves.</p>
+<div class="problem-grid">
+<div class="problem-card" style="text-align:left"><span class="emoji">&#128533;</span><h3>Grades Are Slipping</h3><p>Your student is falling behind and the next test, exam, or report card is approaching fast. Worry is mounting.</p></div>
+<div class="problem-card" style="text-align:left"><span class="emoji">&#128173;</span><h3>Lost Confidence</h3><p>They've stopped raising their hand. They're avoiding homework. They've decided they're "just bad at math/writing/science."</p></div>
+<div class="problem-card" style="text-align:left"><span class="emoji">&#127891;</span><h3>College Prep Stress</h3><p>SAT/ACT looming. Application essays unwritten. The clock is ticking and there's no clear plan in place.</p></div>
+</div>
+</div>
+</section>
+
+<section class="solution">
+<div class="container">
+<div class="split">
+<div>
+<span class="section-tag">Our Solution</span>
+<h2 class="section-title" style="font-size:42px;text-align:left">A Tutor Matched Just for Them.</h2>
+<p style="color:#475569;font-size:17px;margin-bottom:10px">We pair every student with a vetted expert who matches their subject, learning style, and personality. Every session has a plan. Every plan has a goal.</p>
+<ul class="checklist">
+<li>1-on-1 sessions — never group lessons or generic worksheets</li>
+<li>Personalized study plan reviewed every 4 weeks</li>
+<li>Progress tracker shared with parents weekly</li>
+<li>Same tutor every session — relationships matter</li>
+<li>Online, in-person, or hybrid — your call</li>
+</ul>
+</div>
+<div class="visual">
+<div class="card card1"><div class="label">Grade Improvement</div><div class="val">+1.7 GPA</div><div class="bar"></div></div>
+<div class="card card2"><div class="label">SAT Score</div><div class="val">+220 pts</div><div class="bar"></div></div>
+<div class="card card3"><div class="label">Sessions Complete</div><div class="val">42 / 52</div><div class="bar"></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="subjects">
+<div class="container center">
+<span class="section-tag">Subjects We Teach</span>
+<h2 class="section-title">Every Subject. Every Level.</h2>
+<p class="section-sub">From elementary fundamentals to AP courses and college admissions — we have you covered.</p>
+<div class="subject-grid">
+<div class="subject"><span class="emoji">&#128290;</span><h3>Math</h3></div>
+<div class="subject"><span class="emoji">&#129514;</span><h3>Science</h3></div>
+<div class="subject"><span class="emoji">&#128221;</span><h3>English</h3></div>
+<div class="subject"><span class="emoji">&#128218;</span><h3>History</h3></div>
+<div class="subject"><span class="emoji">&#127919;</span><h3>SAT / ACT</h3></div>
+<div class="subject"><span class="emoji">&#127942;</span><h3>AP Exams</h3></div>
+<div class="subject"><span class="emoji">&#9997;</span><h3>College Essay</h3></div>
+<div class="subject"><span class="emoji">&#127760;</span><h3>ESL</h3></div>
+</div>
+</div>
+</section>
+
+<section class="steps" id="how">
+<div class="container center">
+<span class="section-tag">How It Works</span>
+<h2 class="section-title">3 Steps to Better Grades</h2>
+<div class="steps-row">
+<div class="step"><div class="step-num">1</div><h3>Free Assessment</h3><p>30-minute call to identify your student's strengths, gaps, and goals. No cost, no pressure.</p></div>
+<div class="step"><div class="step-num">2</div><h3>Get Matched</h3><p>We pair you with the perfect tutor based on subject, schedule, and personality. Free swap if it's not a fit.</p></div>
+<div class="step"><div class="step-num">3</div><h3>See Results</h3><p>Sessions begin within 48 hours. Track progress weekly. Watch grades and confidence climb.</p></div>
+</div>
+</div>
+</section>
+
+<section class="tutors">
+<div class="container center">
+<span class="section-tag">Meet Our Tutors</span>
+<h2 class="section-title">Vetted Experts. Real Credentials.</h2>
+<p class="section-sub">Less than 4% of applicants are accepted to tutor with us. Every tutor passes a teaching demo, background check, and subject exam.</p>
+<div class="tutor-grid">
+<div class="tutor-card"><div class="tutor-avatar">SR</div><h3>Sarah R.</h3><div class="subj">Math &middot; SAT</div><div class="cred">MIT alum &middot; 8 yrs teaching &middot; +280 avg SAT lift</div></div>
+<div class="tutor-card"><div class="tutor-avatar">DK</div><h3>David K.</h3><div class="subj">Science &middot; AP</div><div class="cred">Stanford PhD &middot; 12 yrs teaching &middot; 96% AP pass rate</div></div>
+<div class="tutor-card"><div class="tutor-avatar">MJ</div><h3>Maya J.</h3><div class="subj">English &middot; Essays</div><div class="cred">Yale grad, NYT contributor &middot; College essay specialist</div></div>
+<div class="tutor-card"><div class="tutor-avatar">AT</div><h3>Aaron T.</h3><div class="subj">History &middot; SAT</div><div class="cred">Harvard MA &middot; 10 yrs teaching &middot; AP scholar mentor</div></div>
+</div>
+</div>
+</section>
+
+<section class="testimonials">
+<div class="container">
+<div class="center">
+<span class="section-tag">Parent Reviews</span>
+<h2 class="section-title">Real Families. Real Results.</h2>
+<p class="section-sub">"Worth every dollar" is the most common phrase in our parent feedback.</p>
+</div>
+<div class="testimonial-carousel">
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"My daughter went from a C+ in Algebra II to an A- in one semester. More importantly, she actually likes math now. Cannot recommend Sarah enough."</div><div class="who">Jennifer M.<small>Parent of 10th grader</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"Our son scored a 1480 on the SAT after 12 sessions with David. He was in the 1200s before. We got into our top-choice school."</div><div class="who">Marcus &amp; Lisa P.<small>Parents of college freshman</small></div></div>
+<div class="testimonial"><div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><div class="quote">"Maya helped my son write the college essay of a lifetime. He got into 4 of his top 5 schools. The investment paid for itself."</div><div class="who">Patricia W.<small>Parent of high school senior</small></div></div>
+</div>
+</div>
+</section>
+
+<section class="stats-section">
+<div class="container">
+<div class="center" style="margin-bottom:46px">
+<h2 style="color:#fff;font-size:clamp(28px,4vw,40px);margin-bottom:10px">Numbers That Matter</h2>
+<p style="color:rgba(255,255,255,.78);font-size:17px">The proof is in the results.</p>
+</div>
+<div class="stats-grid">
+<div class="stat"><div class="num">+1.5</div><div class="label">Avg. grade-letter improvement</div></div>
+<div class="stat"><div class="num">95%</div><div class="label">Acceptance to first-choice colleges</div></div>
+<div class="stat"><div class="num">12,000+</div><div class="label">Students taught since 2014</div></div>
+</div>
+</div>
+</section>
+
+<section class="pricing">
+<div class="container center">
+<span class="section-tag">Simple Pricing</span>
+<h2 class="section-title">Plans That Fit Your Budget</h2>
+<p class="section-sub">No contracts. Cancel anytime. First session is risk-free.</p>
+<div class="pricing-grid">
+<div class="price-card"><h3>Single Session</h3><div class="price-card-sub">For occasional help</div><div class="price">$65<small>/hr</small></div><ul><li>1-on-1 expert tutor</li><li>Any subject K-college</li><li>Progress report after each session</li><li>Pay as you go</li><li>Online or in-person</li></ul><a href="#contact" class="btn-primary">Get Started</a></div>
+<div class="price-card featured"><div class="featured-badge">Most Popular</div><h3>10-Session Pack</h3><div class="price-card-sub">Best for skill building</div><div class="price">$550<small> &middot; $55/session</small></div><ul><li>Save 15% per session</li><li>Same tutor each session</li><li>Custom study plan included</li><li>Weekly progress emails</li><li>Free swap if not a fit</li></ul><a href="#contact" class="btn-primary">Choose Plan</a></div>
+<div class="price-card"><h3>Monthly Unlimited</h3><div class="price-card-sub">For serious commitment</div><div class="price">$375<small>/mo</small></div><ul><li>Up to 8 sessions / month</li><li>Priority scheduling</li><li>Test prep package included</li><li>Parent dashboard access</li><li>Cancel anytime</li></ul><a href="#contact" class="btn-primary">Subscribe</a></div>
+</div>
+</div>
+</section>
+
+<section class="faq">
+<div class="container">
+<div class="center">
+<span class="section-tag">FAQs</span>
+<h2 class="section-title">Common Questions</h2>
+<p class="section-sub">Don't see your question? Email us — we usually reply within an hour.</p>
+</div>
+<div class="faq-wrap">
+<details><summary>How quickly can sessions start?<span class="chevron">&#9662;</span></summary><p>Most families have their first session within 48 hours of completing the free assessment. We work around your schedule — evenings and weekends included.</p></details>
+<details><summary>Online or in-person — which is better?<span class="chevron">&#9662;</span></summary><p>Both work equally well. Our online platform includes a shared whiteboard and recorded sessions for review. In-person works great for elementary students or hands-on subjects like chemistry.</p></details>
+<details><summary>What if my child doesn't click with the tutor?<span class="chevron">&#9662;</span></summary><p>We swap tutors for free, no questions asked. About 8% of our students switch tutors once — the second match is the right one 97% of the time.</p></details>
+<details><summary>Do you guarantee grade improvement?<span class="chevron">&#9662;</summary><p>If after 8 sessions your student hasn't improved at least one full letter grade in the targeted subject, we'll refund the difference or continue free of charge. We're confident in our process.</p></details>
+<details><summary>How are tutors vetted?<span class="chevron">&#9662;</summary><p>Less than 4% of applicants are accepted. Every tutor passes a teaching demo, subject exam, background check, and continual quality reviews. Most have 5+ years of teaching experience.</p></details>
+<details><summary>Is there a long-term contract?<span class="chevron">&#9662;</summary><p>Never. Sessions are paid as you go or in packs, and our monthly unlimited plan is month-to-month. Cancel anytime with no fees.</p></details>
+</div>
+</div>
+</section>
+
+<section class="cta-final">
+<div class="container">
+<div class="center">
+<span class="free-badge">&#10024; 100% Free &middot; No Card Required</span>
+<h2>Get Your Free Assessment</h2>
+<p class="lead">Tell us about your student. We'll match you with the perfect tutor and put together a personalized study plan — completely free.</p>
+</div>
+<form id="contact" method="post">
+<input type="text" name="parent_name" placeholder="Parent / Guardian Name" required>
+<div class="form-row">
+<input type="email" name="email" placeholder="Email Address" required>
+<input type="tel" name="phone" placeholder="Phone Number" required>
+</div>
+<div class="form-row">
+<input type="text" name="student_name" placeholder="Student's First Name" required>
+<select name="student_grade" required>
+<option value="">Student Grade Level</option>
+<option>K – 2</option>
+<option>3 – 5</option>
+<option>6 – 8</option>
+<option>9 – 12</option>
+<option>College</option>
+</select>
+</div>
+<div class="form-row">
+<select name="subject_needed" required>
+<option value="">Subject(s) Needed</option>
+<option>Math</option>
+<option>Science</option>
+<option>English / Reading</option>
+<option>History</option>
+<option>SAT / ACT Prep</option>
+<option>AP Exam Prep</option>
+<option>College Essay</option>
+<option>ESL</option>
+<option>Other / Multiple</option>
+</select>
+<select name="session_format" required>
+<option value="">Session Format</option>
+<option>Online</option>
+<option>In-Person</option>
+<option>Either</option>
+</select>
+</div>
+<select name="urgency" required>
+<option value="">How Urgent?</option>
+<option>ASAP — within a week</option>
+<option>Within 2 – 4 weeks</option>
+<option>Planning ahead — 1+ month</option>
+</select>
+<button type="submit">Book My Free Assessment &rarr;</button>
+</form>
+</div>
+</section>
+
+<footer>
+<div class="container">
+<div class="footer-grid">
+<div>
+<div class="logo" style="color:#22D3EE;margin-bottom:14px">{{location.name}}</div>
+<p>Personalized tutoring that moves grades. Serving families in {{location.city}} and online nationwide since 2014.</p>
+<div class="social-row">
+<a href="#" aria-label="Facebook">FB</a>
+<a href="#" aria-label="Instagram">IG</a>
+<a href="#" aria-label="LinkedIn">IN</a>
+<a href="#" aria-label="YouTube">YT</a>
+</div>
+</div>
+<div>
+<h4>Programs</h4>
+<a href="#">K-12 Tutoring</a>
+<a href="#">SAT &amp; ACT Prep</a>
+<a href="#">AP Exam Prep</a>
+<a href="#">College Essays</a>
+</div>
+<div>
+<h4>Company</h4>
+<a href="#">About Us</a>
+<a href="#">Our Tutors</a>
+<a href="#">Reviews</a>
+<a href="#">Careers</a>
+</div>
+<div>
+<h4>Contact</h4>
+<a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+<a href="mailto:{{location.email}}">{{location.email}}</a>
+<p>{{location.fullAddress}}</p>
+</div>
+</div>
+<div class="copyright">&copy; {{location.name}}. All rights reserved. &nbsp;&middot;&nbsp; Helping students rise.</div>
+</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Veterinary Care</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;color:#111827;background:#ECFDF5;line-height:1.65}
+h1,h2,h3,h4{font-weight:900;line-height:1.15;color:#064E3B}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(5,150,105,.5)}50%{box-shadow:0 0 0 22px rgba(5,150,105,0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes wag{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:14px 0;box-shadow:0 4px 16px rgba(6,78,59,.06)}
+.nav-wrap{display:flex;justify-content:space-between;align-items:center}
+.logo{font-weight:900;font-size:22px;color:#064E3B;display:flex;align-items:center;gap:8px}
+.logo-icon{font-size:32px;animation:wag 3s ease infinite;display:inline-block;transform-origin:bottom}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{color:#064E3B;text-decoration:none;font-weight:700;font-size:15px;transition:color .2s}
+.nav-links a:hover{color:#059669}
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#059669,#10B981);color:#fff !important;padding:13px 26px;border-radius:50px;font-weight:800;text-decoration:none;transition:all .3s ease;border:none;cursor:pointer;font-size:15px;font-family:'Nunito',sans-serif;box-shadow:0 6px 20px rgba(5,150,105,.25)}
+.btn-primary:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 30px rgba(5,150,105,.4)}
+.btn-pulse{animation:pulse 2s infinite}
+
+/* HERO */
+.hero{position:relative;padding:80px 0 110px;background:linear-gradient(135deg,#ECFDF5 0%,#A7F3D0 50%,#FDE68A 100%);background-size:200% 200%;animation:gradient 14s ease infinite;overflow:hidden}
+.hero::before{content:'🐾';position:absolute;font-size:200px;top:5%;left:5%;opacity:.08;animation:float 8s ease infinite}
+.hero::after{content:'🐾';position:absolute;font-size:160px;bottom:8%;right:8%;opacity:.1;animation:float 10s ease infinite reverse;transform:rotate(45deg)}
+.hero-content{position:relative;z-index:2;display:grid;grid-template-columns:1.1fr 1fr;gap:50px;align-items:center}
+.hero-text{animation:fadeInUp 1s ease both}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#fff;padding:8px 18px;border-radius:50px;font-size:13px;font-weight:800;color:#059669;margin-bottom:20px;box-shadow:0 4px 14px rgba(5,150,105,.15)}
+.hero-badge .pulse-dot{width:8px;height:8px;background:#059669;border-radius:50%;animation:pulse 1.5s infinite}
+.hero h1{font-size:54px;color:#064E3B;margin-bottom:18px;line-height:1.1;font-weight:900}
+.hero h1 .accent{color:#059669;display:inline-block}
+.hero p.sub{font-size:19px;color:#065F46;margin-bottom:30px;font-weight:600}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
+.btn-secondary{background:#fff;color:#064E3B !important;padding:13px 26px;border-radius:50px;font-weight:800;text-decoration:none;border:2px solid #059669;transition:all .3s}
+.btn-secondary:hover{background:#ECFDF5;transform:translateY(-2px)}
+.hero-trust{display:flex;align-items:center;gap:14px;font-size:14px;color:#064E3B;font-weight:700;flex-wrap:wrap}
+.stars{color:#F59E0B;font-size:18px;letter-spacing:2px}
+.hero-visual{position:relative;aspect-ratio:1;border-radius:40% 60% 70% 30% / 50% 50% 50% 50%;background:linear-gradient(135deg,#059669,#10B981,#F59E0B);display:flex;align-items:center;justify-content:center;animation:float 6s ease infinite;box-shadow:0 25px 60px rgba(6,78,59,.25)}
+.hero-visual-emoji{font-size:180px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.2))}
+.float-icon{position:absolute;font-size:50px;animation:float 4s ease infinite}
+.fi1{top:5%;right:-5%;animation-delay:0s}
+.fi2{bottom:15%;left:-8%;animation-delay:.5s;font-size:40px}
+.fi3{top:50%;right:-12%;animation-delay:1s;font-size:46px}
+
+/* TRUST BAR */
+.trust-bar{background:#fff;padding:30px 0;border-bottom:1px solid #D1FAE5}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
+.trust-item .num{font-size:38px;font-weight:900;color:#059669;display:block;line-height:1}
+.trust-item .lbl{font-size:13px;color:#4B5563;font-weight:600;margin-top:6px;display:block}
+
+/* SECTIONS */
+section{padding:80px 0}
+.section-head{text-align:center;max-width:680px;margin:0 auto 60px}
+.eyebrow{display:inline-block;color:#fff;background:linear-gradient(135deg,#059669,#10B981);padding:6px 18px;border-radius:50px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;font-size:11px;margin-bottom:16px}
+.section-head h2{font-size:44px;margin-bottom:14px;font-weight:900}
+.section-head h2 .accent{color:#059669}
+.section-head p{font-size:17px;color:#4B5563;font-weight:500}
+
+/* PROBLEM */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.pain-card{background:#fff;padding:32px 26px;border-radius:24px;box-shadow:0 8px 24px rgba(6,78,59,.06);transition:all .4s ease;text-align:center;border:2px solid transparent;position:relative;overflow:hidden}
+.pain-card:hover{transform:translateY(-8px);box-shadow:0 18px 44px rgba(5,150,105,.18);border-color:#059669}
+.pain-card .ico{font-size:60px;margin-bottom:14px;display:inline-block;animation:bounce 3s ease infinite}
+.pain-card h3{font-size:21px;margin-bottom:10px}
+.pain-card p{color:#4B5563;font-size:15px;font-weight:500}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#ECFDF5,#D1FAE5)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.split h2{font-size:42px;margin-bottom:18px;font-weight:900}
+.split p.lead{font-size:17px;color:#065F46;margin-bottom:26px;font-weight:600}
+.checklist{list-style:none}
+.checklist li{padding:11px 0;display:flex;align-items:flex-start;gap:12px;font-size:16px;font-weight:600}
+.check{flex-shrink:0;width:30px;height:30px;background:linear-gradient(135deg,#059669,#10B981);border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;box-shadow:0 4px 10px rgba(5,150,105,.35)}
+.visual-block{position:relative;height:440px;border-radius:32px;background:linear-gradient(135deg,#059669,#10B981,#F59E0B);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 25px 60px rgba(6,78,59,.25)}
+.visual-block::before{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,.15);border-radius:50%;top:30px;right:30px}
+.visual-block::after{content:'🐾';position:absolute;font-size:80px;bottom:30px;left:30px;opacity:.3;transform:rotate(-20deg)}
+.visual-icon{font-size:180px;position:relative;z-index:2;animation:float 5s ease infinite}
+
+/* SERVICES */
+.services{background:#fff}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.feat{background:linear-gradient(180deg,#fff,#ECFDF5);padding:30px 26px;border-radius:24px;transition:all .4s ease;border:2px solid #D1FAE5;text-align:center}
+.feat:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 18px 44px rgba(5,150,105,.2);border-color:#059669}
+.feat-ico{width:70px;height:70px;background:linear-gradient(135deg,#D1FAE5,#FDE68A);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px}
+.feat h3{font-size:20px;margin-bottom:8px}
+.feat p{color:#4B5563;font-size:15px;font-weight:500}
+
+/* HOW IT WORKS */
+.how{background:linear-gradient(180deg,#FEF3C7,#FDE68A)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.step{text-align:center;background:#fff;padding:36px 26px;border-radius:24px;transition:all .3s ease;box-shadow:0 8px 20px rgba(6,78,59,.06)}
+.step:hover{transform:translateY(-6px) rotate(-1deg);box-shadow:0 18px 40px rgba(5,150,105,.18)}
+.step-num{width:70px;height:70px;background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;margin:0 auto 16px;box-shadow:0 8px 20px rgba(245,158,11,.4)}
+.step h3{font-size:21px;margin-bottom:10px}
+.step p{color:#4B5563;font-size:15px;font-weight:500}
+
+/* TESTIMONIALS */
+.testimonials{background:#ECFDF5}
+.t-scroller{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:24px;padding:8px 4px 28px;scrollbar-width:thin}
+.t-card{flex:0 0 380px;scroll-snap-align:start;background:#fff;padding:32px;border-radius:28px;box-shadow:0 12px 32px rgba(6,78,59,.08);position:relative;transition:transform .3s ease;border-top:5px solid #059669}
+.t-card:hover{transform:translateY(-6px)}
+.t-card .pet-emoji{font-size:54px;line-height:1;margin-bottom:6px}
+.t-card .stars{color:#F59E0B;font-size:18px;margin-bottom:14px;letter-spacing:2px}
+.t-card p.quote{font-size:16px;color:#1F2937;margin-bottom:18px;font-weight:500}
+.t-author{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:2px solid #ECFDF5}
+.t-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#059669,#10B981);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.t-author strong{display:block;font-size:15px;color:#064E3B}
+.t-author span{font-size:13px;color:#059669;font-weight:700}
+
+/* STATS */
+.stats{background:linear-gradient(135deg,#064E3B,#059669,#10B981);background-size:200% 200%;animation:gradient 12s ease infinite;color:#fff;padding:80px 0;position:relative;overflow:hidden}
+.stats::before{content:'🐾';position:absolute;font-size:300px;opacity:.08;top:-50px;right:-50px;transform:rotate(-15deg)}
+.stats::after{content:'🐾';position:absolute;font-size:200px;opacity:.06;bottom:-30px;left:5%;transform:rotate(25deg)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center;position:relative;z-index:2}
+.stat{animation:fadeInUp .8s ease both}
+.stat:nth-child(2){animation-delay:.1s}
+.stat:nth-child(3){animation-delay:.2s}
+.stat:nth-child(4){animation-delay:.3s}
+.stat .big{font-size:60px;font-weight:900;color:#FDE68A;display:block;line-height:1}
+.stat .lbl{font-size:14px;margin-top:8px;display:block;font-weight:600;opacity:.95}
+
+/* PRICING */
+.pricing{background:#fff}
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1100px;margin:0 auto}
+.tier{padding:36px 30px;background:#fff;border:2px solid #D1FAE5;border-radius:28px;text-align:center;transition:all .4s ease;position:relative}
+.tier:hover{transform:translateY(-8px);box-shadow:0 18px 44px rgba(5,150,105,.18)}
+.tier.featured{background:linear-gradient(180deg,#059669,#064E3B);color:#fff;transform:scale(1.05);border:none;box-shadow:0 25px 60px rgba(5,150,105,.3)}
+.tier.featured h3,.tier.featured .price-amt,.tier.featured .tier-desc{color:#FDE68A}
+.tier.featured .tier-feats li{color:#D1FAE5;border-color:rgba(253,230,138,.15)}
+.tier.featured .tier-feats li::before{color:#FDE68A}
+.tier-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#F59E0B;color:#fff;padding:6px 22px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800;border-radius:50px}
+.tier-icon{font-size:48px;margin-bottom:10px}
+.tier h3{font-size:24px;margin-bottom:4px;font-weight:900}
+.tier-desc{font-size:13px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px}
+.price-amt{font-size:48px;color:#059669;font-weight:900;line-height:1}
+.price-per{font-size:14px;color:#9CA3AF;margin-bottom:24px;display:block;font-weight:600}
+.tier-feats{list-style:none;text-align:left;margin:20px 0}
+.tier-feats li{padding:10px 0;border-bottom:1px solid #ECFDF5;font-size:14px;font-weight:600;color:#374151}
+.tier-feats li::before{content:'🐾';margin-right:8px;font-size:14px}
+
+/* OFFER */
+.offer-card{max-width:680px;margin:0 auto;background:linear-gradient(135deg,#FEF3C7,#FDE68A);padding:50px 40px;border-radius:32px;text-align:center;border:3px solid #F59E0B;position:relative;box-shadow:0 20px 50px rgba(245,158,11,.2)}
+.offer-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:6px 20px;border-radius:50px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.offer-card h3{font-size:30px;margin-bottom:8px}
+.offer-price{font-size:64px;font-weight:900;color:#059669;line-height:1;margin:18px 0 4px}
+.offer-orig{font-size:18px;color:#9CA3AF;text-decoration:line-through;margin-bottom:18px}
+.offer-includes{list-style:none;text-align:left;max-width:400px;margin:24px auto}
+.offer-includes li{padding:8px 0;display:flex;gap:10px;align-items:center;color:#374151;font-weight:600}
+.offer-includes li::before{content:'🐾';font-size:18px}
+
+/* FAQ */
+.faq{background:#ECFDF5}
+.faq-list{max-width:780px;margin:0 auto}
+details{background:#fff;border-radius:20px;margin-bottom:14px;overflow:hidden;border:2px solid transparent;transition:all .3s}
+details[open]{border-color:#059669;box-shadow:0 12px 30px rgba(5,150,105,.15)}
+summary{padding:22px 26px;font-weight:800;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#064E3B;list-style:none}
+summary::-webkit-details-marker{display:none}
+.chevron{display:inline-block;transition:transform .3s ease;color:#059669;font-size:22px;font-weight:900}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 26px 22px;color:#4B5563;font-size:15px;line-height:1.75;font-weight:500}
+
+/* CONTACT */
+.cta-section{background:linear-gradient(135deg,#064E3B 0%,#059669 50%,#F59E0B 100%);background-size:200% 200%;animation:gradient 14s ease infinite;color:#fff;text-align:center;position:relative;overflow:hidden}
+.cta-section::before{content:'🐶';position:absolute;font-size:200px;opacity:.1;top:10%;left:5%;animation:float 7s ease infinite}
+.cta-section::after{content:'🐱';position:absolute;font-size:200px;opacity:.1;bottom:10%;right:5%;animation:float 9s ease infinite reverse}
+.cta-section h2{color:#fff;font-size:44px;margin-bottom:14px;position:relative;z-index:2}
+.cta-section p.sub{font-size:18px;opacity:.95;margin-bottom:36px;max-width:580px;margin-left:auto;margin-right:auto;position:relative;z-index:2;font-weight:600}
+form{max-width:580px;margin:0 auto;background:#fff;padding:36px;border-radius:28px;color:#111827;text-align:left;box-shadow:0 25px 70px rgba(0,0,0,.25);position:relative;z-index:2}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:800;margin-bottom:6px;color:#064E3B}
+input,select{width:100%;padding:13px 14px;border:2px solid #D1FAE5;border-radius:14px;font-size:15px;font-family:'Nunito',sans-serif;background:#ECFDF5;transition:all .2s;font-weight:600}
+input:focus,select:focus{outline:none;border-color:#059669;background:#fff}
+.submit-btn{width:100%;padding:17px;background:linear-gradient(135deg,#059669,#10B981);color:#fff;border:none;border-radius:50px;font-size:17px;font-weight:900;cursor:pointer;transition:all .3s ease;margin-top:10px;font-family:'Nunito',sans-serif;box-shadow:0 10px 28px rgba(5,150,105,.4)}
+.submit-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 36px rgba(5,150,105,.55)}
+.privacy{font-size:12px;color:#6B7280;text-align:center;margin-top:14px;font-weight:600}
+
+/* FOOTER */
+footer{background:#064E3B;color:#D1FAE5;padding:60px 0 30px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:36px}
+footer h4{color:#FDE68A;font-size:17px;margin-bottom:14px;font-weight:900}
+footer p,footer a{color:#A7F3D0;text-decoration:none;font-size:15px;line-height:1.9;display:block;font-weight:500}
+footer a:hover{color:#FDE68A}
+.socials{display:flex;gap:10px;margin-top:14px}
+.social{width:40px;height:40px;background:rgba(253,230,138,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FDE68A;text-decoration:none;font-size:16px;transition:all .3s;font-weight:800}
+.social:hover{background:#F59E0B;color:#fff;transform:rotate(10deg)}
+.copy{border-top:1px solid rgba(167,243,208,.2);padding-top:24px;text-align:center;font-size:14px;color:#A7F3D0;font-weight:500}
+
+@media (max-width:768px){
+  .hero{padding:60px 0 80px}
+  .hero h1{font-size:36px}
+  .hero p.sub{font-size:16px}
+  .hero-content{grid-template-columns:1fr;gap:40px}
+  .nav-links{display:none}
+  .section-head h2,.split h2,.cta-section h2{font-size:30px}
+  .problem-grid,.features-grid,.steps,.split,.stats-grid,.foot-grid,.trust-grid,.form-row,.tier-grid{grid-template-columns:1fr}
+  .trust-grid,.stats-grid{grid-template-columns:repeat(2,1fr)}
+  .t-card{flex:0 0 280px}
+  section{padding:60px 0}
+  .offer-price{font-size:48px}
+  form{padding:24px}
+  .tier.featured{transform:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-wrap">
+    <div class="logo"><span class="logo-icon">🐾</span>{{location.name}}</div>
+    <div class="nav-links">
+      <a href="#services">Services</a>
+      <a href="#plans">Wellness Plans</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="btn-primary">Free First Visit 🐶</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-text">
+      <div class="hero-badge"><span class="pulse-dot"></span>Now Accepting New Patients 🐾</div>
+      <h1>Compassionate Care for Every <span class="accent">Tail, Paw, and Whisker.</span></h1>
+      <p class="sub">Full-service veterinary care from puppy first visits to senior wellness — your family vet for life.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn-primary btn-pulse">Book My Pet's First Visit 🐶</a>
+        <a href="#services" class="btn-secondary">See Services</a>
+      </div>
+      <div class="hero-trust">
+        <div class="stars">★★★★★</div>
+        <div>Trusted by 8,000+ pet families in {{location.city}}</div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-visual-emoji">🐶</div>
+      <div class="float-icon fi1">🦴</div>
+      <div class="float-icon fi2">🐱</div>
+      <div class="float-icon fi3">🐾</div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-grid">
+      <div class="trust-item"><span class="num">8,000+</span><span class="lbl">Happy Pet Families</span></div>
+      <div class="trust-item"><span class="num">15+</span><span class="lbl">Years Caring for Pets</span></div>
+      <div class="trust-item"><span class="num">4.9★</span><span class="lbl">Google Rating</span></div>
+      <div class="trust-item"><span class="num">24/7</span><span class="lbl">Emergency Available</span></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Pet Parent Problems</div>
+      <h2>Worried About Your <span class="accent">Furry Family Member?</span></h2>
+      <p>Finding a vet you trust shouldn't feel like a leap of faith. We get it — and we're here to make it easier.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="pain-card">
+        <div class="ico">😟</div>
+        <h3>Vet Visits = Stress</h3>
+        <p>Your pet gets anxious. You get anxious. The whole family dreads it. There has to be a better way to make checkups feel safe and calm.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">💸</div>
+        <h3>Surprise Bills</h3>
+        <p>You love your pet — but unpredictable costs make you wince. You want transparent pricing and care plans that fit your budget.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">⏰</div>
+        <h3>Long Waits, Rushed Visits</h3>
+        <p>Booked weeks out, then 7 rushed minutes with the vet? Your pet deserves real attention from someone who knows their name.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <div class="eyebrow">Why Pet Parents Love Us</div>
+        <h2>Care That Feels Like <span class="accent">Family.</span></h2>
+        <p class="lead">From the moment you walk in (with treats and tail-wags waiting), we treat your pet the way we treat our own — with patience, love, and the highest standard of medicine.</p>
+        <ul class="checklist">
+          <li><span class="check">✓</span><div><strong>Fear-free certified team</strong> — gentle handling, calm environment, treat-based exams</div></li>
+          <li><span class="check">✓</span><div><strong>Transparent pricing</strong> — estimates upfront, no surprise bills</div></li>
+          <li><span class="check">✓</span><div><strong>Same-week appointments</strong> — and same-day for emergencies</div></li>
+          <li><span class="check">✓</span><div><strong>Full-service hospital</strong> — labs, imaging, surgery, all on-site</div></li>
+          <li><span class="check">✓</span><div><strong>Wellness plans</strong> — affordable monthly care, no membership fees</div></li>
+        </ul>
+      </div>
+      <div class="visual-block">
+        <div class="visual-icon">🐕</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Our Services</div>
+      <h2>Everything Your Pet Needs, <span class="accent">Under One Roof</span> 🏥</h2>
+      <p>From their first puppy shots to their golden years — we've got every life stage covered.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat"><div class="feat-ico">🩺</div><h3>Wellness Exams</h3><p>Comprehensive nose-to-tail checkups that catch issues early and keep your pet thriving.</p></div>
+      <div class="feat"><div class="feat-ico">💉</div><h3>Vaccinations</h3><p>Tailored vaccination protocols for puppies, kittens, and adult pets — no over-vaccinating.</p></div>
+      <div class="feat"><div class="feat-ico">🦷</div><h3>Dental Care</h3><p>Professional cleanings, dental X-rays, and extractions in our fully equipped suite.</p></div>
+      <div class="feat"><div class="feat-ico">🔪</div><h3>Surgery</h3><p>Spay/neuter, soft-tissue, and orthopedic surgery performed by experienced veterinarians.</p></div>
+      <div class="feat"><div class="feat-ico">🚑</div><h3>Emergency Care</h3><p>Urgent same-day appointments for sick or injured pets. We're here when you need us most.</p></div>
+      <div class="feat"><div class="feat-ico">✂️</div><h3>Grooming</h3><p>Full-service bathing, trimming, and nail care by gentle, pet-loving professionals.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Easy Process</div>
+      <h2>From Booking to <span class="accent">Belly Rubs</span> 🐾</h2>
+      <p>Getting your pet the care they need has never been simpler.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h3>Book Online</h3><p>Schedule your free new patient visit in under 60 seconds. We'll confirm same day.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Bring Your Pet In</h3><p>Walk into our calm, treat-filled clinic. Your pet meets the team and gets the VIP treatment.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Lifetime Care Plan</h3><p>We design a personalized wellness roadmap so your pet stays happy, healthy, and thriving for years.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Pet Parents Love Us</div>
+      <h2>Tails Wagging, <span class="accent">Hearts Full</span> 💚</h2>
+      <p>Don't just take our word for it — listen to the families we care for.</p>
+    </div>
+    <div class="t-scroller">
+      <div class="t-card">
+        <div class="pet-emoji">🐶</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">My golden retriever Bailey USED to hate the vet. Now she literally pulls on her leash to get inside. The team treats her like royalty — and they caught an early heart murmur that probably saved her life. Forever grateful.</p>
+        <div class="t-author"><div class="t-avatar">JM</div><div><strong>Jennifer M.</strong><span>Bailey's Mom 🐾</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="pet-emoji">🐱</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">Our rescue kitty Mochi is terrified of strangers. The fear-free approach here is no joke — they got her purring during her exam! Honest pricing, no upselling, just genuine love for animals. We drive 40 minutes to come here.</p>
+        <div class="t-author"><div class="t-avatar">DP</div><div><strong>David P.</strong><span>Mochi's Dad 🐱</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="pet-emoji">🐕</div>
+        <div class="stars">★★★★★</div>
+        <p class="quote">When our senior pup Charlie needed emergency surgery, this team was there at 11 PM. They walked us through every option, gave us realistic expectations, and saved our boy. Two years later, he's still wagging strong. We're family for life.</p>
+        <div class="t-author"><div class="t-avatar">SK</div><div><strong>Sarah K.</strong><span>Charlie's Mom 🦴</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat"><span class="big">8K+</span><span class="lbl">Pets Cared For</span></div>
+      <div class="stat"><span class="big">4.9★</span><span class="lbl">Google Rating</span></div>
+      <div class="stat"><span class="big">15+</span><span class="lbl">Years of Expertise</span></div>
+      <div class="stat"><span class="big">98%</span><span class="lbl">Tail-Wag Approval</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="plans">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Wellness Plans</div>
+      <h2>Predictable Care, <span class="accent">Affordable Monthly</span> 🐾</h2>
+      <p>Spread the cost of care across the year — and never miss preventive medicine.</p>
+    </div>
+    <div class="tier-grid">
+      <div class="tier">
+        <div class="tier-icon">🐾</div>
+        <h3>Basic Care</h3>
+        <div class="tier-desc">Puppy/Kitten Essentials</div>
+        <div class="price-amt">$35</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>2 wellness exams/year</li>
+          <li>Core vaccinations included</li>
+          <li>Annual fecal & heartworm test</li>
+          <li>10% off all services</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Choose Basic</a>
+      </div>
+      <div class="tier featured">
+        <div class="tier-tag">★ Most Popular</div>
+        <div class="tier-icon">🦴</div>
+        <h3>Standard Care</h3>
+        <div class="tier-desc">The Full Wellness</div>
+        <div class="price-amt">$59</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>Unlimited wellness exams</li>
+          <li>All vaccinations included</li>
+          <li>Annual dental cleaning</li>
+          <li>Bloodwork & screenings</li>
+          <li>15% off all services</li>
+          <li>Free spay/neuter</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="background:#FDE68A;color:#064E3B !important">Choose Standard</a>
+      </div>
+      <div class="tier">
+        <div class="tier-icon">👑</div>
+        <h3>Premium Care</h3>
+        <div class="tier-desc">VIP Pet Treatment</div>
+        <div class="price-amt">$95</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>Everything in Standard</li>
+          <li>24/7 emergency access</li>
+          <li>Free monthly grooming</li>
+          <li>Free quarterly nail trims</li>
+          <li>20% off all services</li>
+          <li>Concierge scheduling</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Choose Premium</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">New Patient Offer</div>
+      <h2>Your First Visit Is <span class="accent">Completely Free</span> 🎉</h2>
+      <p>New to {{location.name}}? Get a comprehensive wellness exam for your pet — on us.</p>
+    </div>
+    <div class="offer-card">
+      <div class="offer-tag">★ New Patient Special</div>
+      <h3>Free New Pet Wellness Exam</h3>
+      <div class="offer-price">FREE</div>
+      <div class="offer-orig">$85 Value · Limited Time</div>
+      <ul class="offer-includes">
+        <li>Comprehensive nose-to-tail wellness exam</li>
+        <li>Personal time with our lead veterinarian</li>
+        <li>Customized vaccination & wellness recommendations</li>
+        <li>Free goody bag with treats and toys for your pet</li>
+        <li>No obligation. No pressure. Just great care.</li>
+      </ul>
+      <a href="#contact" class="btn-primary btn-pulse" style="padding:16px 36px;font-size:17px">Book My Pet's Free Visit 🐾</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Pet Parent FAQ</div>
+      <h2>Common <span class="accent">Questions</span> 🐾</h2>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>Is the new patient exam really free? <span class="chevron">⌄</span></summary>
+        <p>Absolutely! Your pet's first wellness exam (an $85 value) is 100% free for new patients. No catches, no hidden fees. Just our way of welcoming you and your fur baby to the family.</p>
+      </details>
+      <details>
+        <summary>What if my pet is anxious about vet visits? <span class="chevron">⌄</span></summary>
+        <p>We're a Fear-Free Certified practice — that means low-stress handling, calming pheromones, treats, and patience are part of every visit. Many anxious pets become happy regulars within just 2–3 visits.</p>
+      </details>
+      <details>
+        <summary>Do you handle emergencies? <span class="chevron">⌄</span></summary>
+        <p>Yes! We offer same-day urgent appointments during business hours, and our Premium plan members have 24/7 emergency access. For after-hours emergencies, we'll connect you with our trusted partner ER.</p>
+      </details>
+      <details>
+        <summary>What kinds of pets do you treat? <span class="chevron">⌄</span></summary>
+        <p>Dogs and cats are our specialty, and we welcome small mammals too — rabbits, guinea pigs, hamsters, and ferrets. Just mention your pet type when booking so we can prep the right resources.</p>
+      </details>
+      <details>
+        <summary>Do you accept pet insurance? <span class="chevron">⌄</span></summary>
+        <p>Yes! We work with all major pet insurance providers including Trupanion, Healthy Paws, ASPCA, Embrace, and more. Our team helps with claims paperwork so you get reimbursed quickly.</p>
+      </details>
+      <details>
+        <summary>Can I tour the clinic before booking? <span class="chevron">⌄</span></summary>
+        <p>Of course! We love showing off our facility. Just call us at {{location.phone}} to schedule a quick walk-through. Bring your pet too — they can sniff around and meet the team.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Let's Meet Your Best Friend 🐶🐱</h2>
+    <p class="sub">Book your pet's FREE new patient wellness exam today — limited spots this month!</p>
+    <form id="contact">
+      <div class="form-row">
+        <div class="field"><label>Your Name</label><input type="text" name="owner_name" placeholder="Owner name" required></div>
+        <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="(555) 123-4567" required></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required></div>
+      <div class="form-row">
+        <div class="field"><label>Pet's Name 🐾</label><input type="text" name="pet_name" placeholder="What's their name?" required></div>
+        <div class="field"><label>Species</label>
+          <select name="pet_species" required>
+            <option value="">Select species</option>
+            <option>Dog 🐶</option><option>Cat 🐱</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Pet's Age</label><input type="text" name="pet_age" placeholder="e.g. 2 years, 6 months"></div>
+        <div class="field"><label>Reason for Visit</label>
+          <select name="reason_for_visit" required>
+            <option value="">Select reason</option>
+            <option>New Patient Wellness Exam</option><option>Vaccinations</option>
+            <option>Dental Care</option><option>Sick / Concerned</option>
+            <option>Surgery Consultation</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="submit-btn">Book My Pet's Free Visit 🐾</button>
+      <p class="privacy">🔒 Your info is 100% private. We treat your data like we treat your pets — with love.</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="logo" style="color:#FDE68A;margin-bottom:14px"><span style="font-size:32px">🐾</span>{{location.name}}</div>
+        <p>Compassionate, comprehensive veterinary care for the pets — and pet parents — of {{location.city}}. Your family vet for life.</p>
+        <div class="socials">
+          <a href="#" class="social">f</a><a href="#" class="social">ig</a><a href="#" class="social">in</a><a href="#" class="social">★</a>
+        </div>
+      </div>
+      <div>
+        <h4>Visit Us</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="#services">Services</a>
+        <a href="#plans">Wellness Plans</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Book Now</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 {{location.name}} · Made with 💚 for pets and their people</div>
+  </div>
+</footer>
+
+</body>
+</html>

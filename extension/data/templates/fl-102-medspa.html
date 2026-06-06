@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{location.name}} — Luxury Medical Aesthetics</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:#1C1917;background:#FEF3C7;line-height:1.7;font-weight:300}
+h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:600;line-height:1.2;color:#7C2D12;letter-spacing:-.5px}
+.container{max-width:1200px;margin:0 auto;padding:0 24px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,165,116,.5)}50%{box-shadow:0 0 0 24px rgba(212,165,116,0)}}
+@keyframes shimmer{0%{background-position:-1000px 0}100%{background-position:1000px 0}}
+@keyframes gradient{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(254,243,199,.9);backdrop-filter:blur(20px);padding:18px 0;border-bottom:1px solid rgba(124,45,18,.1)}
+.nav-wrap{display:flex;justify-content:space-between;align-items:center}
+.logo{font-family:'Playfair Display',serif;font-weight:700;font-size:24px;color:#7C2D12;letter-spacing:1px}
+.logo-icon{display:inline-block;color:#D4A574;margin-right:6px;font-size:22px}
+.nav-links{display:flex;gap:32px;align-items:center}
+.nav-links a{color:#7C2D12;text-decoration:none;font-weight:400;font-size:14px;letter-spacing:1px;text-transform:uppercase;transition:color .3s}
+.nav-links a:hover{color:#D4A574}
+.btn-primary{display:inline-block;background:linear-gradient(135deg,#D4A574,#B8935A);color:#fff !important;padding:14px 32px;font-weight:500;text-decoration:none;letter-spacing:2px;text-transform:uppercase;font-size:12px;transition:all .4s ease;border:none;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-primary:hover{background:linear-gradient(135deg,#7C2D12,#9A3412);transform:translateY(-2px);letter-spacing:3px}
+.btn-pulse{animation:pulse 2.5s infinite}
+
+/* HERO */
+.hero{position:relative;padding:120px 0 140px;background:linear-gradient(135deg,#FEF3C7 0%,#FED7AA 50%,#FBBF24 100%);background-size:200% 200%;animation:gradient 15s ease infinite;overflow:hidden;text-align:center}
+.hero::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(212,165,116,.3),transparent 70%);border-radius:50%;top:-200px;left:-200px;animation:float 8s ease infinite}
+.hero::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(251,191,36,.25),transparent 70%);border-radius:50%;bottom:-150px;right:-100px;animation:float 10s ease infinite reverse}
+.hero-content{position:relative;z-index:2;max-width:840px;margin:0 auto}
+.hero-badge{display:inline-block;color:#7C2D12;padding:6px 0;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;animation:fadeInUp 1s ease both;border-top:1px solid #7C2D12;border-bottom:1px solid #7C2D12}
+.hero h1{font-size:72px;color:#7C2D12;margin-bottom:24px;animation:fadeInUp 1s ease .15s both;font-weight:500}
+.hero h1 em{font-style:italic;color:#D4A574;font-weight:400}
+.hero p.sub{font-size:19px;color:#451A03;margin-bottom:42px;animation:fadeInUp 1s ease .3s both;max-width:620px;margin-left:auto;margin-right:auto;font-weight:300}
+.hero-ctas{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;animation:fadeInUp 1s ease .45s both;margin-bottom:42px}
+.btn-secondary{background:transparent;color:#7C2D12 !important;padding:14px 32px;border:1px solid #7C2D12;text-decoration:none;letter-spacing:2px;text-transform:uppercase;font-size:12px;font-weight:500;transition:all .3s}
+.btn-secondary:hover{background:#7C2D12;color:#fff !important}
+.hero-trust{animation:fadeInUp 1s ease .6s both;font-size:13px;color:#7C2D12;letter-spacing:2px;text-transform:uppercase}
+.stars{color:#D4A574;font-size:18px;letter-spacing:4px;margin-bottom:6px}
+
+/* TRUST BAR */
+.trust-bar{background:#fff;padding:36px 0;border-top:1px solid rgba(124,45,18,.1);border-bottom:1px solid rgba(124,45,18,.1)}
+.trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}
+.trust-item .num{font-family:'Playfair Display',serif;font-size:42px;font-weight:600;color:#D4A574;display:block;line-height:1}
+.trust-item .lbl{font-size:11px;color:#7C2D12;letter-spacing:3px;text-transform:uppercase;margin-top:10px;display:block;font-weight:500}
+
+/* SECTIONS */
+section{padding:100px 0}
+.section-head{text-align:center;max-width:680px;margin:0 auto 70px}
+.eyebrow{color:#D4A574;font-weight:500;text-transform:uppercase;letter-spacing:4px;font-size:12px;margin-bottom:18px}
+.section-head h2{font-size:48px;margin-bottom:16px;font-weight:500}
+.section-head p{font-size:17px;color:#57534E;font-weight:300}
+
+/* PROBLEM */
+.problem{background:#fff}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.pain-card{padding:42px 32px;text-align:center;transition:all .5s ease;border:1px solid rgba(124,45,18,.1);background:linear-gradient(180deg,#FEF3C7 0%,#fff 100%)}
+.pain-card:hover{transform:translateY(-10px);box-shadow:0 30px 60px rgba(124,45,18,.12);border-color:#D4A574}
+.pain-card .ico{font-size:48px;margin-bottom:20px;display:block}
+.pain-card h3{font-size:22px;margin-bottom:14px}
+.pain-card p{color:#57534E;font-size:15px;font-weight:300}
+
+/* SOLUTION */
+.solution{background:linear-gradient(180deg,#FEF3C7,#FED7AA)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.split h2{font-size:46px;margin-bottom:22px;font-weight:500}
+.split p.lead{font-size:17px;color:#451A03;margin-bottom:30px;font-weight:300}
+.checklist{list-style:none}
+.checklist li{padding:14px 0;display:flex;align-items:flex-start;gap:16px;font-size:16px;border-bottom:1px solid rgba(124,45,18,.08);font-weight:400;color:#1C1917}
+.check{flex-shrink:0;width:28px;height:28px;background:#D4A574;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.visual-block{position:relative;aspect-ratio:1;border-radius:8px;background:linear-gradient(135deg,#D4A574,#FBBF24);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 30px 80px rgba(124,45,18,.25)}
+.visual-block::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.4),transparent 60%)}
+.visual-icon{font-size:160px;position:relative;z-index:2;animation:float 6s ease infinite;filter:drop-shadow(0 10px 30px rgba(0,0,0,.2))}
+
+/* TREATMENTS */
+.treatments{background:#fff}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.feat{padding:40px 32px;text-align:center;background:#FEF9F0;border:1px solid rgba(212,165,116,.2);transition:all .4s ease;position:relative;overflow:hidden}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#D4A574,#FBBF24);transform:scaleX(0);transition:transform .4s ease}
+.feat:hover{transform:translateY(-8px);box-shadow:0 24px 50px rgba(124,45,18,.15);background:#fff}
+.feat:hover::before{transform:scaleX(1)}
+.feat-ico{font-size:44px;margin-bottom:18px;display:inline-block}
+.feat h3{font-size:21px;margin-bottom:10px;font-weight:600}
+.feat p{color:#57534E;font-size:15px;font-weight:300}
+
+/* HOW IT WORKS */
+.how{background:#7C2D12;color:#FEF3C7;text-align:center}
+.how h2,.how .eyebrow{color:#FBBF24}
+.how .section-head p{color:#FED7AA}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:50px;position:relative}
+.step{text-align:center}
+.step-num{font-family:'Playfair Display',serif;font-size:64px;color:#D4A574;font-weight:500;margin-bottom:10px;line-height:1;font-style:italic}
+.step h3{color:#FBBF24;font-size:23px;margin-bottom:12px}
+.step p{color:#FED7AA;font-size:15px;font-weight:300}
+
+/* TESTIMONIALS */
+.testimonials{background:#FEF3C7}
+.t-scroller{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:30px;padding:8px 4px 30px;scrollbar-width:thin}
+.t-card{flex:0 0 420px;scroll-snap-align:start;background:#fff;padding:42px 36px;border:1px solid rgba(124,45,18,.1);position:relative}
+.t-card::before{content:'"';position:absolute;top:10px;left:24px;font-family:'Playfair Display',serif;font-size:90px;color:#D4A574;line-height:1;opacity:.3}
+.t-card .stars{color:#D4A574;font-size:16px;letter-spacing:2px;margin-bottom:18px;position:relative;z-index:2}
+.t-card p.quote{font-family:'Playfair Display',serif;font-size:19px;color:#1C1917;font-style:italic;margin-bottom:24px;line-height:1.6;position:relative;z-index:2;font-weight:400}
+.t-author{display:flex;align-items:center;gap:14px;padding-top:18px;border-top:1px solid rgba(124,45,18,.1)}
+.t-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#D4A574,#FBBF24);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-family:'Playfair Display',serif}
+.t-author strong{display:block;font-size:15px;color:#7C2D12;font-weight:600}
+.t-author span{font-size:12px;color:#A8A29E;letter-spacing:1px;text-transform:uppercase}
+
+/* STATS */
+.stats{background:linear-gradient(135deg,#D4A574,#FBBF24);color:#fff;padding:90px 0;text-align:center}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:40px}
+.stat{animation:fadeInUp 1s ease both}
+.stat:nth-child(2){animation-delay:.15s}
+.stat:nth-child(3){animation-delay:.3s}
+.stat:nth-child(4){animation-delay:.45s}
+.stat .big{font-family:'Playfair Display',serif;font-size:64px;font-weight:500;color:#fff;display:block;line-height:1}
+.stat .lbl{font-size:12px;color:#fff;margin-top:10px;display:block;letter-spacing:3px;text-transform:uppercase;opacity:.9}
+
+/* PRICING */
+.pricing{background:#fff}
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;max-width:1100px;margin:0 auto}
+.tier{padding:48px 36px;background:#FEF9F0;border:1px solid rgba(124,45,18,.1);text-align:center;transition:all .4s ease;position:relative}
+.tier:hover{transform:translateY(-8px);box-shadow:0 30px 60px rgba(124,45,18,.15)}
+.tier.featured{background:linear-gradient(180deg,#7C2D12,#9A3412);color:#fff;transform:scale(1.05);border:none;box-shadow:0 30px 70px rgba(124,45,18,.3)}
+.tier.featured h3,.tier.featured .price-amt,.tier.featured .tier-desc{color:#FBBF24}
+.tier.featured .tier-feats li{color:#FED7AA;border-color:rgba(251,191,36,.2)}
+.tier-tag{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#D4A574;color:#fff;padding:6px 22px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:500}
+.tier h3{font-size:24px;margin-bottom:8px;font-weight:600}
+.tier-desc{font-size:13px;color:#A8A29E;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.price-amt{font-family:'Playfair Display',serif;font-size:54px;color:#7C2D12;font-weight:500;line-height:1}
+.price-per{font-size:14px;color:#A8A29E;margin-bottom:24px;display:block}
+.tier-feats{list-style:none;text-align:left;margin:24px 0}
+.tier-feats li{padding:10px 0;border-bottom:1px solid rgba(124,45,18,.08);font-size:14px;font-weight:400}
+.tier-feats li::before{content:'✓';color:#D4A574;font-weight:700;margin-right:10px}
+.tier.featured .tier-feats li::before{color:#FBBF24}
+
+/* FAQ */
+.faq{background:#FEF3C7}
+.faq-list{max-width:780px;margin:0 auto}
+details{background:#fff;margin-bottom:14px;border:1px solid rgba(124,45,18,.1);transition:all .3s}
+details[open]{box-shadow:0 12px 30px rgba(124,45,18,.1)}
+summary{padding:24px 28px;font-weight:500;font-size:17px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#7C2D12;list-style:none;font-family:'Playfair Display',serif}
+summary::-webkit-details-marker{display:none}
+.chevron{display:inline-block;transition:transform .4s ease;color:#D4A574;font-size:20px}
+details[open] .chevron{transform:rotate(180deg)}
+details p{padding:0 28px 24px;color:#57534E;font-size:15px;line-height:1.7;font-weight:300}
+
+/* CONTACT */
+.cta-section{background:linear-gradient(135deg,#7C2D12 0%,#9A3412 50%,#D4A574 100%);background-size:200% 200%;animation:gradient 15s ease infinite;color:#fff;text-align:center}
+.cta-section h2{color:#FBBF24;font-size:50px;margin-bottom:18px;font-weight:500}
+.cta-section p.sub{font-size:18px;color:#FED7AA;margin-bottom:42px;max-width:580px;margin-left:auto;margin-right:auto;font-weight:300}
+form{max-width:580px;margin:0 auto;background:#fff;padding:48px 40px;color:#1C1917;text-align:left;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:18px}
+label{display:block;font-size:11px;font-weight:600;margin-bottom:8px;color:#7C2D12;letter-spacing:2px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:14px 16px;border:1px solid #E7E5E4;font-size:15px;font-family:'Inter',sans-serif;background:#FEF9F0;transition:all .3s;font-weight:400}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#D4A574;background:#fff}
+.check-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.check-label{display:flex;align-items:center;gap:8px;padding:10px;background:#FEF9F0;border:1px solid #E7E5E4;cursor:pointer;font-size:13px;transition:all .2s}
+.check-label:hover{border-color:#D4A574}
+.check-label input{width:auto}
+.submit-btn{width:100%;padding:18px;background:linear-gradient(135deg,#7C2D12,#9A3412);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .4s ease;margin-top:10px;font-family:'Inter',sans-serif;letter-spacing:3px;text-transform:uppercase}
+.submit-btn:hover{background:linear-gradient(135deg,#D4A574,#FBBF24);letter-spacing:4px}
+.privacy{font-size:11px;color:#A8A29E;text-align:center;margin-top:14px;letter-spacing:1px;text-transform:uppercase}
+
+/* FOOTER */
+footer{background:#1C1917;color:#FED7AA;padding:70px 0 30px}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:50px;margin-bottom:42px}
+footer h4{color:#FBBF24;font-size:14px;margin-bottom:18px;letter-spacing:3px;text-transform:uppercase;font-family:'Inter',sans-serif;font-weight:600}
+footer p,footer a{color:#D6D3D1;text-decoration:none;font-size:14px;line-height:1.9;display:block;font-weight:300}
+footer a:hover{color:#D4A574}
+.socials{display:flex;gap:12px;margin-top:18px}
+.social{width:38px;height:38px;border:1px solid rgba(251,191,36,.3);display:flex;align-items:center;justify-content:center;color:#FBBF24;text-decoration:none;font-size:14px;transition:all .3s}
+.social:hover{background:#D4A574;border-color:#D4A574;color:#fff}
+.copy{border-top:1px solid rgba(214,211,209,.15);padding-top:24px;text-align:center;font-size:12px;color:#A8A29E;letter-spacing:2px;text-transform:uppercase}
+
+@media (max-width:768px){
+  .hero{padding:80px 0 100px}
+  .hero h1{font-size:42px}
+  .hero p.sub{font-size:16px}
+  .nav-links{display:none}
+  .section-head h2,.split h2,.cta-section h2{font-size:34px}
+  .problem-grid,.features-grid,.steps,.split,.stats-grid,.foot-grid,.trust-grid,.form-row,.tier-grid,.check-group{grid-template-columns:1fr}
+  .trust-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .t-card{flex:0 0 300px}
+  section{padding:70px 0}
+  .tier.featured{transform:none}
+  form{padding:28px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container nav-wrap">
+    <div class="logo"><span class="logo-icon">❋</span>{{location.name}}</div>
+    <div class="nav-links">
+      <a href="#treatments">Treatments</a>
+      <a href="#how">Process</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact" class="btn-primary">Book Consultation</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-badge">Voted #1 MedSpa in {{location.city}}</div>
+    <h1>Timeless Beauty. <em>Refined Confidence.</em></h1>
+    <p class="sub">Award-winning medical aesthetics in a private, luxurious setting. Trusted by 5,000+ clients.</p>
+    <div class="hero-ctas">
+      <a href="#contact" class="btn-primary btn-pulse">Book a Private Consultation</a>
+      <a href="#treatments" class="btn-secondary">Explore Treatments</a>
+    </div>
+    <div class="hero-trust">
+      <div class="stars">★ ★ ★ ★ ★</div>
+      <div>5,000+ Satisfied Clients</div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-grid">
+      <div class="trust-item"><span class="num">5,000+</span><span class="lbl">Happy Clients</span></div>
+      <div class="trust-item"><span class="num">15+</span><span class="lbl">Years of Excellence</span></div>
+      <div class="trust-item"><span class="num">98%</span><span class="lbl">Would Refer a Friend</span></div>
+      <div class="trust-item"><span class="num">4.9★</span><span class="lbl">Across All Platforms</span></div>
+    </div>
+  </div>
+</div>
+
+<section class="problem">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">The Honest Truth</div>
+      <h2>Settling Shouldn't Be the Standard</h2>
+      <p>You deserve more than rushed appointments and uncertain results. You deserve true craftsmanship.</p>
+    </div>
+    <div class="problem-grid">
+      <div class="pain-card">
+        <div class="ico">⌛</div>
+        <h3>Fine Lines Catching Up</h3>
+        <p>The mirror doesn't lie. Crow's feet, forehead lines, and lost volume that no cream or serum has been able to address.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">🪞</div>
+        <h3>Lackluster Results Elsewhere</h3>
+        <p>You've tried other clinics. Overdone faces. Underwhelming results. Practitioners who didn't truly listen to what you wanted.</p>
+      </div>
+      <div class="pain-card">
+        <div class="ico">🔒</div>
+        <h3>The Need for Discretion</h3>
+        <p>You want natural, refined results — not announcements. You want to look refreshed, not "done." Privacy is non-negotiable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="solution">
+  <div class="container">
+    <div class="split">
+      <div>
+        <div class="eyebrow">The Artistry Difference</div>
+        <h2>Medical Precision. Artistic Vision.</h2>
+        <p class="lead">At {{location.name}}, we believe enhancement should be invisible. Our master injectors and laser specialists deliver results so natural, your friends will wonder what your secret is.</p>
+        <ul class="checklist">
+          <li><span class="check">✓</span><div>Board-certified physicians & master injectors only</div></li>
+          <li><span class="check">✓</span><div>Personalized treatment plans — never one-size-fits-all</div></li>
+          <li><span class="check">✓</span><div>Private suites with hospital-grade safety standards</div></li>
+          <li><span class="check">✓</span><div>FDA-approved products from trusted global brands</div></li>
+          <li><span class="check">✓</span><div>Complimentary follow-up consultations included</div></li>
+        </ul>
+      </div>
+      <div class="visual-block">
+        <div class="visual-icon">✨</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="treatments" id="treatments">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Signature Treatments</div>
+      <h2>The Art of Aesthetic Refinement</h2>
+      <p>Curated treatments to enhance your natural beauty — performed by the most skilled providers in {{location.city}}.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat"><div class="feat-ico">💉</div><h3>Botox & Filler</h3><p>Soften lines and restore volume with hand-crafted precision. Look refreshed, never frozen.</p></div>
+      <div class="feat"><div class="feat-ico">💧</div><h3>HydraFacial</h3><p>Cleanse, exfoliate, hydrate, and glow — the ultimate skin reset in 45 minutes.</p></div>
+      <div class="feat"><div class="feat-ico">🌟</div><h3>Laser Skin Resurfacing</h3><p>Erase sun damage, scars, and uneven texture with advanced fractional CO₂ technology.</p></div>
+      <div class="feat"><div class="feat-ico">❄️</div><h3>CoolSculpting</h3><p>Non-invasive fat reduction that freezes away stubborn pockets — no surgery required.</p></div>
+      <div class="feat"><div class="feat-ico">✨</div><h3>Microneedling</h3><p>Stimulate collagen and reveal radiant, baby-soft skin with collagen induction therapy.</p></div>
+      <div class="feat"><div class="feat-ico">💎</div><h3>IV Therapy</h3><p>Custom IV cocktails for energy, hydration, immunity, and luminous skin from within.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">The Experience</div>
+      <h2>White-Glove Service, Every Visit</h2>
+      <p>From the moment you enter, your experience is curated for comfort, results, and discretion.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">I.</div><h3>Private Consultation</h3><p>A relaxed 1:1 with your provider — no rush, no pressure, just expertise listening to your goals.</p></div>
+      <div class="step"><div class="step-num">II.</div><h3>Tailored Treatment</h3><p>Your personalized plan, executed by our most skilled specialists in a private treatment suite.</p></div>
+      <div class="step"><div class="step-num">III.</div><h3>Lasting Confidence</h3><p>Follow-up care, ongoing maintenance plans, and the confidence that comes with looking your best.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Client Stories</div>
+      <h2>Quiet Confidence. Loud Compliments.</h2>
+      <p>The women and men who trust us with their faces have a lot to say.</p>
+    </div>
+    <div class="t-scroller">
+      <div class="t-card">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <p class="quote">After years of trying other clinics, I finally found a team that understands subtlety. My friends keep asking what's different about me — and no one can put their finger on it. That's exactly what I wanted.</p>
+        <div class="t-author"><div class="t-avatar">EW</div><div><strong>Elise W.</strong><span>Filler Client, 3 Years</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <p class="quote">The HydraFacial and laser resurfacing combination completely transformed my skin. Fifteen years of sun damage — gone. I'm 47 and my skin has never looked better. The team is pure art.</p>
+        <div class="t-author"><div class="t-avatar">CN</div><div><strong>Catherine N.</strong><span>Laser & HydraFacial Client</span></div></div>
+      </div>
+      <div class="t-card">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <p class="quote">From the moment I walked in, I knew I'd found my place. The discretion, expertise, and genuine artistry are unmatched. I drive an hour to see them and would drive five. Worth every minute.</p>
+        <div class="t-author"><div class="t-avatar">MA</div><div><strong>Margaret A.</strong><span>Botox & CoolSculpting Client</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat"><span class="big">5K+</span><span class="lbl">Treatments Performed</span></div>
+      <div class="stat"><span class="big">15</span><span class="lbl">Years of Excellence</span></div>
+      <div class="stat"><span class="big">98%</span><span class="lbl">Client Retention</span></div>
+      <div class="stat"><span class="big">12</span><span class="lbl">Industry Awards</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Membership</div>
+      <h2>The Beauty Investment</h2>
+      <p>Exclusive savings and priority access for our most valued clients.</p>
+    </div>
+    <div class="tier-grid">
+      <div class="tier">
+        <h3>Refresh</h3>
+        <div class="tier-desc">Essentials</div>
+        <div class="price-amt">$149</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>1 HydraFacial monthly</li>
+          <li>10% off all treatments</li>
+          <li>Priority booking</li>
+          <li>Quarterly skin assessment</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Choose Refresh</a>
+      </div>
+      <div class="tier featured">
+        <div class="tier-tag">Most Popular</div>
+        <h3>Radiance</h3>
+        <div class="tier-desc">The Standard</div>
+        <div class="price-amt">$299</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>2 treatments monthly (mix & match)</li>
+          <li>20% off all add-on treatments</li>
+          <li>Complimentary annual Botox unit credit</li>
+          <li>VIP private suite access</li>
+          <li>Monthly skin coaching</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="background:#FBBF24;color:#7C2D12 !important">Choose Radiance</a>
+      </div>
+      <div class="tier">
+        <h3>Reverence</h3>
+        <div class="tier-desc">Luxury Tier</div>
+        <div class="price-amt">$599</div>
+        <span class="price-per">per month</span>
+        <ul class="tier-feats">
+          <li>Unlimited treatments</li>
+          <li>30% off injectables</li>
+          <li>Concierge scheduling</li>
+          <li>Quarterly wellness package</li>
+          <li>Personal aesthetician</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Choose Reverence</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">Questions Answered</div>
+      <h2>Frequently Asked</h2>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>Will I look "overdone"? <span class="chevron">⌄</span></summary>
+        <p>Never. Our entire philosophy is enhancement through subtlety. Our injectors are trained to use the minimum effective dose — refined results, never overdone.</p>
+      </details>
+      <details>
+        <summary>Is there downtime after treatments? <span class="chevron">⌄</span></summary>
+        <p>Most of our signature treatments require zero to minimal downtime. Your consultation will include a full briefing on what to expect post-treatment, including any short recovery windows.</p>
+      </details>
+      <details>
+        <summary>How do I know what treatment is right for me? <span class="chevron">⌄</span></summary>
+        <p>That's exactly what our private consultation is for. We never recommend a treatment until we understand your goals, lifestyle, and aesthetic preferences in depth.</p>
+      </details>
+      <details>
+        <summary>Are your providers medically licensed? <span class="chevron">⌄</span></summary>
+        <p>Without exception. All injections, lasers, and medical aesthetic procedures are performed by board-certified physicians or master-level licensed nurse injectors with extensive training.</p>
+      </details>
+      <details>
+        <summary>How long do results last? <span class="chevron">⌄</span></summary>
+        <p>This varies by treatment. Botox typically lasts 3–4 months, fillers 6–18 months, and laser/CoolSculpting results can be permanent with proper maintenance. We'll discuss longevity during your consultation.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>Begin Your Refinement</h2>
+    <p class="sub">Reserve your private consultation. Complimentary for first-time guests.</p>
+    <form id="contact">
+      <div class="form-row">
+        <div class="field"><label>Full Name</label><input type="text" name="full_name" placeholder="Your full name" required></div>
+        <div class="field"><label>Phone</label><input type="tel" name="phone" placeholder="(555) 123-4567" required></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" name="email" placeholder="you@email.com" required></div>
+      <div class="field">
+        <label>Treatments of Interest</label>
+        <div class="check-group">
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="botox">Botox & Filler</label>
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="hydrafacial">HydraFacial</label>
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="laser">Laser Resurfacing</label>
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="coolsculpting">CoolSculpting</label>
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="microneedling">Microneedling</label>
+          <label class="check-label"><input type="checkbox" name="interested_treatment" value="iv">IV Therapy</label>
+        </div>
+      </div>
+      <div class="field"><label>Your Aesthetic Goal</label><input type="text" name="goal" placeholder="Tell us what you'd like to achieve"></div>
+      <div class="field"><label>Preferred Date</label><input type="date" name="preferred_date"></div>
+      <button type="submit" class="submit-btn">Reserve Consultation</button>
+      <p class="privacy">🔒 100% Private & Confidential</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <div class="logo" style="color:#FBBF24;margin-bottom:18px"><span class="logo-icon">❋</span>{{location.name}}</div>
+        <p>Award-winning medical aesthetics in {{location.city}}. Discretion. Expertise. Artistry. The standard you deserve.</p>
+        <div class="socials">
+          <a href="#" class="social">f</a><a href="#" class="social">ig</a><a href="#" class="social">in</a><a href="#" class="social">★</a>
+        </div>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <a href="tel:{{location.phoneRaw}}">{{location.phone}}</a>
+        <a href="mailto:{{location.email}}">{{location.email}}</a>
+        <p>{{location.fullAddress}}</p>
+      </div>
+      <div>
+        <h4>Discover</h4>
+        <a href="#treatments">Treatments</a>
+        <a href="#how">Our Process</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Book Now</a>
+      </div>
+    </div>
+    <div class="copy">© 2026 {{location.name}} · All Rights Reserved</div>
+  </div>
+</footer>
+
+</body>
+</html>
