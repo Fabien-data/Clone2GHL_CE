@@ -84,7 +84,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     await writeDb((draft) => {
       const user = draft.users.find(u => u.stripeCustomerId === customerId);
-      if (user) user.plan = nextPlan;
+      // Never let a Stripe event override a GHL-provisioned account — GHL is the
+      // source of truth for those users. (Also neutralizes the checkout.session
+      // .completed → priceId null → 'free' downgrade bug if Stripe is re-enabled.)
+      if (user && user.subscriptionSource !== 'ghl') user.plan = nextPlan;
       return draft;
     });
   }
@@ -93,7 +96,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const customerId = event.data.object.customer;
     await writeDb((draft) => {
       const user = draft.users.find(u => u.stripeCustomerId === customerId);
-      if (user) user.plan = 'free';
+      if (user && user.subscriptionSource !== 'ghl') user.plan = 'free';
       return draft;
     });
   }

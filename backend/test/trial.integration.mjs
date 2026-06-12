@@ -59,6 +59,16 @@ u = await j('/api/usage', { token });
 ok('usage now paid pro', u.data.plan === 'pro' && u.data.state === 'paid' && u.data.upgradeRequired === false, `plan ${u.data.plan} state ${u.data.state}`);
 ok('pro clone limit 300', u.data.clonesLimit === 300, `got ${u.data.clonesLimit}`);
 
+console.log('GHL refund revokes access immediately (decision: refund => instant)');
+const refund = await j('/api/ghl/cancel?token=whsec', { method: 'POST', body: { email, type: 'refund', transactionId: 'tx_it_1' } });
+ok('refund acknowledged', refund.status === 200 && refund.data.found === true && refund.data.refund === true, JSON.stringify(refund.data));
+u = await j('/api/usage', { token });
+ok('account dropped to free after refund', u.data.plan === 'free' && u.data.upgradeRequired === true, `plan ${u.data.plan} upg ${u.data.upgradeRequired}`);
+
+console.log('Stripe path is inert by default (GHL is the only live payment rail)');
+const stripeWh = await fetch(BASE + '/api/billing/webhook', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+ok('billing webhook unmounted → 404', stripeWh.status === 404, `status ${stripeWh.status}`);
+
 console.log('bad token rejected');
 const badWh = await j('/api/ghl/webhook?token=WRONG', { method: 'POST', body: { email, productName: 'Pro Plan' } });
 ok('webhook bad token → 401', badWh.status === 401, `status ${badWh.status}`);

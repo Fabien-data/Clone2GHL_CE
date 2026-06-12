@@ -18,9 +18,18 @@ export async function sendEmail({ to, subject, html, text }) {
   const provider = config.emailProvider || 'console';
   const from = config.emailFrom || 'Clone2GHL <onboarding@resend.dev>';
 
+  // No deliverable provider: either 'console' is selected (dev) or 'resend' was
+  // selected but EMAIL_API_KEY is empty (a misconfigured production mailer). Log the
+  // message and report sent:false so callers reflect reality — the old code returned
+  // sent:true here, which silently hid an unconfigured mailer (the GHL webhook then
+  // reported emailSent:true while no activation email ever left the server).
   if (provider === 'console' || !config.emailApiKey) {
-    console.log(`[email:console] to=${to} subject="${subject}"\n${text || html || ''}`);
-    return { sent: true, provider: 'console' };
+    if (provider !== 'console' && !config.emailApiKey) {
+      console.warn(`[email] EMAIL_PROVIDER=${provider} but EMAIL_API_KEY is empty — email NOT sent. to=${to} subject="${subject}"`);
+    } else {
+      console.log(`[email:console] to=${to} subject="${subject}"\n${text || html || ''}`);
+    }
+    return { sent: false, provider: 'console', logged: true };
   }
 
   if (provider === 'resend') {

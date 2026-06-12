@@ -20,6 +20,7 @@ import assetsRoutes from './routes/assets.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { aiLimiter, webhookLimiter } from './middleware/rateLimit.js';
 import { readDb } from './store.js';
+import { runPreflight } from './lib/preflight.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -55,13 +56,22 @@ app.get('/health', async (_req, res) => {
     db: dbOk ? 'ok' : 'error',
     openai: config.openaiApiKey ? 'configured' : 'missing',
     email: config.emailProvider,
+    // Money-path config visibility (booleans/counts only — never secrets) so the
+    // operator can verify a live deploy from the URL without shell access.
+    emailDeliverable: config.emailProvider !== 'console' && Boolean(config.emailApiKey),
+    ghlAuth: Boolean(config.ghlWebhookSecret || config.ghlWebhookHmac),
+    ghlProducts: Object.keys(config.ghlProductMap || {}).length,
+    checkoutUrl: Boolean(config.ghlCheckoutUrl),
+    stripeEnabled: config.billingStripeEnabled === true,
     uptimeSec: Math.round(process.uptime()),
     ts: new Date().toISOString(),
   });
 });
 
-// Stripe webhook must receive raw body before json parser.
-app.use('/api/billing/webhook', webhookLimiter, billingRoutes);
+// Stripe webhook must receive raw body before json parser. Mounted only when
+// Stripe is explicitly enabled — GHL is the live payment path, so Stripe stays
+// inert (404) by default and can never alter a GHL-provisioned account.
+if (config.billingStripeEnabled) app.use('/api/billing/webhook', webhookLimiter, billingRoutes);
 app.use('/api/videos/webhook', express.text({ type: '*/*' }));
 
 // Tiered body limits: clone/AI payloads can be large; everything else is capped
@@ -81,7 +91,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/funnels', funnelRoutes);
 app.use('/api/usage', usageRoutes);
-app.use('/api/billing', billingRoutes);
+if (config.billingStripeEnabled) app.use('/api/billing', billingRoutes);
 app.use('/api/preferences', preferencesRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/analytics', analyticsRoutes);
@@ -102,6 +112,20 @@ app.use((err, req, res, _next) => {
   console.error(JSON.stringify({ level: 'error', id: req.id, msg: err.message, stack: err.stack?.split('\n').slice(0, 3) }));
   res.status(500).json({ error: 'Internal server error' });
 });
+
+// ── Boot-time config validation ──────────────────────────────────────────────
+// Fail loudly on misconfiguration that would silently break payments/activation.
+// Hard blockers are fatal in production; in dev/test they only warn.
+const { errors, warnings } = runPreflight();
+for (const w of warnings) console.warn(`[preflight] WARN: ${w}`);
+if (errors.length) {
+  for (const e of errors) console.error(`[preflight] FATAL: ${e}`);
+  if (config.nodeEnv === 'production') {
+    console.error('[preflight] Refusing to start in production with the above misconfiguration.');
+    process.exit(1);
+  }
+  console.warn('[preflight] Non-production: continuing despite blockers (these would exit(1) in production).');
+}
 
 app.listen(config.port, () => {
   console.log(`Clone2GHL backend running on http://localhost:${config.port}`);

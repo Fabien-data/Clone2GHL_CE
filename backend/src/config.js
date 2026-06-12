@@ -101,6 +101,10 @@ export const config = {
     pro:     process.env.STRIPE_PRICE_PRO     || '',
     agency:  process.env.STRIPE_PRICE_AGENCY  || '',
   },
+  // Selling is via GoHighLevel; Stripe is OFF by default so its routes are inert
+  // and can never alter a GHL-provisioned account. Set BILLING_STRIPE_ENABLED=true
+  // only if you intend to run Stripe as a live payment path.
+  billingStripeEnabled: String(process.env.BILLING_STRIPE_ENABLED ?? 'false').toLowerCase() === 'true',
 
   // ── GoHighLevel (GHL) payment bridge ──────────────────────────────────────
   // Shared secret a GHL workflow must present (header X-GHL-Token or ?token=)

@@ -8,6 +8,8 @@ import { hashToken, compareToken, safeEqual, generateToken } from '../src/lib/to
 import { generateActivationCode, normalizeCode, hashCode, compareCode } from '../src/lib/activation.js';
 import { validateBody, EMAIL_RE } from '../src/lib/validate.js';
 import { computeEntitlement, ensureTrialInitialized, appendRef, TRIAL_DAYS } from '../src/lib/entitlement.js';
+import { runPreflight } from '../src/lib/preflight.js';
+import { isRefund } from '../src/routes/ghl.js';
 
 let pass = 0, fail = 0;
 function test(name, fn) {
@@ -76,7 +78,9 @@ test('trial expired by time → trial_expired + upgrade', () => {
   assert.equal(e.upgradeRequired, true);
 });
 test('active paid pro → paid, limit 300', () => {
-  const e = computeEntitlement({ plan: 'pro', subscriptionSource: 'ghl', currentPeriodEnd: new Date(NOW + 5 * DAY).toISOString() }, NOW);
+  // currentPeriodEnd must be future vs the REAL clock: effectivePlan() reads
+  // Date.now(), not the injected NOW, so a fixed-date window here would rot.
+  const e = computeEntitlement({ plan: 'pro', subscriptionSource: 'ghl', currentPeriodEnd: new Date(Date.now() + 5 * DAY).toISOString() }, NOW);
   assert.equal(e.state, 'paid');
   assert.equal(e.clonesLimit, 300);
   assert.equal(e.upgradeRequired, false);
@@ -114,6 +118,69 @@ test('appends ref to a bare URL', () => assert.equal(appendRef('https://x.com/bu
 test('uses & when a query already exists', () => assert.equal(appendRef('https://x.com/buy?p=1', 'ABC'), 'https://x.com/buy?p=1&ref=ABC'));
 test('no ref → unchanged; no url → empty', () => { assert.equal(appendRef('https://x.com', ''), 'https://x.com'); assert.equal(appendRef('', 'ABC'), ''); });
 test('encodes ref', () => assert.equal(appendRef('https://x.com', 'a b&c'), 'https://x.com?ref=a%20b%26c'));
+
+console.log('preflight.runPreflight');
+const goodCfg = {
+  nodeEnv: 'production',
+  jwtSecret: 'a-strong-random-secret-value-1234',
+  ghlWebhookSecret: 'whsec', ghlWebhookHmac: '',
+  emailProvider: 'resend', emailApiKey: 're_live_123',
+  emailFrom: 'Clone2GHL <noreply@clone2ghl.com>',
+  ghlProductMap: { 'pro plan': { plan: 'pro', type: 'recurring' } },
+  ghlCheckoutUrl: 'https://clone2ghl.com/checkout',
+  allowedOrigins: ['https://app.clone2ghl.com'], extensionIds: ['abc'],
+};
+const probeOk = () => ({ path: '/app/data', mounted: true });
+const has = (list, re) => list.some(m => re.test(m));
+test('fully-configured prod → no errors, no warnings', () => {
+  const { errors, warnings } = runPreflight(goodCfg, probeOk);
+  assert.equal(errors.length, 0, errors.join(' | '));
+  assert.equal(warnings.length, 0, warnings.join(' | '));
+});
+test('prod + dev JWT secret → FATAL error', () => {
+  const { errors } = runPreflight({ ...goodCfg, jwtSecret: 'dev-secret-change-me' }, probeOk);
+  assert.ok(has(errors, /JWT_SECRET/));
+});
+test('non-prod + dev JWT secret → warning, not error', () => {
+  const { errors, warnings } = runPreflight({ ...goodCfg, nodeEnv: 'development', jwtSecret: 'dev-secret-change-me' }, probeOk);
+  assert.equal(errors.length, 0);
+  assert.ok(has(warnings, /JWT_SECRET/));
+});
+test('prod + resend without api key → FATAL error', () => {
+  const { errors } = runPreflight({ ...goodCfg, emailApiKey: '' }, probeOk);
+  assert.ok(has(errors, /EMAIL_API_KEY/));
+});
+test('prod + empty product map WHILE ghl enabled → FATAL error', () => {
+  const { errors } = runPreflight({ ...goodCfg, ghlProductMap: {} }, probeOk);
+  assert.ok(has(errors, /GHL_PRODUCT_MAP/));
+});
+test('empty product map WITHOUT ghl auth → no product-map error (ghl just disabled)', () => {
+  const { errors } = runPreflight({ ...goodCfg, ghlProductMap: {}, ghlWebhookSecret: '', ghlWebhookHmac: '' }, probeOk);
+  assert.equal(has(errors, /GHL_PRODUCT_MAP/), false);
+  assert.ok(has(errors, /GHL webhook auth/));
+});
+test('soft warnings: test EMAIL_FROM + empty checkout url + ephemeral disk', () => {
+  const { warnings } = runPreflight(
+    { ...goodCfg, emailFrom: 'Clone2GHL <onboarding@resend.dev>', ghlCheckoutUrl: '' },
+    () => ({ path: '/app/data', mounted: false }),
+  );
+  assert.ok(has(warnings, /resend\.dev/));
+  assert.ok(has(warnings, /GHL_CHECKOUT_URL/));
+  assert.ok(has(warnings, /mounted volume/));
+});
+
+console.log('ghl.isRefund');
+test('refund signals are detected', () => {
+  assert.ok(isRefund({ type: 'refund' }));
+  assert.ok(isRefund({ event: 'payment.refunded' }));
+  assert.ok(isRefund({ reason: 'chargeback' }));
+  assert.ok(isRefund({ refunded: true }));
+});
+test('plain cancellations are NOT refunds', () => {
+  assert.equal(isRefund({ type: 'subscription.cancelled' }), false);
+  assert.equal(isRefund({ status: 'cancelled' }), false);
+  assert.equal(isRefund({}), false);
+});
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

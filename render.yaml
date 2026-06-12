@@ -13,15 +13,17 @@ services:
     disk:
       name: clone2ghl-data
       mountPath: /app/data        # persists db.json + rehosted assets
-      sizeGB: 1
+      sizeGB: 1                    # REQUIRED: detaching/omitting this disk WIPES all
+                                   # users, subscriptions & invoices on every redeploy.
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: "8080"
       # ── Secrets — set these in the Render dashboard (never commit) ──
+      # REQUIRED keys fail the boot-time preflight in production if missing.
       - key: JWT_SECRET
-        sync: false
+        sync: false             # REQUIRED: >=32 random chars, or tokens are forgeable
       - key: OPENAI_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
@@ -29,21 +31,31 @@ services:
       - key: EXTENSION_IDS
         sync: false             # your published Chrome/Firefox extension id(s)
       - key: OWNER_EMAILS
-        sync: false
+        sync: false             # REQUIRED: enables the in-app Admin panel + manual activation
       - key: ADMIN_SECRET
         sync: false
       - key: EMAIL_PROVIDER
         value: resend
       - key: EMAIL_API_KEY
-        sync: false
+        sync: false             # REQUIRED (provider=resend): else activation/reset mail silently fails
       - key: EMAIL_FROM
-        sync: false
+        sync: false             # REQUIRED: a VERIFIED Resend domain, e.g. "Clone2GHL <noreply@clone2ghl.com>"
       - key: APP_URL
         sync: false
+      - key: CLIENT_URL
+        sync: false             # used for CORS + email links
       - key: GHL_WEBHOOK_SECRET
-        sync: false
+        sync: false             # REQUIRED: shared secret the GHL workflow sends, or every payment 503s
+      - key: GHL_WEBHOOK_HMAC
+        sync: false             # optional: forge-resistant signed webhook (X-GHL-Signature)
       - key: GHL_PRODUCT_MAP
-        sync: false             # e.g. prod_abc=pro, Agency=agency
+        sync: false             # REQUIRED: e.g. "Starter Plan=starter:recurring, Pro Plan=pro:recurring, Agency Plan=agency:lifetime"
+      - key: GHL_CHECKOUT_URL
+        sync: false             # REQUIRED: the clone2ghl.com GHL order page the Upgrade button deep-links to
+      - key: GHL_CHECKOUT_URLS
+        sync: false             # optional per-plan map: "starter=https://...,pro=https://..."
+      - key: BILLING_STRIPE_ENABLED
+        value: "false"          # GHL is the only live payment path; keep Stripe inert
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET

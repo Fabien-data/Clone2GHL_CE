@@ -21,7 +21,7 @@ import { config } from '../config.js';
 import { readDb, writeDb } from '../store.js';
 import { issueActivationCode, normalizeCode, compareCode } from '../lib/activation.js';
 import { safeEqual } from '../lib/tokens.js';
-import { signAccessToken, issueRefreshToken } from '../lib/authTokens.js';
+import { signAccessToken, issueRefreshToken, revokeAllForUser } from '../lib/authTokens.js';
 import { sendEmail, activationEmail } from '../lib/email.js';
 import { authLimiter, webhookLimiter } from '../middleware/rateLimit.js';
 
@@ -74,6 +74,20 @@ function extractOrder(body = {}) {
   ).trim();
   const ghlContactId = String(body.contactId || body.contact_id || contact.id || '').trim();
   return { email, name, productId, productName, transactionId, ghlContactId };
+}
+
+// Distinguish a REFUND/chargeback (access should be revoked immediately) from a
+// normal end-of-period cancellation (access runs out at currentPeriodEnd). GHL
+// custom-webhook payloads aren't standardized, so we sniff the common aliases the
+// same forgiving way extractOrder() does. 'cancel' is deliberately NOT treated as
+// a refund.
+export function isRefund(body = {}) {
+  const signal = String(
+    body.type || body.event || body.eventType || body.event_type ||
+    body.reason || body.action || body.status || ''
+  ).toLowerCase();
+  if (/refund|chargeback|charge_back|charge-back|dispute/.test(signal)) return true;
+  return body.refunded === true || body.isRefund === true || body.refund === true;
 }
 
 function resolvePlan({ productId, productName }) {
@@ -246,22 +260,31 @@ router.post('/activate', authLimiter, async (req, res) => {
 });
 
 // ── POST /api/ghl/cancel ── GHL cancellation / refund workflow ──────────────────
-// Marks the subscription cancelled; access runs out at currentPeriodEnd (handled
-// by effectivePlan), so we don't yank access mid-period.
+// Normal cancellation: mark cancelled but let access run out at currentPeriodEnd
+// (the buyer paid for the period). Refund/chargeback: revoke immediately by
+// expiring currentPeriodEnd now (effectivePlan then reads the account as 'free')
+// and killing live refresh tokens so the session can't silently re-auth.
 router.post('/cancel', ghlSecretRequired, async (req, res) => {
   const order = extractOrder(req.body);
   if (!order.email) return res.status(400).json({ error: 'Missing customer email in payload.' });
 
+  const refund = isRefund(req.body);
   let found = false;
   await writeDb((draft) => {
     const user = draft.users.find(u => u.email.toLowerCase() === order.email);
-    if (user) {
+    if (!user) return draft;
+    found = true;
+    if (refund) {
+      user.subscriptionStatus = 'refunded';
+      // Expire now — overrides a future window AND a lifetime (null) entitlement.
+      user.currentPeriodEnd = new Date(Date.now() - 1000).toISOString();
+      revokeAllForUser(draft, user.id);
+    } else {
       user.subscriptionStatus = 'cancelled';
-      found = true;
     }
     return draft;
   });
-  return res.json({ received: true, found });
+  return res.json({ received: true, found, refund });
 });
 
 export default router;
