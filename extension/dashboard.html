@@ -16,6 +16,10 @@
     </div>
 
     <nav class="sidebar-nav">
+      <button class="nav-item" data-tab="getting-started" id="nav-getting-started">
+        <span class="nav-icon">🚀</span>
+        <span>Getting Started</span>
+      </button>
       <button class="nav-item active" data-tab="funnels">
         <span class="nav-icon">📁</span>
         <span>My Funnels</span>
@@ -56,6 +60,10 @@
         <span class="nav-icon">⚙️</span>
         <span>Settings</span>
       </button>
+      <button class="nav-item" data-tab="guide" id="nav-guide">
+        <span class="nav-icon">❓</span>
+        <span>Help &amp; Guide</span>
+      </button>
       <button class="nav-item nav-admin" data-tab="admin" id="nav-admin" style="display:none;">
         <span class="nav-icon">👑</span>
         <span>Admin</span>
@@ -89,6 +97,18 @@
 
   <!-- ─── Main Content ──────────────────────────────────────────────────────── -->
   <main class="main">
+
+    <!-- ═══ Getting Started Tab ════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-getting-started">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Welcome to Clone2GHL 👋</h1>
+          <h2 class="page-sub">Three quick steps and you're cloning funnels into GoHighLevel.</h2>
+        </div>
+      </div>
+      <div id="gs-status-card" style="margin-bottom:18px;"></div>
+      <div id="gs-checklist"></div>
+    </div>
 
     <!-- ═══ My Funnels Tab ═══════════════════════════════════════════════════ -->
     <div class="tab-content active" id="tab-funnels">
@@ -980,6 +1000,8 @@
         </div>
       </div>
 
+      <div id="settings-status-card" style="margin-bottom:18px;"></div>
+
       <div class="settings-grid">
 
         <!-- GHL Connection -->
@@ -1040,16 +1062,19 @@
           <div class="settings-card-header">
             <span class="settings-icon">☁</span>
             <div>
-              <div class="settings-card-title">Cloud Backend</div>
-              <div class="settings-card-sub">Auth, usage limits, funnel sync, and Stripe billing</div>
+              <div class="settings-card-title">Your Clone2GHL Account</div>
+              <div class="settings-card-sub">Sign in to sync your funnels, unlock higher limits, and manage billing</div>
             </div>
           </div>
           <div class="settings-status" id="backend-status-badge"></div>
 
-          <div class="form-row">
-            <label class="field-label">Backend API Base URL</label>
-            <input type="text" class="field-input" id="backend-api-base" placeholder="http://localhost:8080">
-          </div>
+          <details class="settings-advanced">
+            <summary>Advanced — backend URL (optional)</summary>
+            <div class="form-row" style="margin-top:8px;">
+              <input type="text" class="field-input" id="backend-api-base" placeholder="https://api.clone2ghl.com">
+              <p class="field-hint">Leave as the default unless you self-host. This is pre-filled automatically.</p>
+            </div>
+          </details>
 
           <div class="form-row-2">
             <div>
@@ -1062,6 +1087,7 @@
             </div>
           </div>
 
+          <p class="field-hint" style="margin-top:8px;">New here? Click <strong>Register</strong> to create your account. Already have one? Click <strong>Sign In</strong>.</p>
           <div class="settings-actions" style="margin-top:12px;">
             <button class="btn-secondary" id="btn-backend-register">Register</button>
             <button class="btn-primary" id="btn-backend-login">Sign In</button>
@@ -1515,6 +1541,108 @@
         <div class="admin-devmode-card">
           <h3>Owner Unlimited</h3>
           <p>Owner accounts automatically bypass all quotas. Owner status comes from <code>OWNER_EMAILS</code> on the backend — currently this account is <strong id="admin-owner-status">unknown</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Help & Guide Tab ═══════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-guide">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Help &amp; Guide</h1>
+          <h2 class="page-sub">Everything you need to clone, optimize, and launch funnels into GoHighLevel.</h2>
+        </div>
+      </div>
+      <div class="settings-card">
+        <div class="guide-wrap">
+          <details open>
+            <summary>🚀 Quick Start (3 steps)</summary>
+            <div class="guide-body">
+              <ol>
+                <li><strong>Connect GoHighLevel</strong> — open <strong>Getting Started</strong> (or Settings → GoHighLevel Connection), paste your API token + Location ID, and click <strong>Test Connection</strong>. Your free trial starts automatically.</li>
+                <li><strong>Clone a page</strong> — open any web page, click the Clone2GHL icon, and hit <strong>⚡ Clone This Page</strong>.</li>
+                <li><strong>Push to GoHighLevel</strong> — find it under <strong>My Funnels</strong>, edit if you like, then click <strong>→ GHL</strong>.</li>
+              </ol>
+            </div>
+          </details>
+          <details>
+            <summary>🔗 Connecting GoHighLevel</summary>
+            <div class="guide-body">
+              You need two values from your GoHighLevel account:
+              <ul>
+                <li><strong>Private Integration Token</strong> — in GHL: <code>Settings → Integrations → Private Integrations</code> → create a token with the <strong>Funnels</strong> scope, then copy it.</li>
+                <li><strong>Location ID</strong> — in GHL: <code>Settings → Business Profile</code> → copy the Location ID.</li>
+              </ul>
+              Paste both into <strong>Settings → GoHighLevel Connection</strong> and click <strong>Test Connection</strong>. On success, your 30-day / 6-clone free trial activates automatically.
+            </div>
+          </details>
+          <details>
+            <summary>🧬 Cloning a page</summary>
+            <div class="guide-body">
+              <ul>
+                <li><strong>Quick clone:</strong> click the Clone2GHL icon on any page, pick a niche (or leave Auto-detect), and click <strong>Clone This Page</strong>.</li>
+                <li><strong>From the dashboard:</strong> <strong>My Funnels → Clone New Page</strong>, paste a URL.</li>
+                <li><strong>Bulk:</strong> <strong>My Funnels → Bulk Clone</strong>, paste up to 20 URLs at once.</li>
+              </ul>
+              Every clone is saved to <strong>My Funnels</strong>, where you can review the fidelity score, edit text/images/colors, and push it to GHL.
+            </div>
+          </details>
+          <details>
+            <summary>📤 Pushing to GoHighLevel</summary>
+            <div class="guide-body">
+              Open a funnel in <strong>My Funnels</strong> and click <strong>→ GHL</strong>. We create the funnel + page in your GHL account and upload the content.
+              <ul>
+                <li>Connect GoHighLevel first (see above) — this is required.</li>
+                <li>If the content upload only partially succeeds, you'll be offered to <strong>open the funnel in GHL</strong> or <strong>download the HTML</strong> to paste manually.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>🤖 AI tools — Optimize, Logo, Video</summary>
+            <div class="guide-body">
+              <ul>
+                <li><strong>AI Copy Optimizer</strong> rewrites headlines + copy for your niche.</li>
+                <li><strong>Logo Generator</strong> creates a logo you can drop into a funnel.</li>
+                <li><strong>Video Generation</strong> queues short promo videos.</li>
+              </ul>
+              These require an OpenAI API key (Settings) and/or a <strong>Pro</strong> or <strong>Agency</strong> plan.
+            </div>
+          </details>
+          <details>
+            <summary>💳 Plans &amp; Activation</summary>
+            <div class="guide-body">
+              <ul>
+                <li><strong>Free trial:</strong> 30 days &amp; 6 clones once you connect GoHighLevel.</li>
+                <li><strong>Bought a plan?</strong> You'll receive an <strong>activation code</strong> by email. Click the extension icon → <strong>🎟 Activate Plan</strong>, enter your purchase email + code, and your plan unlocks instantly.</li>
+                <li><strong>Upgrade</strong> anytime from <strong>Settings → Your Plan</strong>. Limits: Free trial 6 · Starter 24/mo · Pro 300/mo · Agency unlimited.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>❓ FAQ</summary>
+            <div class="guide-body">
+              <ul>
+                <li><strong>Do I have to connect GoHighLevel?</strong> Yes — it unlocks your trial and is where clones are pushed.</li>
+                <li><strong>Where's my activation code?</strong> In your purchase confirmation email. Contact support if you can't find it.</li>
+                <li><strong>Can I edit a clone before pushing?</strong> Yes — open the funnel and use the editor to change text, images, and colors.</li>
+                <li><strong>My clone looks a bit different from the original?</strong> Some sites block copying or rely on heavy scripts. Re-try, or fine-tune in the editor.</li>
+                <li><strong>Is my data private?</strong> Your GHL / OpenAI keys are stored locally in your browser. See our privacy policy.</li>
+                <li><strong>Does my trial repeat?</strong> No — the free trial is one-time per GoHighLevel location.</li>
+              </ul>
+            </div>
+          </details>
+          <details>
+            <summary>🛠 Troubleshooting</summary>
+            <div class="guide-body">
+              <ul>
+                <li><strong>API key / 401 errors:</strong> re-create the Private Integration Token in GHL with the <strong>Funnels</strong> scope and paste it again.</li>
+                <li><strong>Location ID errors:</strong> copy the exact Location ID from <code>GHL → Settings → Business Profile</code>.</li>
+                <li><strong>"No funnels found":</strong> create at least one funnel in GoHighLevel first, then retry the push.</li>
+                <li><strong>Timeouts:</strong> check your connection; GHL can be slow — wait ~30s and retry.</li>
+                <li><strong>Clone fails:</strong> reload the page and try again; some sites block automated copying.</li>
+              </ul>
+            </div>
+          </details>
         </div>
       </div>
     </div>

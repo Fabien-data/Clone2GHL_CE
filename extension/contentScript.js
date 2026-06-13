@@ -440,7 +440,7 @@
 
       if (!cloneResp?.success) throw new Error(cloneResp?.error || 'Clone failed');
 
-      showStatus('✓ Funnel saved to your dashboard!', 'success');
+      showStatus('✓ Cloned! Opening your dashboard — next: push it to GoHighLevel.', 'success');
       setLoading(false);
       loadCredits();
 

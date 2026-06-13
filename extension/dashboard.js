@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupOwnerButtons();
   setupVisualEditor();
 
+  // Build the onboarding checklist + status card so they're ready if shown.
+  renderGettingStarted();
+
   // Handle hash navigation (popup links to #library, #settings, #activate etc.)
   const hash = window.location.hash.replace('#', '');
   if (hash === 'activate') {
@@ -39,6 +42,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     focusActivation();
   } else if (hash) {
     switchTab(hash);
+  } else if (!getSetupState().allDone) {
+    // First run / incomplete setup → land on the guided Getting Started page.
+    switchTab('getting-started');
   }
 });
 
@@ -117,8 +123,133 @@ function prefillActivationFromUrl() {
 // Scroll to + focus the activation form (used by the #activate deep-link + banner).
 function focusActivation() {
   const sec = document.getElementById('activate-section');
-  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (sec) {
+    sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    sec.classList.add('gs-highlight');
+    setTimeout(() => sec.classList.remove('gs-highlight'), 2100);
+  }
   document.getElementById('ghl-activate-email')?.focus();
+}
+
+// ─── Onboarding / status (v1.0.5) ──────────────────────────────────────────────
+// Derive setup state purely from already-synced `settings` — one source of truth
+// shared by the Getting Started checklist and the "Your Status" card.
+function getSetupState() {
+  const s = settings || {};
+  const ownerOrDev = s.plan === 'owner' || s.devMode;
+  const accountDone = Boolean(s.backendToken);
+  const ghlDone = Boolean(s.ghlValidated) || Boolean(s.ghlApiKey && s.ghlLocationId);
+  const planDone = (s.plan && s.plan !== 'free') || s.isTrial === true
+    || (s.plan === 'free' && !s.trialActivationRequired && typeof s.daysLeft === 'number');
+  const allDone = ownerOrDev || (accountDone && ghlDone && planDone);
+  const nextStep = !accountDone ? 1 : !ghlDone ? 2 : !planDone ? 3 : 0;
+  return { ownerOrDev, accountDone, ghlDone, planDone, allDone, nextStep };
+}
+
+// Render the "Your Status" card into a container (used on Getting Started + Settings).
+function renderStatusCard(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const s = settings || {};
+  const st = getSetupState();
+  const planName = (s.plan || 'free');
+  const planLabel = planName.charAt(0).toUpperCase() + planName.slice(1);
+
+  let usage;
+  if (st.ownerOrDev) usage = 'Unlimited';
+  else if (s.plan && s.plan !== 'free') usage = (s.plan === 'agency') ? 'Unlimited clones' : 'Active plan';
+  else if (s.isTrial && typeof s.daysLeft === 'number') usage = `${s.credits ?? 0} clones · ${s.daysLeft} days left`;
+  else usage = 'No active plan';
+
+  const item = (label, valueHtml, cls, fixLabel, fixKey) => `
+    <div class="gs-status-item">
+      <div class="gs-status-label">${label}</div>
+      <div class="gs-status-value ${cls || ''}">${valueHtml}</div>
+      ${fixLabel ? `<button class="gs-status-fix" data-fix="${fixKey}">${fixLabel}</button>` : ''}
+    </div>`;
+
+  el.innerHTML = `
+    <div class="settings-card">
+      <div class="settings-card-header"><span class="settings-icon">📊</span>
+        <div><div class="settings-card-title">Your Status</div>
+        <div class="settings-card-sub">Account, plan, and connection at a glance</div></div>
+      </div>
+      <div class="gs-status-grid">
+        ${item('Plan', escHtml(planLabel))}
+        ${item('Usage', escHtml(usage))}
+        ${item('Account', st.accountDone ? '✓ Signed in' : '✗ Not signed in', st.accountDone ? 'ok' : 'bad', st.accountDone ? '' : 'Sign in', 'account')}
+        ${item('GoHighLevel', st.ghlDone ? '✓ Connected' : '✗ Not connected', st.ghlDone ? 'ok' : 'bad', st.ghlDone ? '' : 'Connect', 'ghl')}
+      </div>
+    </div>`;
+
+  el.querySelectorAll('.gs-status-fix').forEach(b => {
+    b.addEventListener('click', () => {
+      switchTab('settings');
+      if (b.dataset.fix === 'ghl') document.getElementById('ghl-api-key')?.focus();
+      else document.getElementById('backend-auth-email')?.focus();
+    });
+  });
+}
+
+// Render the Getting Started status card + 3-step checklist with live ✓ ticks.
+function renderGettingStarted() {
+  renderStatusCard('gs-status-card');
+  renderStatusCard('settings-status-card');
+  const wrap = document.getElementById('gs-checklist');
+  if (!wrap) return;
+  const st = getSetupState();
+
+  if (st.ownerOrDev) {
+    wrap.innerHTML = `<div class="settings-card"><div class="settings-card-header"><span class="settings-icon">👑</span><div><div class="settings-card-title">You're all set</div><div class="settings-card-sub">Owner / dev account — everything is unlocked.</div></div></div></div>`;
+    return;
+  }
+
+  const step = (n, done, isNext, title, desc, actionsHtml, helpHtml) => `
+    <div class="gs-step ${done ? 'is-done' : ''} ${isNext ? 'is-next' : ''}">
+      <div class="gs-step-badge">${done ? '✓' : n}</div>
+      <div class="gs-step-body">
+        <div class="gs-step-title">${title}</div>
+        <div class="gs-step-desc">${desc}</div>
+        ${done ? '' : `<div class="gs-step-actions">${actionsHtml}</div>`}
+        ${helpHtml || ''}
+      </div>
+    </div>`;
+
+  const ghlHelp = `
+    <details class="gs-help"><summary>Where do I find these?</summary>
+      <ol>
+        <li><strong>Private Integration Token</strong>: in GoHighLevel → Settings → Integrations → Private Integrations → create a token with the <strong>Funnels</strong> scope.</li>
+        <li><strong>Location ID</strong>: in GoHighLevel → Settings → Business Profile → copy the Location ID.</li>
+      </ol>
+    </details>`;
+
+  wrap.innerHTML = `
+    ${step(1, st.accountDone, st.nextStep === 1,
+      'Create your Clone2GHL account',
+      'Sign in (or register) so your funnels sync and your plan is remembered.',
+      `<button class="btn-primary" data-gs="account">Create account / Sign in</button>`)}
+    ${step(2, st.ghlDone, st.nextStep === 2,
+      'Connect GoHighLevel',
+      'Paste your GHL Private Integration Token + Location ID. This unlocks your trial and lets you push funnels.',
+      `<button class="btn-primary" data-gs="ghl">Connect GoHighLevel</button>`,
+      ghlHelp)}
+    ${step(3, st.planDone, st.nextStep === 3,
+      'Start your free trial or activate a plan',
+      'Connecting GoHighLevel starts your 30-day / 6-clone trial automatically. Bought a plan? Activate it with your code.',
+      `<button class="btn-primary" data-gs="trial">Start free trial</button>
+       <button class="btn-secondary" data-gs="activate">I bought a plan → Activate</button>`)}
+    ${st.allDone ? `<div class="gs-step is-done"><div class="gs-step-badge">✓</div><div class="gs-step-body"><div class="gs-step-title">You're ready! 🎉</div><div class="gs-step-desc">Open any page and click <strong>Clone This Page</strong>, or head to <a href="#funnels" data-gs="funnels" style="color:var(--gold-light)">My Funnels</a>.</div></div></div>` : ''}`;
+
+  wrap.querySelectorAll('[data-gs]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      const a = b.dataset.gs;
+      if (a === 'account') { switchTab('settings'); document.getElementById('backend-auth-email')?.focus(); }
+      else if (a === 'ghl' || a === 'trial') { switchTab('settings'); document.getElementById('ghl-api-key')?.focus(); }
+      else if (a === 'activate') { switchTab('settings'); focusActivation(); }
+      else if (a === 'funnels') { switchTab('funnels'); }
+    });
+  });
 }
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
@@ -213,8 +344,7 @@ function switchTab(tabName) {
   // Gate locked tabs — bounce to Settings pricing block
   const required = TAB_FEATURE_GATE[tab];
   if (required && !hasFeature(required)) {
-    const planLabel = (settings?.plan || 'free');
-    alert(`This feature is locked on the ${planLabel} plan. Upgrade to Pro or Agency to unlock.`);
+    showSaveToast('That feature needs Pro or Agency — see plans below.');
     return switchTab('pricing');
   }
 
@@ -1357,8 +1487,9 @@ async function pushFunnelToGHL(funnelId, btnEl) {
   settings = sr?.settings || settings;
 
   if (!settings.ghlApiKey || !settings.ghlLocationId) {
-    if (confirm('GHL API key or Location ID is not configured.\n\nClick OK to open Settings and add your credentials.')) {
+    if (await uiConfirm('Connect GoHighLevel', "Your GoHighLevel API key or Location ID isn't set yet. Open Settings to connect your account?", { okText: 'Open Settings', cancelText: 'Not now' })) {
       switchTab('settings');
+      document.getElementById('ghl-api-key')?.focus();
     }
     return;
   }
@@ -1376,12 +1507,12 @@ async function pushFunnelToGHL(funnelId, btnEl) {
   // ── Error ──────────────────────────────────────────────────────────────────
   if (result?.error || (!result?.success && !result?.funnelId)) {
     const errMsg = buildPushErrorMessage(result?.error || 'Unknown error occurred.');
-    alert(errMsg);
     if (btnEl) btnEl.textContent = originalText;
+    await uiAlert('Export failed', errMsg);
 
     // Offer download fallback
     const funnel = myFunnels.find(f => f.id === funnelId);
-    if (funnel && confirm('Would you like to download the HTML instead so you can paste it manually in GHL?')) {
+    if (funnel && await uiConfirm('Download HTML?', 'Want to download the HTML instead so you can paste it manually into GHL?', { okText: 'Download', cancelText: 'No thanks' })) {
       const html = funnel.optimizedHtml || funnel.html || '';
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
@@ -1403,11 +1534,10 @@ async function pushFunnelToGHL(funnelId, btnEl) {
   if (result.success === 'partial' || result.success === 'html_only') {
     if (btnEl) btnEl.textContent = '⚠ Partial';
     const details = result.warning || 'Page was created but content could not be uploaded automatically.';
-    const action = confirm(
-      `⚠️ Partial Export\n\n${details}\n\n` +
-      `Funnel: "${result.funnelName || 'Unknown'}"\n\n` +
-      `Click OK to open GHL and paste the HTML manually.\n` +
-      `Click Cancel to download the HTML file instead.`
+    const action = await uiConfirm(
+      'Partial export',
+      `${details}\n\nFunnel: "${result.funnelName || 'Unknown'}"\n\nOpen GHL to paste the HTML manually, or download the HTML file instead.`,
+      { okText: 'Open GHL', cancelText: 'Download HTML' }
     );
     if (action) {
       chrome.tabs.create({ url: result.ghlBuilderUrl });
@@ -1430,11 +1560,11 @@ async function pushFunnelToGHL(funnelId, btnEl) {
   // ── Full success ──────────────────────────────────────────────────────────
   if (btnEl) btnEl.textContent = '✓ Exported!';
   const funnelLabel = result.funnelName ? ` "${result.funnelName}"` : '';
-  if (confirm(
-    `✅ Successfully pushed to GHL funnel${funnelLabel}!\n\n` +
-    `The page is now live in your GHL account.\n` +
-    `All content is editable directly in GHL Builder.\n\n` +
-    `Open GHL Builder now?`
+  showSaveToast('Pushed to GoHighLevel ✓');
+  if (await uiConfirm(
+    'Pushed to GoHighLevel ✅',
+    `Your page${funnelLabel} is now live in your GHL account and editable in the GHL Builder.\n\nOpen the GHL Builder now?`,
+    { okText: 'Open GHL Builder', cancelText: 'Stay here' }
   )) {
     chrome.tabs.create({ url: result.ghlBuilderUrl });
   }
@@ -3290,6 +3420,7 @@ function setupSettingsTab() {
         }
         // Any other trial error: keep the "connected" status — they can still upgrade.
       }
+      renderGettingStarted();
     } else {
       setStatus(badge, `✗ ${result?.error || 'Connection failed'}`, 'error');
     }
@@ -3304,6 +3435,7 @@ function setupSettingsTab() {
     settings.ghlApiKey = apiKey;
     settings.ghlLocationId = locationId;
     showSaveToast('GHL settings saved!');
+    renderGettingStarted();
   });
 
   // ── Affiliate / referral link ─────────────────────────────────────────────
@@ -3378,6 +3510,7 @@ function setupSettingsTab() {
     await loadBackendAccountData();
     setStatus(badge, `✓ Signed in as ${result.user?.email || email}`, 'connected');
     showSaveToast('Backend account created and connected.');
+    renderGettingStarted();
   });
 
   // Backend login
@@ -3411,6 +3544,7 @@ function setupSettingsTab() {
     await loadBackendAccountData();
     setStatus(badge, `✓ Signed in as ${result.user?.email || email}`, 'connected');
     showSaveToast('Backend sign-in successful.');
+    renderGettingStarted();
   });
 
   // Forgot password — reveal the reset panel
@@ -3504,6 +3638,7 @@ function setupSettingsTab() {
     await loadBackendAccountData();
     setStatus(badge, `✓ Activated — plan: ${result.user?.plan || 'updated'}`, 'connected');
     showSaveToast('Plan activated! Welcome aboard.');
+    renderGettingStarted();
   });
 
   // Backend logout
@@ -3705,7 +3840,10 @@ function setupAccountTab() {
 function loadSettingsFields() {
   if (settings.ghlApiKey) document.getElementById('ghl-api-key').value = settings.ghlApiKey;
   if (settings.ghlLocationId) document.getElementById('ghl-location-id').value = settings.ghlLocationId;
-  if (settings.backendApiBase) document.getElementById('backend-api-base').value = settings.backendApiBase;
+  // Always populate the (now hidden/Advanced) backend URL so handlers never see it
+  // empty; fall back to the production default if settings somehow lacks it.
+  const baseEl = document.getElementById('backend-api-base');
+  if (baseEl) baseEl.value = settings.backendApiBase || 'https://api.clone2ghl.com';
   if (settings.discoverApiKey) document.getElementById('discover-api-key').value = settings.discoverApiKey;
   if (settings.discoverCx) document.getElementById('discover-cx').value = settings.discoverCx;
 
@@ -3968,6 +4106,42 @@ function a11yModal(modal, label) {
   const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
   setTimeout(() => (focusable || modal).focus(), 0);
 }
+
+// ─── In-app dialogs (replace jarring native alert/confirm) ─────────────────────
+// Promise-based; OK resolves true, Cancel/✕/backdrop/Esc resolve false.
+function uiDialog(title, message, { okText = 'OK', cancelText = null } = {}) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    const safeMsg = escHtml(message).replace(/\n/g, '<br>');
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:440px;">
+        <div class="modal-header">
+          <div class="modal-title">${escHtml(title)}</div>
+          <button class="modal-close" data-act="cancel" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body" style="font-size:13.5px;color:var(--text3);line-height:1.6;">${safeMsg}</div>
+        <div class="modal-footer">
+          ${cancelText ? `<button class="btn-secondary" data-act="cancel">${escHtml(cancelText)}</button>` : ''}
+          <button class="btn-primary" data-act="ok">${escHtml(okText)}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    a11yModal(overlay.querySelector('.modal'), title);
+    const done = (val) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(val); };
+    const onKey = (e) => { if (e.key === 'Escape') done(false); };
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) return done(false);
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if (act === 'ok') done(true);
+      else if (act === 'cancel') done(false);
+    });
+    document.addEventListener('keydown', onKey);
+  });
+}
+function uiAlert(title, message, opts = {}) { return uiDialog(title, message, { okText: opts.okText || 'OK' }); }
+function uiConfirm(title, message, opts = {}) { return uiDialog(title, message, { okText: opts.okText || 'OK', cancelText: opts.cancelText || 'Cancel' }); }
 
 // Render untrusted/cloned HTML in an isolated, script-disabled sandbox iframe —
 // NEVER inject cloned page markup into the dashboard DOM via innerHTML. The
@@ -4307,6 +4481,7 @@ chrome.runtime.onMessage.addListener((message) => {
       myFunnels = r?.funnels || myFunnels;
       const f = myFunnels.find(x => x.id === message.funnelId);
       if (f) { renderFunnels(); openVisualEditor(f); }
+      renderGettingStarted();
     });
   }
 });

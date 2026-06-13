@@ -158,14 +158,20 @@ async function startClone() {
       return;
     }
 
-    showStatus('✓ Saved to your dashboard!', 'success');
+    showStatus('✓ Cloned! Opening your dashboard — next: push it to GoHighLevel.', 'success');
     btn.textContent = '✓ Done!';
 
     await loadSettings();
 
-    // Open dashboard after short delay
+    // Open the dashboard after a short delay. If the user isn't fully set up
+    // (no account, or GHL not connected), land them on Getting Started for guidance.
+    const sr = await chrome.runtime.sendMessage({ action: 'GET_SETTINGS' }).catch(() => null);
+    const s = sr?.settings || {};
+    const setupIncomplete = !(s.plan === 'owner' || s.devMode)
+      && (!s.backendToken || !(s.ghlValidated || (s.ghlApiKey && s.ghlLocationId)));
+    const dashUrl = chrome.runtime.getURL('dashboard.html') + (setupIncomplete ? '#getting-started' : '');
     setTimeout(() => {
-      chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+      chrome.tabs.create({ url: dashUrl });
       window.close();
     }, 1200);
 

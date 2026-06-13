@@ -2639,3 +2639,63 @@ body { display: flex; }
 
 .discover-niche-pill-icon { font-size: 14px; }
 
+/* ── v1.0.5 UX: Getting Started / onboarding checklist ──────────────────────── */
+.gs-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px; border: 1px solid var(--border); border-radius: 12px;
+  background: var(--card); margin-bottom: 12px;
+}
+.gs-step.is-next { border-color: var(--gold); background: var(--gold-faint); }
+.gs-step.is-done { opacity: 0.85; }
+.gs-step-badge {
+  flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  background: var(--card2); color: var(--text3); border: 1px solid var(--border2);
+}
+.gs-step.is-done .gs-step-badge { background: var(--green); color: #fff; border-color: var(--green); }
+.gs-step.is-next .gs-step-badge { background: var(--gold); color: #1a1405; border-color: var(--gold); }
+.gs-step-body { flex: 1; min-width: 0; }
+.gs-step-title { font-size: 15px; font-weight: 700; color: var(--text2); margin-bottom: 4px; }
+.gs-step-desc { font-size: 13px; color: var(--text3); line-height: 1.5; margin-bottom: 10px; }
+.gs-step-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.gs-help { margin-top: 8px; font-size: 12.5px; color: var(--text3); }
+.gs-help summary { cursor: pointer; color: var(--gold-light); }
+.gs-help ol { margin: 8px 0 0 18px; line-height: 1.7; }
+
+/* ── v1.0.5 UX: Your Status card ────────────────────────────────────────────── */
+.gs-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.gs-status-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.gs-status-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text4); margin-bottom: 6px; }
+.gs-status-value { font-size: 14px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.gs-status-value.ok { color: var(--green); }
+.gs-status-value.bad { color: var(--red); }
+.gs-status-fix { font-size: 12px; color: var(--gold-light); cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; margin-top: 4px; }
+
+/* ── v1.0.5 UX: Help & Guide ────────────────────────────────────────────────── */
+.guide-wrap { display: flex; flex-direction: column; gap: 12px; max-width: 840px; }
+.guide-wrap .settings-card { margin-bottom: 0; }
+.guide-wrap details { border-top: 1px solid var(--border); padding: 6px 0; }
+.guide-wrap details:first-child { border-top: none; }
+.guide-wrap summary { cursor: pointer; font-size: 14.5px; font-weight: 700; color: var(--text2); padding: 8px 0; list-style: none; }
+.guide-wrap summary::-webkit-details-marker { display: none; }
+.guide-wrap summary::before { content: '▸ '; color: var(--gold); }
+.guide-wrap details[open] summary::before { content: '▾ '; }
+.guide-body { font-size: 13.5px; color: var(--text3); line-height: 1.7; padding: 2px 0 10px 16px; }
+.guide-body ol, .guide-body ul { margin: 6px 0 6px 18px; }
+.guide-body strong { color: var(--text2); }
+.guide-body code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--gold-light); }
+
+/* ── v1.0.5 UX: Advanced disclosure + activation highlight + locked nav ─────── */
+.settings-advanced { margin: 10px 0; }
+.settings-advanced > summary { cursor: pointer; color: var(--text3); font-size: 12px; list-style: none; }
+.settings-advanced > summary::-webkit-details-marker { display: none; }
+.settings-advanced > summary::before { content: '⚙ '; }
+.gs-highlight { animation: gsGlow 2s ease-out 1; border-radius: 12px; }
+@keyframes gsGlow {
+  0%   { box-shadow: 0 0 0 2px var(--gold), 0 0 16px rgba(217,166,32,0.5); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.nav-item.nav-locked { cursor: help; }
+.nav-item.nav-locked:hover { box-shadow: inset 2px 0 0 var(--gold); }
+
