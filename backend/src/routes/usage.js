@@ -99,6 +99,10 @@ router.get('/', authRequired, async (req, res) => {
     // Base GHL checkout/upgrade URL (no ref). Always present so the extension can
     // offer "Upgrade" proactively; the client appends a captured ?ref= itself.
     checkoutUrl: config.ghlCheckoutUrl || '',
+    // Per-plan GHL checkout deep-links { starter, pro, agency }. ALWAYS present
+    // (independent of upgradeRequired) so the extension can route each pricing
+    // button to the right order page. {} when GHL_CHECKOUT_URLS is unset.
+    checkoutUrls: config.ghlCheckoutUrls || {},
   });
 });
 

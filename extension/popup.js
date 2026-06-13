@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ─── Button events ────────────────────────────────────────────────────────
   document.getElementById('btn-clone').addEventListener('click', startClone);
 
+  // One-click activation: opens the dashboard straight on the activation form.
+  document.getElementById('btn-activate')?.addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') + '#activate' });
+    window.close();
+  });
+
   document.getElementById('btn-dashboard').addEventListener('click', () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
     window.close();

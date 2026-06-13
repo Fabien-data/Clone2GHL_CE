@@ -58,6 +58,15 @@ ok('webhook idempotent (duplicate)', wh2.data.duplicate === true);
 u = await j('/api/usage', { token });
 ok('usage now paid pro', u.data.plan === 'pro' && u.data.state === 'paid' && u.data.upgradeRequired === false, `plan ${u.data.plan} state ${u.data.state}`);
 ok('pro clone limit 300', u.data.clonesLimit === 300, `got ${u.data.clonesLimit}`);
+ok('usage exposes per-plan checkoutUrls', u.data.checkoutUrls && u.data.checkoutUrls.pro === 'https://buy.test/p', JSON.stringify(u.data.checkoutUrls));
+
+console.log('GHL purchase recorded a paid invoice (admin)');
+const owner = await j('/api/auth/register', { method: 'POST', body: { email: 'owner@example.com', password: 'password123' } });
+const ownerTok = owner.data.token;
+const invRes = await j('/api/admin/invoices', { token: ownerTok });
+const inv = (invRes.data.invoices || []).find(i => i.userEmail === email && i.plan === 'pro');
+ok('invoice created for the pro purchase', !!inv, JSON.stringify((invRes.data.invoices || []).slice(0, 3)));
+ok('invoice 14700 cents, paid, source=ghl', inv && inv.amount === 14700 && inv.status === 'paid' && inv.source === 'ghl', inv && `${inv.amount}/${inv.status}/${inv.source}`);
 
 console.log('GHL refund revokes access immediately (decision: refund => instant)');
 const refund = await j('/api/ghl/cancel?token=whsec', { method: 'POST', body: { email, type: 'refund', transactionId: 'tx_it_1' } });

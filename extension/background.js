@@ -339,6 +339,10 @@ async function syncUsageFromBackend(settings, prefetchedUsage = null) {
     // Store the BASE checkout URL (no ref); the captured referral code is appended
     // client-side at click time so it works for both proactive and forced upgrades.
     upgradeUrl: usage.checkoutUrl || usage.upgrade?.checkoutUrl || '',
+    // Per-plan GHL checkout deep-links { starter, pro, agency } so each pricing
+    // button routes to the right order page. Always present from /api/usage;
+    // fall back to upgrade.plans for forced-upgrade responses. {} when unset.
+    checkoutUrls: usage.checkoutUrls || usage.upgrade?.plans || {},
   });
   return merged;
 }

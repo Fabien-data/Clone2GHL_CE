@@ -17,7 +17,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import { createHmac } from 'node:crypto';
-import { config } from '../config.js';
+import { config, planPrices } from '../config.js';
 import { readDb, writeDb } from '../store.js';
 import { issueActivationCode, normalizeCode, compareCode } from '../lib/activation.js';
 import { safeEqual } from '../lib/tokens.js';
@@ -192,6 +192,34 @@ router.post('/webhook', webhookLimiter, ghlSecretRequired, async (req, res) => {
       createdAt: new Date(now).toISOString(),
     });
     if (draft.ghlEvents.length > 10000) draft.ghlEvents.length = 10000;
+
+    // Record a paid invoice so the Admin → Invoices tab shows GHL revenue (the
+    // disabled Stripe path was the only thing creating invoices before). Amount is
+    // in CENTS to match the dashboard's formatMoney() + the Stripe invoice shape.
+    // Created for the initial purchase AND each renewal (duplicate events were
+    // already filtered out above, so there's exactly one invoice per payment).
+    draft.invoices.unshift({
+      id: `inv_${now}_${Math.random().toString(36).slice(2, 8)}`,
+      userId: user.id,
+      userEmail: user.email,
+      source: 'ghl',
+      stripeInvoiceId: null,
+      stripeCustomerId: null,
+      plan,
+      productType,
+      amount: (planPrices[plan] || 0) * 100,
+      currency: 'usd',
+      status: 'paid',
+      transactionId: order.transactionId || null,
+      number: order.transactionId || `GHL-${new Date(now).toISOString().slice(0, 10)}-${String(user.id).slice(-5)}`,
+      hostedInvoiceUrl: null,
+      invoicePdf: null,
+      periodStart: new Date(now).toISOString(),
+      periodEnd,
+      createdAt: new Date(now).toISOString(),
+      updatedAt: new Date(now).toISOString(),
+    });
+    if (draft.invoices.length > 10000) draft.invoices.length = 10000;
 
     return draft;
   });

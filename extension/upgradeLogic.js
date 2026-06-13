@@ -21,7 +21,14 @@
     return Boolean(s.trialActivationRequired || s.upgradeRequired);
   }
 
-  var api = { appendRef: appendRef, shouldShowUpgradeBanner: shouldShowUpgradeBanner };
+  // Resolve the checkout URL for a specific plan. Prefers a per-plan GHL deep-link
+  // (checkoutUrls[plan]); falls back to the single configured URL; '' if neither.
+  function planCheckoutUrl(checkoutUrls, plan, fallbackUrl) {
+    var perPlan = (checkoutUrls && plan) ? checkoutUrls[plan] : '';
+    return perPlan || fallbackUrl || '';
+  }
+
+  var api = { appendRef: appendRef, shouldShowUpgradeBanner: shouldShowUpgradeBanner, planCheckoutUrl: planCheckoutUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.C2GUpgrade = api;
 })(typeof self !== 'undefined' ? self : (typeof globalThis !== 'undefined' ? globalThis : this));

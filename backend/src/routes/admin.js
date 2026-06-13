@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { config, planLimits, logoLimits, aiLimits, effectivePlan } from '../config.js';
+import { config, planLimits, logoLimits, aiLimits, effectivePlan, planPrices as PLAN_PRICES } from '../config.js';
 import { authRequired } from '../middleware/auth.js';
 import { readDb, writeDb } from '../store.js';
 import { issueActivationCode } from '../lib/activation.js';
@@ -12,8 +12,8 @@ const AI_CALL_COST = { 'ai.optimize': 0.04, 'ai.report': 0.01, 'ai.headlines': 0
 
 const router = express.Router();
 
-// Pricing source of truth — must match in-app pricing tiles + Stripe products.
-const PLAN_PRICES = { free: 0, starter: 27, pro: 147, agency: 297 };
+// Pricing comes from config.planPrices (imported above as PLAN_PRICES) so the
+// admin revenue/MRR estimates and the GHL invoice amounts never drift apart.
 
 // Append an admin action to the activity audit trail (call inside a writeDb
 // updater so it commits atomically with the change it records).

@@ -6,7 +6,7 @@
 const assert = require('node:assert/strict');
 const GHLConverter = require('../ghlConverter.js');
 const FunnelAnalyzer = require('../funnelAnalyzer.js');
-const { appendRef, shouldShowUpgradeBanner } = require('../upgradeLogic.js');
+const { appendRef, shouldShowUpgradeBanner, planCheckoutUrl } = require('../upgradeLogic.js');
 
 let pass = 0, fail = 0;
 function test(name, fn) {
@@ -64,6 +64,12 @@ test('hidden for owner / dev', () => {
   assert.equal(shouldShowUpgradeBanner({ plan: 'owner', upgradeRequired: true }), false);
   assert.equal(shouldShowUpgradeBanner({ plan: 'free', upgradeRequired: true, devMode: true }), false);
 });
+
+console.log('upgradeLogic — planCheckoutUrl');
+test('prefers the per-plan URL', () => assert.equal(planCheckoutUrl({ pro: 'https://p', starter: 'https://s' }, 'pro', 'https://fb'), 'https://p'));
+test('falls back to single URL when plan missing', () => assert.equal(planCheckoutUrl({ starter: 'https://s' }, 'pro', 'https://fb'), 'https://fb'));
+test('falls back when map empty/undefined', () => { assert.equal(planCheckoutUrl({}, 'pro', 'https://fb'), 'https://fb'); assert.equal(planCheckoutUrl(undefined, 'pro', 'https://fb'), 'https://fb'); });
+test('empty string when nothing configured', () => assert.equal(planCheckoutUrl({}, 'pro', ''), ''));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

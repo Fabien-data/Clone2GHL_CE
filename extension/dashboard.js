@@ -30,9 +30,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupOwnerButtons();
   setupVisualEditor();
 
-  // Handle hash navigation (popup links to #library, #settings etc.)
+  // Handle hash navigation (popup links to #library, #settings, #activate etc.)
   const hash = window.location.hash.replace('#', '');
-  if (hash) switchTab(hash);
+  if (hash === 'activate') {
+    // Deep-link straight to the activation form (from the popup, email, or banner).
+    prefillActivationFromUrl();
+    switchTab('settings');
+    focusActivation();
+  } else if (hash) {
+    switchTab(hash);
+  }
 });
 
 async function loadAll() {
@@ -91,6 +98,27 @@ async function loadAll() {
 // Append the captured affiliate ref to the configured GHL checkout URL.
 function ghlCheckoutUrl(extraRef) {
   return C2GUpgrade.appendRef(settings.upgradeUrl || '', extraRef || settings.capturedRef);
+}
+
+// Pre-fill the activation form from URL params (e.g. an email "Activate" link:
+// dashboard.html#activate?email=...&code=...) so the user lands ready to submit.
+function prefillActivationFromUrl() {
+  try {
+    const q = new URLSearchParams(location.search);
+    const email = (q.get('email') || '').trim();
+    const code = (q.get('code') || '').trim();
+    const emailEl = document.getElementById('ghl-activate-email');
+    const codeEl = document.getElementById('ghl-activate-code');
+    if (email && emailEl) emailEl.value = email.slice(0, 160);
+    if (code && codeEl) codeEl.value = code.slice(0, 80);
+  } catch { /* no-op */ }
+}
+
+// Scroll to + focus the activation form (used by the #activate deep-link + banner).
+function focusActivation() {
+  const sec = document.getElementById('activate-section');
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('ghl-activate-email')?.focus();
 }
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
@@ -178,7 +206,7 @@ function switchTab(tabName) {
     watchlist: 'watchlist',
     'video-gen': 'video-gen', 'ad-intel': 'ad-intel', 'logo-gen': 'logo-gen',
     settings: 'settings', account: 'account',
-    pricing: 'settings',
+    pricing: 'settings', activate: 'settings',
   };
   const tab = tabMap[tabName] || tabName;
 
@@ -3854,9 +3882,11 @@ function refreshPlanLabel() {
 }
 
 async function startCheckout(plan) {
-  // Plans are sold via GoHighLevel. If a GHL checkout URL is configured, deep-link
-  // to it (carrying the captured affiliate ref) instead of the Stripe fallback.
-  const ghlUrl = ghlCheckoutUrl();
+  // Plans are sold via GoHighLevel. Deep-link to the per-plan GHL checkout (falling
+  // back to the single configured URL), carrying the captured affiliate ref. Stripe
+  // is only a fallback when no GHL URL is configured at all.
+  const base = C2GUpgrade.planCheckoutUrl(settings.checkoutUrls, plan, settings.upgradeUrl);
+  const ghlUrl = C2GUpgrade.appendRef(base, settings.capturedRef);
   if (ghlUrl) {
     chrome.tabs.create({ url: ghlUrl });
     return;
@@ -4212,7 +4242,7 @@ function showActivationBannerIfNeeded() {
   goBtn.className = 'btn-primary';
   goBtn.style.cssText = 'padding:7px 14px;font-size:12px;';
   goBtn.textContent = 'Activate / Sign in';
-  goBtn.addEventListener('click', () => { location.hash = '#settings'; document.getElementById('backend-auth-email')?.focus(); });
+  goBtn.addEventListener('click', () => { location.hash = '#activate'; switchTab('settings'); focusActivation(); });
 
   const dismiss = document.createElement('button');
   dismiss.className = 'btn-secondary';

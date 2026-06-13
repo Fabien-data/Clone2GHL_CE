@@ -125,6 +125,9 @@ export const config = {
   ghlCheckoutUrl:        process.env.GHL_CHECKOUT_URL        || '',
   // Optional per-plan override map: "starter=https://...,pro=https://...".
   ghlCheckoutUrls:       parseCheckoutMap(process.env.GHL_CHECKOUT_URLS),
+  // Chrome Web Store install link, included in the activation email so buyers can
+  // get the extension. Override per environment without a code change.
+  extensionInstallUrl:   process.env.EXTENSION_INSTALL_URL || 'https://chromewebstore.google.com/detail/mjphmimkcjjhaejnlpcpekeekjmjfajk',
 
   // ── Free trial ─────────────────────────────────────────────────────────────
   // Length of the one-time free trial window (non-repeating).
@@ -135,6 +138,17 @@ export const config = {
   trialRequireGhl:       String(process.env.TRIAL_REQUIRE_GHL ?? 'true').toLowerCase() !== 'false',
   // Base URL for server-side GHL location validation (LeadConnector REST).
   ghlApiBase:            process.env.GHL_API_BASE            || 'https://services.leadconnectorhq.com',
+};
+
+// Monthly list price per plan in whole dollars. Single source of truth for the
+// admin revenue/MRR estimates AND the invoice amount recorded on each GHL payment
+// (stored in cents = price * 100). Keep in sync with the in-app + website pricing.
+export const planPrices = {
+  free:    0,
+  starter: 27,
+  pro:     147,
+  agency:  297,
+  owner:   0,
 };
 
 // Monthly clone limits per plan (-1 = unlimited)

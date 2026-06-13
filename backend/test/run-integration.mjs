@@ -25,6 +25,8 @@ const env = {
   GHL_WEBHOOK_SECRET: 'whsec',
   GHL_PRODUCT_MAP: 'Pro Plan=pro:recurring',
   GHL_CHECKOUT_URL: 'https://clone2ghl.com/checkout',
+  GHL_CHECKOUT_URLS: 'starter=https://buy.test/s,pro=https://buy.test/p,agency=https://buy.test/a',
+  OWNER_EMAILS: 'owner@example.com',
 };
 
 console.log(`Booting server (data dir: ${dataDir})…`);

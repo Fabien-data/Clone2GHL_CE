@@ -74,19 +74,35 @@ export function passwordResetEmail({ resetUrl, code, ttlMinutes = 30 }) {
 }
 
 export function activationEmail({ code, plan }) {
+  const installUrl = config.extensionInstallUrl || 'https://chromewebstore.google.com/detail/mjphmimkcjjhaejnlpcpekeekjmjfajk';
   const subject = 'Your Clone2GHL access code 🎟';
-  const steps = `1. Open the Clone2GHL extension → Settings → Cloud Backend.\n2. Under "Activate Plan", enter your purchase email and this code:\n   ${code}\n3. Click "Activate Plan". Your ${plan} plan unlocks instantly.`;
-  const text = `Thanks for your purchase!\n\n${steps}\n\nKeep this code safe — it activates your account.`;
+  const text = [
+    `Thanks for your purchase! Activate your ${plan} plan in 3 steps:`,
+    ``,
+    `1. Install the Clone2GHL extension (skip if you already have it):`,
+    `   ${installUrl}`,
+    `2. Click the Clone2GHL icon in your browser, then "Activate Plan"`,
+    `   (or open the dashboard -> Settings -> Cloud Backend -> "Activate Plan").`,
+    `3. Enter your purchase email and this activation code:`,
+    ``,
+    `   ${code}`,
+    ``,
+    `Click "Activate Plan" and your ${plan} plan unlocks instantly.`,
+    `Keep this code safe - it activates your account.`,
+  ].join('\n');
   const html = `
-    <div style="font-family:system-ui,Arial,sans-serif;max-width:480px;margin:0 auto">
+    <div style="font-family:system-ui,Arial,sans-serif;max-width:520px;margin:0 auto;color:#111">
       <h2>Your Clone2GHL access code 🎟</h2>
-      <p>Thanks for your purchase! Activate the <strong>${escapeHtml(plan)}</strong> plan in three steps:</p>
-      <ol style="line-height:1.6">
-        <li>Open the Clone2GHL extension → <strong>Settings → Cloud Backend</strong>.</li>
-        <li>Under <strong>Activate Plan</strong>, enter your purchase email and this code:</li>
+      <p>Thanks for your purchase! Activate your <strong>${escapeHtml(plan)}</strong> plan in three steps:</p>
+      <ol style="line-height:1.7">
+        <li><strong>Install the extension</strong> (skip if you already have it):<br>
+          <a href="${escapeAttr(installUrl)}">Get Clone2GHL on the Chrome Web Store →</a></li>
+        <li>Click the <strong>Clone2GHL</strong> icon in your browser, then <strong>"Activate Plan"</strong><br>
+          <span style="color:#666">(or open the dashboard → Settings → Cloud Backend → "Activate Plan")</span></li>
+        <li>Enter your <strong>purchase email</strong> and this code:</li>
       </ol>
-      <p style="font-size:26px;font-weight:700;letter-spacing:3px;text-align:center;margin:16px 0">${escapeHtml(code)}</p>
-      <p>Then click <strong>Activate Plan</strong> — your plan unlocks instantly.</p>
+      <p style="font-size:28px;font-weight:700;letter-spacing:3px;text-align:center;margin:18px 0;padding:14px 0;background:#f5f5f5;border-radius:8px">${escapeHtml(code)}</p>
+      <p>Then click <strong>Activate Plan</strong> — your ${escapeHtml(plan)} plan unlocks instantly.</p>
       <p style="color:#666">Keep this code safe; it activates your account.</p>
     </div>`;
   return { subject, text, html };
