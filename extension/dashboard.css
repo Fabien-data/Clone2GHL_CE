@@ -2699,3 +2699,14 @@ body { display: flex; }
 .nav-item.nav-locked { cursor: help; }
 .nav-item.nav-locked:hover { box-shadow: inset 2px 0 0 var(--gold); }
 
+/* ── v1.0.5 UX: Welcome / Activate modal ────────────────────────────────────── */
+.c2gw-tabs { display:flex; gap:6px; margin-bottom:16px; background:var(--bg2); padding:4px; border-radius:10px; }
+.c2gw-tab { flex:1; padding:9px 8px; border:none; background:none; color:var(--text3); font-weight:600; font-size:13px; border-radius:8px; cursor:pointer; transition:all .15s; }
+.c2gw-tab.active { background:var(--card2); color:var(--gold); }
+.c2gw-hint { color:var(--text3); font-size:13px; line-height:1.5; margin:0 0 14px; }
+.c2gw-err { color:var(--red); font-size:12.5px; margin-top:10px; min-height:16px; }
+.c2gw-foot { text-align:center; color:var(--text3); font-size:12.5px; margin-top:14px; }
+.c2gw-foot a { color:var(--gold-light); cursor:pointer; text-decoration:underline; }
+.c2gw-modal .field-input { width:100%; }
+.btn-full { width:100%; }
+

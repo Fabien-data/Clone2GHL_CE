@@ -36,14 +36,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle hash navigation (popup links to #library, #settings, #activate etc.)
   const hash = window.location.hash.replace('#', '');
   if (hash === 'activate') {
-    // Deep-link straight to the activation form (from the popup, email, or banner).
-    prefillActivationFromUrl();
-    switchTab('settings');
-    focusActivation();
+    // Deep-link from the popup / purchase email → open the Welcome modal on Activate.
+    const q = new URLSearchParams(location.search);
+    switchTab('getting-started');
+    showWelcomeModal('activate', { email: (q.get('email') || '').trim(), code: (q.get('code') || '').trim() });
   } else if (hash) {
     switchTab(hash);
+  } else if (!settings.backendToken && settings.plan !== 'owner' && !settings.devMode) {
+    // First run / not signed in → guided onboarding with the Welcome modal front-and-center.
+    switchTab('getting-started');
+    showWelcomeModal('activate');
   } else if (!getSetupState().allDone) {
-    // First run / incomplete setup → land on the guided Getting Started page.
     switchTab('getting-started');
   }
 });
@@ -244,9 +247,9 @@ function renderGettingStarted() {
     b.addEventListener('click', (e) => {
       e.preventDefault();
       const a = b.dataset.gs;
-      if (a === 'account') { switchTab('settings'); document.getElementById('backend-auth-email')?.focus(); }
+      if (a === 'account') { showWelcomeModal('activate'); }
       else if (a === 'ghl' || a === 'trial') { switchTab('settings'); document.getElementById('ghl-api-key')?.focus(); }
-      else if (a === 'activate') { switchTab('settings'); focusActivation(); }
+      else if (a === 'activate') { showWelcomeModal('activate'); }
       else if (a === 'funnels') { switchTab('funnels'); }
     });
   });
@@ -4143,6 +4146,127 @@ function uiDialog(title, message, { okText = 'OK', cancelText = null } = {}) {
 function uiAlert(title, message, opts = {}) { return uiDialog(title, message, { okText: opts.okText || 'OK' }); }
 function uiConfirm(title, message, opts = {}) { return uiDialog(title, message, { okText: opts.okText || 'OK', cancelText: opts.cancelText || 'Cancel' }); }
 
+// ─── First-run Welcome / Activate modal (v1.0.5) ───────────────────────────────
+// One dead-simple entry: Activate (email + code + create password) OR Sign in
+// (email + password). Reuses the existing GHL_ACTIVATE / BACKEND_LOGIN handlers;
+// setting a password during activation means future logins are just email + pw.
+function showWelcomeModal(tab = 'activate', prefill = {}) {
+  if (document.getElementById('c2g-welcome-overlay')) return; // already open
+  const base = settings.backendApiBase || 'https://api.clone2ghl.com';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'c2g-welcome-overlay';
+  overlay.style.display = 'flex';
+  overlay.innerHTML = `
+    <div class="modal c2gw-modal" style="max-width:440px;">
+      <div class="modal-header">
+        <div class="modal-title">Welcome to Clone2GHL 👋</div>
+        <button class="modal-close" data-w="close" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="c2gw-tabs">
+          <button class="c2gw-tab" data-tab="activate">Activate a plan</button>
+          <button class="c2gw-tab" data-tab="signin">Sign in</button>
+        </div>
+
+        <div class="c2gw-pane" data-pane="activate">
+          <p class="c2gw-hint">Just bought a plan? Enter your email and the activation code from your purchase email.</p>
+          <label class="field-label">Email</label>
+          <input type="email" class="field-input" id="cw-act-email" placeholder="you@example.com" autocomplete="email">
+          <label class="field-label" style="margin-top:10px;">Activation code</label>
+          <input type="text" class="field-input" id="cw-act-code" placeholder="XXXX-XXXX">
+          <label class="field-label" style="margin-top:10px;">Create a password <span style="opacity:.6;">(so you can sign in anytime)</span></label>
+          <input type="password" class="field-input" id="cw-act-pass" placeholder="Min 8 characters" autocomplete="new-password">
+          <div class="c2gw-err" id="cw-act-err"></div>
+          <button class="btn-primary btn-full" id="cw-act-btn" style="margin-top:12px;">Activate &amp; Start →</button>
+          <p class="c2gw-foot">Don't have a plan yet? <a data-w="pricing">View pricing →</a></p>
+        </div>
+
+        <div class="c2gw-pane" data-pane="signin" style="display:none;">
+          <p class="c2gw-hint">Welcome back — sign in with your email and password.</p>
+          <label class="field-label">Email</label>
+          <input type="email" class="field-input" id="cw-si-email" placeholder="you@example.com" autocomplete="email">
+          <label class="field-label" style="margin-top:10px;">Password</label>
+          <input type="password" class="field-input" id="cw-si-pass" placeholder="Your password" autocomplete="current-password">
+          <div class="c2gw-err" id="cw-si-err"></div>
+          <button class="btn-primary btn-full" id="cw-si-btn" style="margin-top:12px;">Sign In →</button>
+          <p class="c2gw-foot">Have a code instead? <a data-w="to-activate">Activate a plan →</a></p>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  a11yModal(overlay.querySelector('.modal'), 'Welcome to Clone2GHL');
+
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+
+  const selectTab = (name) => {
+    overlay.querySelectorAll('.c2gw-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    overlay.querySelectorAll('.c2gw-pane').forEach(p => { p.style.display = (p.dataset.pane === name ? 'block' : 'none'); });
+    setTimeout(() => overlay.querySelector(name === 'signin' ? '#cw-si-email' : '#cw-act-email')?.focus(), 0);
+  };
+
+  if (prefill.email) overlay.querySelector('#cw-act-email').value = String(prefill.email).slice(0, 160);
+  if (prefill.code) overlay.querySelector('#cw-act-code').value = String(prefill.code).slice(0, 80);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) return close();
+    const t = e.target.closest('.c2gw-tab')?.dataset.tab;
+    if (t) return selectTab(t);
+    const w = e.target.closest('[data-w]')?.dataset.w;
+    if (w === 'close') return close();
+    if (w === 'pricing') { close(); switchTab('settings'); return; }
+    if (w === 'to-activate') return selectTab('activate');
+  });
+
+  const onAuthSuccess = async (result) => {
+    settings = result.settings || settings;
+    await refreshOwnerStatus();
+    updateSidebarPlanInfo();
+    applyFeatureGating();
+    refreshPlanLabel();
+    await loadBackendAccountData();
+    renderGettingStarted();
+    close();
+    showSaveToast('Welcome! 🎉 You\'re all set.');
+    switchTab('getting-started');
+  };
+
+  const run = async (btn, errEl, action, payload, validate) => {
+    errEl.textContent = '';
+    const v = validate();
+    if (v) { errEl.textContent = v; return; }
+    btn.disabled = true; const orig = btn.innerHTML; btn.innerHTML = '<span class="spinner"></span> Working…';
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { backendApiBase: base, backendEnabled: true } });
+    settings.backendApiBase = base; settings.backendEnabled = true;
+    const result = await sendMsg({ action, ...payload });
+    if (!result?.success) { btn.disabled = false; btn.innerHTML = orig; errEl.textContent = result?.error || 'Something went wrong. Please try again.'; return; }
+    await onAuthSuccess(result);
+  };
+
+  overlay.querySelector('#cw-act-btn').addEventListener('click', () => {
+    const email = overlay.querySelector('#cw-act-email').value.trim();
+    const code = overlay.querySelector('#cw-act-code').value.trim();
+    const password = overlay.querySelector('#cw-act-pass').value;
+    run(overlay.querySelector('#cw-act-btn'), overlay.querySelector('#cw-act-err'), 'GHL_ACTIVATE', { email, code, password }, () => {
+      if (!email || !code) return 'Enter your email and activation code.';
+      if (password && password.length < 8) return 'Password must be at least 8 characters (or leave it blank).';
+      return null;
+    });
+  });
+  overlay.querySelector('#cw-si-btn').addEventListener('click', () => {
+    const email = overlay.querySelector('#cw-si-email').value.trim();
+    const password = overlay.querySelector('#cw-si-pass').value;
+    run(overlay.querySelector('#cw-si-btn'), overlay.querySelector('#cw-si-err'), 'BACKEND_LOGIN', { email, password }, () => {
+      if (!email || !password) return 'Enter your email and password.';
+      return null;
+    });
+  });
+
+  selectTab(tab === 'signin' ? 'signin' : 'activate');
+}
+
 // Render untrusted/cloned HTML in an isolated, script-disabled sandbox iframe —
 // NEVER inject cloned page markup into the dashboard DOM via innerHTML. The
 // extension page CSP already blocks inline scripts; the sandbox (no allow-scripts)
@@ -4416,7 +4540,7 @@ function showActivationBannerIfNeeded() {
   goBtn.className = 'btn-primary';
   goBtn.style.cssText = 'padding:7px 14px;font-size:12px;';
   goBtn.textContent = 'Activate / Sign in';
-  goBtn.addEventListener('click', () => { location.hash = '#activate'; switchTab('settings'); focusActivation(); });
+  goBtn.addEventListener('click', () => { showWelcomeModal('activate'); });
 
   const dismiss = document.createElement('button');
   dismiss.className = 'btn-secondary';
