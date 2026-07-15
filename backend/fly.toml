@@ -24,8 +24,9 @@ primary_region = "iad"
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  # Set to 1 during Chrome Web Store review to avoid any cold-start during testing.
-  min_machines_running = 0
+  # Keep 1 machine warm — cold starts (~9s) exceed the extension's request
+  # timeout and surface as "Backend request timed out" for users.
+  min_machines_running = 1
 
 [[http_service.checks]]
   grace_period = "15s"

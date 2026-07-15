@@ -6,290 +6,410 @@
     <meta name="description" content="Clone2GHL User Guide - Complete setup and usage manual for the Chrome extension">
     <title>Clone2GHL User Guide v1.0.4</title>
     <style>
+        :root {
+            /* Black + bright gold palette — matches clone2ghl.com / dashboard */
+            --bg: #000000;
+            --bg2: #0A0A0A;
+            --surface: #0D0D0D;
+            --card: #141414;
+            --card2: #1A1405;
+            --border: rgba(255, 255, 255, 0.08);
+            --border2: rgba(255, 255, 255, 0.14);
+            --gold: #D9A620;
+            --gold-light: #F0BB2D;
+            --gold-deep: #4A3200;
+            --gold-faint: rgba(217, 166, 32, 0.12);
+            --green: #10B981;
+            --red: #EF4444;
+            --text: #FFFFFF;
+            --text2: #EDEDED;
+            --text3: #B8B8B8;
+            --text4: #8A8A8A;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f8f9fa;
+            color: #C7C7C7;
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
         }
-        
+
         .container {
             display: flex;
             min-height: 100vh;
         }
-        
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-deep); }
+
         /* Sidebar Navigation */
         .sidebar {
             width: 280px;
-            background: #1a1a2e;
-            color: white;
+            background: var(--bg2);
+            color: var(--text);
             padding: 30px 20px;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            border-right: 1px solid var(--border);
         }
-        
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 28px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--gold);
+            color: #000;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: -0.5px;
+            border-radius: 9px;
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 17px;
+            letter-spacing: 0.4px;
+            color: var(--text);
+        }
+
+        .logo-text .gold { color: var(--gold); }
+
         .sidebar h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #0066cc;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.6px;
+            color: var(--text4);
+            margin-bottom: 16px;
+            font-weight: 700;
         }
-        
+
         .sidebar ul {
             list-style: none;
         }
-        
+
         .sidebar li {
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
-        
+
         .sidebar a {
-            color: #aaa;
+            color: #9A9A9A;
             text-decoration: none;
             font-size: 14px;
             display: block;
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: all 0.2s;
+            padding: 9px 12px;
+            border-radius: 6px;
+            transition: all 0.18s ease;
+            border-left: 2px solid transparent;
         }
-        
+
         .sidebar a:hover {
-            background: rgba(0, 102, 204, 0.2);
-            color: #0066cc;
+            background: var(--gold-faint);
+            color: var(--gold-light);
+            border-left-color: var(--gold);
             padding-left: 16px;
         }
-        
+
         .sidebar a.active {
-            background: #0066cc;
-            color: white;
+            background: var(--gold);
+            color: #000;
+            font-weight: 600;
         }
-        
+
         /* Main Content */
         .main-content {
             margin-left: 280px;
-            padding: 40px;
-            max-width: 1000px;
-            background: white;
+            padding: 48px;
+            max-width: 1040px;
+            background: var(--bg2);
             flex: 1;
         }
-        
+
         /* Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border2);
         }
-        
+
         header h1 {
-            font-size: 32px;
-            color: #1a1a2e;
+            font-size: 34px;
+            color: var(--text);
+            font-weight: 800;
+            letter-spacing: -0.5px;
         }
-        
+
+        header h1 .gold { color: var(--gold); }
+
         .version-badge {
-            background: #0066cc;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: var(--gold);
+            color: #000;
+            padding: 8px 18px;
+            border-radius: 999px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
-        
+
         /* Headings */
         h2 {
-            font-size: 26px;
-            color: #1a1a2e;
-            margin-top: 40px;
+            font-size: 27px;
+            color: var(--text);
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-top: 46px;
             margin-bottom: 20px;
-            padding-top: 20px;
-            border-top: 3px solid #0066cc;
+            padding-top: 24px;
+            border-top: 2px solid var(--gold);
         }
-        
+
         h3 {
             font-size: 20px;
-            color: #333;
-            margin-top: 25px;
+            color: var(--text2);
+            font-weight: 700;
+            margin-top: 28px;
             margin-bottom: 15px;
         }
-        
+
         h4 {
             font-size: 16px;
-            color: #555;
-            margin-top: 15px;
+            color: var(--gold-light);
+            margin-top: 18px;
             margin-bottom: 10px;
             font-weight: 600;
         }
-        
+
         /* Paragraphs and Lists */
         p {
             margin-bottom: 15px;
             line-height: 1.8;
+            color: #C7C7C7;
         }
-        
+
         ul, ol {
-            margin-left: 20px;
+            margin-left: 22px;
             margin-bottom: 15px;
         }
-        
+
         li {
             margin-bottom: 8px;
             line-height: 1.7;
+            color: #C7C7C7;
         }
-        
+
+        strong { color: var(--text2); }
+
+        a {
+            color: var(--gold-light);
+            text-decoration: none;
+        }
+
+        a:hover { text-decoration: underline; }
+
         /* Code Blocks */
         pre {
-            background: #f5f5f5;
-            border-left: 4px solid #0066cc;
-            padding: 15px;
-            margin: 15px 0;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--gold);
+            padding: 16px;
+            margin: 16px 0;
             overflow-x: auto;
-            border-radius: 4px;
+            border-radius: 6px;
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 13px;
-            line-height: 1.5;
+            line-height: 1.6;
+            color: #E8E8E8;
         }
-        
+
         code {
-            background: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 3px;
+            background: var(--card2);
+            color: var(--gold-light);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 13px;
         }
-        
+
         pre code {
             background: none;
+            border: none;
+            color: inherit;
             padding: 0;
         }
-        
+
         /* Tables */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 22px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
         }
-        
+
         table th {
-            background: #0066cc;
-            color: white;
-            padding: 12px;
+            background: var(--gold);
+            color: #000;
+            padding: 13px;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
         }
-        
+
         table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 13px;
+            border-bottom: 1px solid var(--border);
+            color: #CFCFCF;
         }
-        
+
         table tr:nth-child(even) {
-            background: #f8f9fa;
+            background: rgba(255, 255, 255, 0.02);
         }
-        
+
         table tr:hover {
-            background: #f0f0f0;
+            background: var(--gold-faint);
         }
-        
+
         /* Info Boxes */
         .info-box, .success-box, .warning-box, .error-box {
-            padding: 15px 20px;
-            margin: 20px 0;
-            border-left: 4px solid #0066cc;
-            border-radius: 4px;
-            background: #e8f4fd;
+            padding: 16px 20px;
+            margin: 22px 0;
+            border-left: 4px solid var(--gold);
+            border-radius: 6px;
+            background: var(--gold-faint);
+            color: #DCDCDC;
         }
-        
+
+        .info-box strong, .success-box strong, .warning-box strong, .error-box strong {
+            color: var(--text);
+        }
+
         .success-box {
-            border-left-color: #28a745;
-            background: #d4edda;
+            border-left-color: var(--green);
+            background: rgba(16, 185, 129, 0.10);
         }
-        
+
         .warning-box {
-            border-left-color: #ffc107;
-            background: #fff3cd;
+            border-left-color: var(--gold-light);
+            background: rgba(240, 187, 45, 0.10);
         }
-        
+
         .error-box {
-            border-left-color: #dc3545;
-            background: #f8d7da;
+            border-left-color: var(--red);
+            background: rgba(239, 68, 68, 0.10);
         }
-        
+
         /* Quick Start Box */
         .quick-start {
-            background: linear-gradient(135deg, #0066cc 0%, #004a99 100%);
-            color: white;
+            background: linear-gradient(135deg, #1A1405 0%, #0A0A0A 100%);
+            border: 1px solid var(--gold-deep);
+            color: #E8E8E8;
             padding: 30px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 30px 0;
         }
-        
+
         .quick-start h3 {
-            color: white;
+            color: var(--gold-light);
             margin-top: 0;
         }
-        
+
         .quick-start ol {
             margin-left: 30px;
             margin-top: 15px;
         }
-        
+
         .quick-start li {
             margin-bottom: 12px;
             line-height: 1.8;
+            color: #DCDCDC;
         }
-        
+
         /* Workflow Cards */
         .workflow-card {
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            margin: 22px 0;
         }
-        
+
         .workflow-card h4 {
-            color: #0066cc;
+            color: var(--gold-light);
             margin-top: 0;
         }
-        
+
         /* Footer */
         footer {
             text-align: center;
-            padding: 20px;
-            color: #999;
+            padding: 28px 20px;
+            color: var(--text4);
             font-size: 12px;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 40px;
+            border-top: 1px solid var(--border);
+            margin-top: 48px;
         }
-        
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-            }
-            .sidebar {
-                display: none;
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            a {
-                text-decoration: underline;
-            }
+
+        footer p { color: var(--text4); }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--gold);
+            color: #000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0;
+            transition: opacity 0.3s, background 0.2s;
+            box-shadow: 0 4px 16px rgba(217, 166, 32, 0.35);
+            text-decoration: none;
         }
-        
+
+        .back-to-top:hover {
+            background: var(--gold-light);
+            text-decoration: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -300,50 +420,29 @@
                 width: 100%;
                 height: auto;
                 padding: 20px;
-                border-bottom: 1px solid #e0e0e0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
             }
             .main-content {
                 margin-left: 0;
-                padding: 20px;
+                padding: 24px;
             }
             header {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 14px;
             }
-            h2 {
-                font-size: 22px;
-            }
-            h3 {
-                font-size: 18px;
-            }
+            h2 { font-size: 23px; }
+            h3 { font-size: 18px; }
         }
-        
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #0066cc;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            text-decoration: none;
-        }
-        
-        .back-to-top:hover {
-            background: #004a99;
-        }
-        
-        .back-to-top.visible {
-            opacity: 1;
+
+        /* Print Styles */
+        @media print {
+            body { background: #fff; color: #222; }
+            .sidebar, .back-to-top { display: none; }
+            .main-content { margin-left: 0; padding: 20px; background: #fff; }
+            h1, h2, h3, h4, p, li, td, strong { color: #222 !important; }
+            a { color: #000; text-decoration: underline; }
         }
     </style>
 </head>
@@ -351,10 +450,14 @@
     <div class="container">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <h2>📖 Contents</h2>
+            <div class="sidebar-logo">
+                <span class="logo-mark">C2</span>
+                <span class="logo-text">CLONE<span class="gold">2</span>GHL</span>
+            </div>
+            <h2>Contents</h2>
             <ul>
                 <li><a href="#quick-start">Quick Start</a></li>
-                <li><a href="#installation">Installation Setup</a></li>
+                <li><a href="#installation">Installation &amp; Setup</a></li>
                 <li><a href="#admin">Admin Guide</a></li>
                 <li><a href="#enduser">End User Guide</a></li>
                 <li><a href="#dashboard">Dashboard Tabs</a></li>
@@ -366,24 +469,24 @@
                 <li><a href="#support">Support</a></li>
             </ul>
         </aside>
-        
+
         <!-- Main Content -->
         <main class="main-content">
             <header>
                 <div>
-                    <h1>Clone2GHL User Guide</h1>
-                    <p style="color: #999; font-size: 14px; margin-top: 8px;">Complete Setup & Usage Manual</p>
+                    <h1>Clone<span class="gold">2GHL</span> User Guide</h1>
+                    <p style="color: var(--text4); font-size: 14px; margin-top: 8px;">Complete Setup &amp; Usage Manual</p>
                 </div>
                 <span class="version-badge">v1.0.4</span>
             </header>
-            
+
             <!-- Quick Start -->
             <section id="quick-start">
                 <h2>🚀 Quick Start (3 Minutes)</h2>
-                
+
                 <h3>For End Users (Chrome Web Store Version)</h3>
                 <div class="quick-start">
-                    <h3 style="color: white; margin-top: 0;">First-Time Setup</h3>
+                    <h3 style="margin-top: 0;">First-Time Setup</h3>
                     <ol>
                         <li>Go to Chrome Web Store and search for <strong>Clone2GHL</strong></li>
                         <li>Click <strong>"Add to Chrome"</strong> → Confirm</li>
@@ -393,7 +496,7 @@
                         <li>Edit and export to GoHighLevel</li>
                     </ol>
                 </div>
-                
+
                 <h3>For Administrators (Self-Hosted Backend)</h3>
                 <ol>
                     <li>Clone repository</li>
@@ -403,11 +506,11 @@
                     <li>Configure backend URL in extension Settings</li>
                 </ol>
             </section>
-            
+
             <!-- Installation -->
             <section id="installation">
-                <h2>📥 Installation & Initial Setup</h2>
-                
+                <h2>📥 Installation &amp; Initial Setup</h2>
+
                 <h3>A. Install from Chrome Web Store (Recommended)</h3>
                 <ol>
                     <li>Open Google Chrome</li>
@@ -418,57 +521,57 @@
                     <li>Confirm in the popup</li>
                     <li>Extension icon appears in your toolbar (top-right)</li>
                 </ol>
-                
+
                 <div class="info-box">
                     <strong>💡 Tip:</strong> Pin the extension to keep it visible. Click the puzzle icon → find Clone2GHL → click the pin.
                 </div>
-                
+
                 <h3>B. Initial Configuration</h3>
                 <h4>Step 1: Open the Extension</h4>
                 <p>Click the Clone2GHL icon in your toolbar. A popup appears with niche selection.</p>
-                
+
                 <h4>Step 2: Select Your Industry</h4>
                 <p>Choose from 15+ options (Plumber, Coach, E-commerce, SaaS, etc.). This helps AI optimize copy for your niche.</p>
-                
+
                 <h4>Step 3: Open the Dashboard</h4>
                 <p>Click <strong>"Dashboard"</strong> to open the full app in a new tab.</p>
-                
+
                 <h4>Step 4: Configure API Keys (Optional)</h4>
                 <p>Go to <strong>Settings</strong> tab and paste optional API keys:</p>
                 <ul>
-                    <li>OpenAI (for AI copy optimization & logo generation)</li>
+                    <li>OpenAI (for AI copy optimization &amp; logo generation)</li>
                     <li>GoHighLevel (for direct funnel export)</li>
                     <li>HeyGen (for video generation)</li>
                 </ul>
-                
+
                 <div class="success-box">
                     <strong>✓ Remember:</strong> Your API keys are stored locally and encrypted (AES-GCM), and are sent only to the service they belong to (GoHighLevel / OpenAI) — not to Clone2GHL.
                 </div>
             </section>
-            
+
             <!-- Admin Guide -->
             <section id="admin">
                 <h2>👨‍💻 For Administrators</h2>
-                
+
                 <p>This section is for anyone self-hosting Clone2GHL with a backend server.</p>
-                
+
                 <h3>Backend Setup</h3>
-                
+
                 <h4>Prerequisites</h4>
                 <ul>
                     <li>Node.js v16 or higher</li>
                     <li>npm (installed with Node.js)</li>
                     <li>Git</li>
-                    <li>External API keys (OpenAI, GoHighLevel, HeyGen</li>
+                    <li>External API keys (OpenAI, GoHighLevel, HeyGen)</li>
                 </ul>
-                
+
                 <h4>Step 1: Clone Repository</h4>
                 <pre><code>git clone https://github.com/[your-repo]/Clone2GHL_CE.git
 cd Clone2GHL_CE/backend</code></pre>
-                
+
                 <h4>Step 2: Install Dependencies</h4>
                 <pre><code>npm install</code></pre>
-                
+
                 <h4>Step 3: Configure Environment Variables</h4>
                 <p>Create a <code>.env</code> file in <code>/backend</code> folder:</p>
                 <pre><code>PORT=8080
@@ -476,16 +579,16 @@ NODE_ENV=production
 JWT_SECRET=your_super_secret_key_here
 OPENAI_API_KEY=sk-xxxxx
 HEYGEN_API_KEY=xxxxx</code></pre>
-                
+
                 <h4>Step 4: Start the Backend</h4>
                 <pre><code>npm start</code></pre>
-                
+
                 <p>Expected output:</p>
                 <pre><code>Server running on http://localhost:8080
 Connected to database: [path/to/db.json]</code></pre>
-                
+
                 <h3>Extension Setup (Developer Mode)</h3>
-                
+
                 <ol>
                     <li>Open Chrome and go to <code>chrome://extensions</code></li>
                     <li>Toggle <strong>"Developer mode"</strong> ON (top-right)</li>
@@ -493,7 +596,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Select the <code>Clone2GHL_CE/extension</code> folder</li>
                     <li>Extension appears in your list ✓</li>
                 </ol>
-                
+
                 <h4>Configure Backend URL</h4>
                 <ol>
                     <li>Open Clone2GHL Dashboard</li>
@@ -505,15 +608,15 @@ Connected to database: [path/to/db.json]</code></pre>
                     <strong>💡 Note:</strong> The Chrome Web Store build of Clone2GHL is pre-configured to the official backend (<code>https://api.clone2ghl.com</code>), so end users do not need to set this.
                 </div>
             </section>
-            
+
             <!-- End User Guide -->
             <section id="enduser">
                 <h2>👤 For End Users</h2>
-                
+
                 <h3>Dashboard Overview</h3>
-                
+
                 <p>The Clone2GHL dashboard has <strong>8 main tabs:</strong></p>
-                
+
                 <table>
                     <thead>
                         <tr>
@@ -525,7 +628,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <tbody>
                         <tr>
                             <td>📁 <strong>My Funnels</strong></td>
-                            <td>View & manage all cloned funnels</td>
+                            <td>View &amp; manage all cloned funnels</td>
                             <td>Clone URL, edit, export, delete</td>
                         </tr>
                         <tr>
@@ -555,34 +658,34 @@ Connected to database: [path/to/db.json]</code></pre>
                         </tr>
                         <tr>
                             <td>👤 <strong>My Account</strong></td>
-                            <td>Manage subscription & usage</td>
+                            <td>Manage subscription &amp; usage</td>
                             <td>View plan, clone credits, upgrade</td>
                         </tr>
                         <tr>
                             <td>⚙️ <strong>Settings</strong></td>
-                            <td>Configure API keys & preferences</td>
+                            <td>Configure API keys &amp; preferences</td>
                             <td>Add API keys, set backend URL</td>
                         </tr>
                     </tbody>
                 </table>
-                
+
                 <h3>Popup Interface</h3>
                 <p>When you click the extension icon, a small popup appears with:</p>
                 <ul>
-                    <li><strong>Current Page Title & URL</strong> — Shows page you're on</li>
+                    <li><strong>Current Page Title &amp; URL</strong> — Shows page you're on</li>
                     <li><strong>Niche Selector</strong> — Choose your industry</li>
                     <li><strong>"Clone This Page" Button</strong> — Quick clone</li>
-                    <li><strong>Plan Badge</strong> — Shows FREE/PRO/AGENCY status</li>
+                    <li><strong>Plan Badge</strong> — Shows FREE/STARTER/PRO/AGENCY status</li>
                 </ul>
             </section>
-            
+
             <!-- Dashboard Tabs -->
             <section id="dashboard">
                 <h2>📊 Feature Guide: Dashboard Tabs</h2>
-                
+
                 <h3>1. 📁 My Funnels</h3>
                 <p><strong>Purpose:</strong> Store and manage all your cloned funnels.</p>
-                
+
                 <h4>Clone a New Funnel:</h4>
                 <ol>
                     <li>In the <strong>URL Input</strong> section, paste a website URL</li>
@@ -591,7 +694,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Funnel appears in the grid</li>
                     <li>Click on the card to edit</li>
                 </ol>
-                
+
                 <h4>Export to GoHighLevel:</h4>
                 <ol>
                     <li>Click on a funnel card</li>
@@ -600,10 +703,10 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Click <strong>"Push to GHL"</strong></li>
                     <li>Wait for confirmation (2-5 seconds)</li>
                 </ol>
-                
+
                 <h3>2. 🤖 AI Tools</h3>
                 <p><strong>Purpose:</strong> Optimize copy and generate graphics.</p>
-                
+
                 <h4>Copy Optimizer (GPT-4o):</h4>
                 <ol>
                     <li>Go to <strong>AI Tools → Copy Optimizer</strong></li>
@@ -613,7 +716,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Choose from 3 variations</li>
                     <li>Copy and use in your funnel</li>
                 </ol>
-                
+
                 <h4>Logo Generator (DALL-E 3):</h4>
                 <ol>
                     <li>Go to <strong>AI Tools → Logo Generator</strong></li>
@@ -622,11 +725,11 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Click <strong>"Generate Logo"</strong></li>
                     <li>Download PNG file</li>
                 </ol>
-                
+
                 <h3>3. 📚 Funnel Library</h3>
                 <p><strong>Purpose:</strong> Browse 15+ high-converting templates.</p>
                 <p>Filter by niche, conversion rate, or industry. Clone any template to <strong>My Funnels</strong> and customize it.</p>
-                
+
                 <h3>4. 🎬 Video Generation</h3>
                 <p><strong>Purpose:</strong> Create promo videos with AI avatars.</p>
                 <ol>
@@ -636,11 +739,11 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Download MP4 file</li>
                 </ol>
             </section>
-            
+
             <!-- Workflows -->
             <section id="workflows">
                 <h2>⚙️ Step-by-Step Workflows</h2>
-                
+
                 <h3>Workflow 1: Clone a Website in 5 Steps</h3>
                 <div class="workflow-card">
                     <h4>Goal: Clone a competitor's landing page and export to GoHighLevel</h4>
@@ -653,7 +756,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     </ol>
                     <p style="margin-top: 15px;"><strong>Total Time:</strong> 2-5 minutes</p>
                 </div>
-                
+
                 <h3>Workflow 2: Optimize Copy for Your Niche</h3>
                 <div class="workflow-card">
                     <h4>Goal: Improve headlines and CTAs using AI</h4>
@@ -666,7 +769,7 @@ Connected to database: [path/to/db.json]</code></pre>
                         <li>Copy to clipboard and apply to your funnel</li>
                     </ol>
                 </div>
-                
+
                 <h3>Workflow 3: Generate a Logo</h3>
                 <div class="workflow-card">
                     <h4>Goal: Create a professional logo and add to funnel</h4>
@@ -680,11 +783,11 @@ Connected to database: [path/to/db.json]</code></pre>
                     </ol>
                 </div>
             </section>
-            
+
             <!-- Best Practices -->
             <section id="bestpractices">
-                <h2>💡 Tips & Best Practices</h2>
-                
+                <h2>💡 Tips &amp; Best Practices</h2>
+
                 <h3>Cloning Best Practices</h3>
                 <ul>
                     <li><strong>Clone high-converting pages</strong> — Focus on pages you know perform well</li>
@@ -693,7 +796,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li><strong>Test fast</strong> — Clone, edit minimally, export and test for 7 days</li>
                     <li><strong>Preserve trust signals</strong> — Keep testimonials, social proof, certifications</li>
                 </ul>
-                
+
                 <h3>AI Copy Tips</h3>
                 <ul>
                     <li>✅ Be specific: "Optimize this e-commerce checkout CTA for impulse buyers"</li>
@@ -702,7 +805,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Match your brand voice — AI suggestions are templates</li>
                     <li>Use niche context for better results</li>
                 </ul>
-                
+
                 <h3>Logo Generation Tips</h3>
                 <ul>
                     <li><strong>Be descriptive:</strong> "Blue and gold SaaS logo, tech-forward, modern flat design"</li>
@@ -710,7 +813,7 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li><strong>Mention industry:</strong> "Coaching logo" vs "Plumbing logo"</li>
                     <li><strong>Generate multiple styles</strong> and choose the best match</li>
                 </ul>
-                
+
                 <h3>Export Best Practices</h3>
                 <ul>
                     <li><strong>Test before export:</strong> Preview in dashboard first</li>
@@ -720,49 +823,49 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li><strong>Verify after export</strong> — Check GHL immediately</li>
                 </ul>
             </section>
-            
+
             <!-- FAQ -->
             <section id="faq">
-                <h2>❓ FAQ & Common Questions</h2>
-                
-                <h3>Cloning & Functionality</h3>
-                
+                <h2>❓ FAQ &amp; Common Questions</h2>
+
+                <h3>Cloning &amp; Functionality</h3>
+
                 <h4>Q: Can I clone any website?</h4>
                 <p>A: Technically yes, but respect copyright law. Only clone pages you have permission to use inspiration from.</p>
-                
+
                 <h4>Q: How long does cloning take?</h4>
                 <p>A: Usually 5-30 seconds. Large pages with many images may take up to 1 minute.</p>
-                
+
                 <h4>Q: How many pages can I clone per month?</h4>
-                <p>A: <strong>FREE:</strong> 10/month | <strong>PRO:</strong> 100/month | <strong>AGENCY:</strong> Unlimited</p>
-                
+                <p>A: <strong>FREE:</strong> 6/month | <strong>STARTER:</strong> 24/month | <strong>PRO:</strong> 300/month | <strong>AGENCY:</strong> Unlimited</p>
+
                 <h4>Q: What happens to my cloned data?</h4>
                 <p>A: All data is stored locally on your device, encrypted. Never sent to our servers. Delete anytime in Settings.</p>
-                
-                <h3>API Keys & Integrations</h3>
-                
+
+                <h3>API Keys &amp; Integrations</h3>
+
                 <h4>Q: Why do I need an OpenAI API key?</h4>
                 <p>A: To use AI copy optimization and logo generation (GPT-4o and DALL-E 3). You'll be charged by OpenAI per API call.</p>
-                
+
                 <h4>Q: Can I use Clone2GHL without API keys?</h4>
                 <p>A: Yes! Basic cloning works without keys. AI tools (copy optimization, logos, videos) require their respective keys.</p>
-                
+
                 <h4>Q: What if my API key expires?</h4>
                 <p>A: You'll get an error. Go to Settings, update the key, and try again.</p>
-                
+
                 <h3>GoHighLevel Integration</h3>
-                
+
                 <h4>Q: How do I connect my GoHighLevel account?</h4>
                 <p>A: GHL Settings → Integrations → Private Integrations → Create app → Copy API key → Paste in Clone2GHL Settings.</p>
-                
+
                 <h4>Q: Can I push to a specific GHL location?</h4>
                 <p>A: Yes. When exporting, choose the destination location from the dropdown.</p>
-                
+
                 <h4>Q: What if the push to GHL fails?</h4>
                 <p>A: Check error message. Common issues: invalid API key, rate limit, or GHL API down. Retry in a few minutes.</p>
-                
-                <h3>Billing & Plans</h3>
-                
+
+                <h3>Billing &amp; Plans</h3>
+
                 <h4>Q: What's included in each plan?</h4>
                 <table>
                     <thead>
@@ -805,7 +908,7 @@ Connected to database: [path/to/db.json]</code></pre>
                         </tr>
                     </tbody>
                 </table>
-                <p style="font-size: 12px; color: #666; margin-top: 10px;">A one-time 30-day free trial may be offered (validating a GoHighLevel connection). Paid plans are billed monthly via GoHighLevel or Stripe and renew automatically until cancelled. Prices subject to change.</p>
+                <p style="font-size: 12px; color: var(--text4); margin-top: 10px;">A one-time 30-day free trial may be offered (validating a GoHighLevel connection). Paid plans are billed monthly via GoHighLevel or Stripe and renew automatically until cancelled. Prices subject to change.</p>
 
                 <h3>Your Account &amp; Data Privacy</h3>
 
@@ -818,31 +921,31 @@ Connected to database: [path/to/db.json]</code></pre>
                 <h4>Q: How do I delete my data?</h4>
                 <p>A: Local data — Settings → Clear Data, or uninstall the extension. Account data — use the delete option in the dashboard, or email <a href="mailto:clone2ghl@gmail.com">clone2ghl@gmail.com</a> from your account email; we remove it within 30 days. See our <a href="https://clone2ghl.com/privacy-policy">Privacy Policy</a>.</p>
             </section>
-            
+
             <!-- Troubleshooting -->
             <section id="troubleshooting">
                 <h2>🔧 Troubleshooting</h2>
-                
+
                 <h3>Installation Issues</h3>
-                
+
                 <h4>Extension won't install</h4>
                 <ul>
                     <li>Make sure you're using Chrome (not Edge/Firefox)</li>
-                    <li>Download latest Clone2GHL_v1.0.3.zip</li>
+                    <li>Download the latest Clone2GHL_v1.0.4.zip</li>
                     <li>Go to <code>chrome://extensions</code></li>
                     <li>Toggle "Developer mode" ON</li>
                     <li>Click "Load unpacked" and select the extension folder</li>
                 </ul>
-                
+
                 <h4>Extension installed but icon doesn't appear</h4>
                 <ul>
                     <li>Go to <code>chrome://extensions</code></li>
                     <li>Find Clone2GHL and toggle it ON</li>
                     <li>Look for hidden extension: Click puzzle icon → Pin Clone2GHL</li>
                 </ul>
-                
+
                 <h3>Cloning Issues</h3>
-                
+
                 <h4>Clone failed or page won't clone</h4>
                 <ul>
                     <li>Try a simpler page first (test)</li>
@@ -851,16 +954,16 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Try in incognito mode</li>
                     <li>Report the URL in support if persistent</li>
                 </ul>
-                
+
                 <h4>Images aren't showing in clone</h4>
                 <ul>
                     <li>Reupload images manually in dashboard</li>
                     <li>Ensure images are PNG, not JPEG/WebP</li>
                     <li>Check image size (resize if needed)</li>
                 </ul>
-                
+
                 <h3>API Key Issues</h3>
-                
+
                 <h4>Invalid API key error</h4>
                 <ul>
                     <li>Go to Settings and re-enter your API key</li>
@@ -868,31 +971,31 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Verify key hasn't expired</li>
                     <li>For GHL, use Private Integration key (not Public)</li>
                 </ul>
-                
+
                 <h4>API rate limit exceeded</h4>
                 <ul>
                     <li>Wait 1 hour (rate limit window resets)</li>
                     <li>Upgrade your API quota in OpenAI dashboard</li>
                     <li>Reduce AI tool usage</li>
                 </ul>
-                
+
                 <h3>Export to GHL Issues</h3>
-                
+
                 <h4>Failed to push to GHL</h4>
                 <ul>
                     <li>Verify GHL API key is correct</li>
                     <li>Check internet connection</li>
                     <li>Try again in 1-5 minutes (might be temporary)</li>
                 </ul>
-                
+
                 <h4>Funnel appears in wrong location</h4>
                 <ul>
                     <li>In GHL, delete the funnel</li>
                     <li>In Clone2GHL, export again and choose correct location</li>
                 </ul>
-                
+
                 <h3>Performance Issues</h3>
-                
+
                 <h4>Dashboard is slow or laggy</h4>
                 <ul>
                     <li>Delete old clones: My Funnels → ... → Delete</li>
@@ -900,93 +1003,93 @@ Connected to database: [path/to/db.json]</code></pre>
                     <li>Update Chrome to latest version</li>
                     <li>Restart browser</li>
                 </ul>
-                
-                <h4>Cloning is very slow (>1 minute)</h4>
+
+                <h4>Cloning is very slow (&gt;1 minute)</h4>
                 <ul>
                     <li>Close other browser tabs</li>
                     <li>Check internet speed</li>
                     <li>Try cloning a simpler page</li>
                 </ul>
             </section>
-            
+
             <!-- Glossary -->
             <section id="glossary">
                 <h2>📚 Glossary</h2>
-                
+
                 <h4>API Key</h4>
                 <p>An authentication token used to access external services (OpenAI, GoHighLevel). Treat like a password.</p>
-                
+
                 <h4>Funnel</h4>
                 <p>A series of web pages designed to guide a visitor toward a specific action (signup, purchase, download).</p>
-                
+
                 <h4>Clone</h4>
                 <p>A copy of a webpage's structure, design, and content, stored locally.</p>
-                
+
                 <h4>CTA (Call-to-Action)</h4>
                 <p>A button or text that prompts users to take action (e.g., "Sign Up Now," "Buy Today").</p>
-                
+
                 <h4>DOM (Document Object Model)</h4>
                 <p>The structure of a webpage's HTML. Clone2GHL extracts and preserves the DOM.</p>
-                
+
                 <h4>CSS</h4>
                 <p>Cascading Style Sheets — code that controls styling and layout of a webpage.</p>
-                
+
                 <h4>GPT-4o</h4>
                 <p>OpenAI's advanced language model used for copy optimization.</p>
-                
+
                 <h4>DALL-E 3</h4>
                 <p>OpenAI's image generation model used for logo creation.</p>
-                
+
                 <h4>GoHighLevel (GHL)</h4>
                 <p>A CRM and marketing automation platform. Clone2GHL exports funnels directly to GHL.</p>
-                
+
                 <h4>Niche</h4>
                 <p>A specific market segment or industry (e.g., plumbing, coaching, e-commerce). Used for contextual AI optimization.</p>
-                
+
                 <h4>Conversion Rate</h4>
                 <p>The percentage of funnel visitors who complete the desired action. Higher = better.</p>
             </section>
-            
+
             <!-- Support -->
             <section id="support">
-                <h2>📞 Support & Contact</h2>
-                
+                <h2>📞 Support &amp; Contact</h2>
+
                 <h3>Getting Help</h3>
                 <ul>
                     <li><strong>Email Support:</strong> <a href="mailto:clone2ghl@gmail.com">clone2ghl@gmail.com</a></li>
                     <li><strong>Website:</strong> <a href="https://clone2ghl.com" target="_blank" rel="noopener">clone2ghl.com</a></li>
                     <li><strong>Bug Reporting:</strong> Email us with steps to reproduce</li>
                 </ul>
-                
+
                 <h3>Share Feedback</h3>
                 <ul>
-                    <li>Dashboard → Help & Support → Send Feedback</li>
+                    <li>Dashboard → Help &amp; Support → Send Feedback</li>
                     <li>Or email: <a href="mailto:clone2ghl@gmail.com">clone2ghl@gmail.com</a></li>
                 </ul>
-                
+
                 <h3>Social Media</h3>
                 <ul>
                     <li>Twitter: @Clone2GHL</li>
                     <li>LinkedIn: Clone2GHL Company Page</li>
                     <li>YouTube: Clone2GHL Tutorials</li>
                 </ul>
-                
+
                 <h3>Legal</h3>
                 <ul>
-                    <li><a href="https://clone2ghl.com/privacy-policy" style="color: #0066cc;">Privacy Policy</a></li>
-                    <li><a href="https://clone2ghl.com/terms-and-conditions" style="color: #0066cc;">Terms &amp; Conditions</a></li>
+                    <li><a href="https://clone2ghl.com/privacy-policy">Privacy Policy</a></li>
+                    <li><a href="https://clone2ghl.com/terms-and-conditions">Terms &amp; Conditions</a></li>
                 </ul>
             </section>
-            
+
             <footer>
-                <p>Clone2GHL User Guide v1.0.4 | Last Updated: June 4, 2026 | Status: Production Ready</p>
+                <p>Clone2GHL User Guide v1.0.4 | Last Updated: June 8, 2026 | Status: Production Ready</p>
                 <p>Thank you for using Clone2GHL! 🚀</p>
             </footer>
         </main>
     </div>
-    
+
     <a href="#" class="back-to-top" onclick="window.scrollTo(0,0); return false;">↑</a>
-    
+
     <script>
         // Show/hide back-to-top button
         window.addEventListener('scroll', function() {
@@ -997,8 +1100,8 @@ Connected to database: [path/to/db.json]</code></pre>
                 btn.classList.remove('visible');
             }
         });
-        
-        // Smooth scroll for anchor links
+
+        // Smooth scroll + active-link highlighting for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
@@ -1008,6 +1111,8 @@ Connected to database: [path/to/db.json]</code></pre>
                     if (target) {
                         target.scrollIntoView({behavior: 'smooth'});
                     }
+                    document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
                 }
             });
         });

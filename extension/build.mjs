@@ -34,17 +34,30 @@ const API_BASE = (process.env.C2G_API_BASE || '').trim();
 // The exact literal in background.js we rewrite at stage time.
 const DEV_BASE_LITERAL = "const DEFAULT_BACKEND_API_BASE = 'http://localhost:8080';";
 
-// Files/dirs never shipped.
+// Files/dirs never shipped (top-level names).
 const EXCLUDE = new Set([
-  'dist', 'build.mjs', 'manifest.firefox.json', 'node_modules', 'test',
+  'dist', 'build.mjs', 'manifest.firefox.json', 'node_modules', 'test', 'docs',
   'INSTALL.md', '.DS_Store', '.gitignore',
 ]);
 const EXCLUDE_EXT = new Set(['.md', '.zip']);
+
+// Nested dev-only / unused assets to delete from the staged build before zipping.
+// (EXCLUDE only filters top-level entries; these live inside copied directories.)
+const STAGE_PRUNE = [
+  'icons/make_icons.html', // dev-only icon generator, not referenced by the extension
+  'icons/logo-square.png', // unused asset (the store listing icon is uploaded separately)
+];
 
 function included(name) {
   if (EXCLUDE.has(name)) return false;
   if (EXCLUDE_EXT.has(path.extname(name))) return false;
   return true;
+}
+
+async function prune(targetDir) {
+  for (const rel of STAGE_PRUNE) {
+    await rm(path.join(targetDir, ...rel.split('/')), { force: true });
+  }
 }
 
 // Refuse to package a store build pointed at a dev/non-https backend.
@@ -117,20 +130,57 @@ async function stage(targetDir, { firefox }) {
   await rewriteApiBase(targetDir);
 }
 
-function zipDir(srcDir, zipPath) {
-  const isWin = process.platform === 'win32';
-  // PowerShell single-quoted strings escape an apostrophe by doubling it — needed
-  // because user paths can contain one (e.g. "C:\Users\Tiran's PC\...").
-  const ps = (s) => s.replace(/'/g, "''");
-  const res = isWin
-    ? spawnSync('powershell', ['-NoProfile', '-Command',
-        `Compress-Archive -Path '${ps(srcDir)}\\*' -DestinationPath '${ps(zipPath)}' -Force`], { stdio: 'inherit' })
-    : spawnSync('zip', ['-r', '-q', zipPath, '.'], { cwd: srcDir, stdio: 'inherit' });
-  if (res.status !== 0) {
-    console.warn(`  ⚠ Could not auto-zip (${isWin ? 'Compress-Archive' : 'zip'} unavailable). Folder staged at ${srcDir}.`);
-    return false;
+function trySpawn(cmd, args, opts = {}) {
+  try {
+    const res = spawnSync(cmd, args, { stdio: 'inherit', ...opts });
+    return res.status === 0;
+  } catch { return false; }
+}
+
+function findPython() {
+  for (const cmd of ['python3', 'python']) {
+    try {
+      if (spawnSync(cmd, ['--version'], { stdio: 'ignore' }).status === 0) return cmd;
+    } catch { /* try next */ }
   }
-  return true;
+  return null;
+}
+
+// Python writes the arcnames exactly as given, so we force forward slashes.
+const PY_ZIP = [
+  'import sys, os, zipfile',
+  'src, dst = sys.argv[1], sys.argv[2]',
+  'if os.path.exists(dst): os.remove(dst)',
+  "with zipfile.ZipFile(dst, 'w', zipfile.ZIP_DEFLATED) as z:",
+  '    for root, dirs, files in os.walk(src):',
+  '        dirs.sort(); files.sort()',
+  '        for name in files:',
+  '            full = os.path.join(root, name)',
+  "            rel = os.path.relpath(full, src).replace(os.sep, '/')",
+  '            z.write(full, rel)',
+].join('\n');
+
+// Build a zip whose entries use POSIX forward-slash separators. This is REQUIRED:
+// the ZIP spec (APPNOTE 4.4.17.1) mandates '/', and Chrome rejects backslash paths
+// (e.g. "Could not load locale 'en'" when _locales\en\messages.json is stored).
+// Windows PowerShell Compress-Archive writes BACKSLASH separators, so it is only a
+// last resort here, with a loud warning.
+function zipDir(srcDir, zipPath) {
+  // 1) `zip` CLI (macOS/Linux/Git-Bash) — emits forward slashes. -X drops extra attrs.
+  if (trySpawn('zip', ['-r', '-q', '-X', zipPath, '.'], { cwd: srcDir })) return true;
+  // 2) Python (cross-platform) — we control the arcname separators explicitly.
+  const py = findPython();
+  if (py && trySpawn(py, ['-c', PY_ZIP, srcDir, zipPath])) return true;
+  // 3) Last resort on Windows: Compress-Archive (NON-COMPLIANT backslash paths).
+  if (process.platform === 'win32') {
+    console.warn('  ⚠ Falling back to PowerShell Compress-Archive, which writes BACKSLASH paths\n'
+      + '    that Chrome may reject. Install the `zip` CLI or Python for a compliant package.');
+    const ps = (s) => s.replace(/'/g, "''"); // PS single-quote escaping (paths may contain ')
+    if (trySpawn('powershell', ['-NoProfile', '-Command',
+      `Compress-Archive -Path '${ps(srcDir)}\\*' -DestinationPath '${ps(zipPath)}' -Force`])) return true;
+  }
+  console.warn(`  ⚠ Could not auto-zip (no zip/python/Compress-Archive). Folder staged at ${srcDir}.`);
+  return false;
 }
 
 async function main() {
@@ -147,8 +197,8 @@ async function main() {
   console.log(`API base: ${API_BASE || '(dev: localhost)'}`);
   if (newVersion !== baseManifest.version) console.log(`Version: ${baseManifest.version} → ${newVersion} (staged only)`);
 
-  console.log('Staging Chrome build…');   await stage(chromeDir, { firefox: false });  await applyVersion(chromeDir, newVersion);
-  console.log('Staging Firefox build…');  await stage(firefoxDir, { firefox: true });  await applyVersion(firefoxDir, newVersion);
+  console.log('Staging Chrome build…');   await stage(chromeDir, { firefox: false });  await applyVersion(chromeDir, newVersion);  await prune(chromeDir);
+  console.log('Staging Firefox build…');  await stage(firefoxDir, { firefox: true });  await applyVersion(firefoxDir, newVersion);  await prune(firefoxDir);
 
   console.log('Zipping…');
   zipDir(chromeDir, path.join(dist, 'clone2ghl-chrome.zip'));

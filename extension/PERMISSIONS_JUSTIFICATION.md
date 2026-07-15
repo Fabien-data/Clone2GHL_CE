@@ -84,9 +84,9 @@ This document explains why Clone2GHL requires each permission listed in the mani
 
 These are specific to known external services:
 
-### **https://services.leadconnectorhq.com/*** and **https://rest.gohighlevel.com/***
+### **https://services.leadconnectorhq.com/***
 - **Purpose:** Export cloned funnels to GoHighLevel account via official API
-- **Justification:** These are the official GHL API endpoints; permission is required for the export feature to function
+- **Justification:** This is the official GHL API endpoint; permission is required for the export feature to function
 
 ### **https://api.openai.com/***
 - **Purpose:** Send copy/content to OpenAI for optimization, logo generation, and direct key validation requests

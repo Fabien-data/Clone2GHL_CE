@@ -23,6 +23,7 @@ const initialData = {
   refreshTokens: [],
   funnelVersions: [],
   trialLocations: [],
+  importJobs: [],
 };
 
 function withDefaults(data) {
@@ -41,6 +42,7 @@ function withDefaults(data) {
     refreshTokens: Array.isArray(data?.refreshTokens) ? data.refreshTokens : [],
     funnelVersions: Array.isArray(data?.funnelVersions) ? data.funnelVersions : [],
     trialLocations: Array.isArray(data?.trialLocations) ? data.trialLocations : [],
+    importJobs: Array.isArray(data?.importJobs) ? data.importJobs : [],
   };
 }
 

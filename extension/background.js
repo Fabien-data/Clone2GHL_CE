@@ -7,7 +7,7 @@
 // loads dependencies via importScripts. Firefox loads them via the manifest's
 // background.scripts array (no importScripts in an event page), so guard the call.
 if (typeof importScripts === 'function') {
-  importScripts('compat.js', 'ghlApi.js', 'ghlConverter.js', 'aiOptimizer.js', 'funnelAnalyzer.js', 'watchlistChecker.js');
+  importScripts('compat.js', 'ghlApi.js', 'ghlConverter.js', 'aiOptimizer.js', 'funnelAnalyzer.js', 'watchlistChecker.js', 'siteScanner.js');
 }
 // compat.js (loaded above on Chromium, or via manifest background.scripts on
 // Firefox) normalizes chrome/browser. Fallback alias in case it was not loaded:
@@ -128,6 +128,7 @@ async function getSettings() {
     backendRefreshToken: '',
     backendUser: null,
     devMode: false,
+    ghlDomains: [], // extra white-label GHL builder domains (besides app.gohighlevel.com)
   };
   const merged = { ...defaults, ...(data.settings || {}) };
   const decrypted = await decryptSensitiveSettings(merged);
@@ -166,14 +167,30 @@ async function saveFunnel(funnel) {
   } else {
     funnels.unshift({ ...funnel, createdAt: new Date().toISOString() });
   }
-  await persistFunnelsSafely(funnels);
-  return funnel;
+  const evicted = await persistFunnelsSafely(funnels, funnel.id);
+  return { funnel, evicted };
 }
 
-async function persistFunnelsSafely(inputFunnels) {
+// Persists under the storage soft limit, evicting the OLDEST funnels first.
+// Never evicts `protectId` (the funnel being saved). Returns the names of any
+// evicted funnels so the UI can tell the user instead of dropping silently.
+async function persistFunnelsSafely(inputFunnels, protectId = null) {
   let funnels = inputFunnels.slice(0, MAX_STORED_FUNNELS);
+  const evicted = [];
   const totalBefore = await chrome.storage.local.getBytesInUse(null);
   const funnelsBefore = await chrome.storage.local.getBytesInUse('funnels');
+
+  const dropOldest = () => {
+    // Drop from the end (oldest), but never the funnel we're saving.
+    for (let i = funnels.length - 1; i >= 0; i--) {
+      if (!protectId || funnels[i].id !== protectId) {
+        evicted.push(funnels[i].name || funnels[i].id);
+        funnels.splice(i, 1);
+        return true;
+      }
+    }
+    return false;
+  };
 
   while (funnels.length > 0) {
     const payloadBytes = new TextEncoder().encode(JSON.stringify({ funnels })).length;
@@ -182,21 +199,22 @@ async function persistFunnelsSafely(inputFunnels) {
     if (estimatedTotalAfter <= STORAGE_SOFT_LIMIT_BYTES) {
       try {
         await chrome.storage.local.set({ funnels });
-        return;
+        return evicted;
       } catch (err) {
         if (String(err?.message || '').toLowerCase().includes('quota')) {
-          funnels.pop();
+          if (!dropOldest()) break;
           continue;
         }
         throw err;
       }
     }
 
-    // Drop oldest funnels first until we are safely under quota.
-    funnels.pop();
+    if (!dropOldest()) break;
   }
 
-  throw new Error('Storage limit reached. Please delete older funnels and try again.');
+  throw new Error(protectId
+    ? 'This page is too large to store — remove large uploaded images and try again.'
+    : 'Storage limit reached. Please delete older funnels and try again.');
 }
 
 async function deleteFunnel(id) {
@@ -361,6 +379,220 @@ function generateId() {
   return `f_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// Wait for a tab to reach status 'complete' (or time out). Shared by the silent
+// single-clone flow and the multi-page Copy-Selected capture.
+function waitForTabComplete(tabId, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      reject(new Error('Page load timed out. The site may be slow or blocked.'));
+    }, timeoutMs);
+    function listener(updatedTabId, info) {
+      if (updatedTabId === tabId && info.status === 'complete') {
+        clearTimeout(timer);
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve(tabId);
+      }
+    }
+    chrome.tabs.onUpdated.addListener(listener);
+  });
+}
+
+// Open a URL in a background (invisible) tab, capture it with extractPageInContext,
+// then close the tab. Returns the captured-page data (or throws).
+async function extractUrlInBackgroundTab(url) {
+  const tab = await chrome.tabs.create({ url, active: false });
+  try {
+    const loadedTabId = await waitForTabComplete(tab.id, 30000);
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: loadedTabId },
+      func: extractPageInContext,
+      world: 'MAIN',
+    });
+    const data = results[0]?.result;
+    if (!data || data.error) throw new Error(data?.error || 'Extraction returned no data.');
+    return data;
+  } finally {
+    chrome.tabs.remove(tab.id).catch(() => {});
+  }
+}
+
+// ── White-label GHL builder support ──────────────────────────────────────────
+// GHL agencies run the builder on custom domains (e.g. app.youragency.com), not
+// just app.gohighlevel.com. We track those domains and register the builder
+// content scripts for them dynamically so paste works everywhere.
+function getGhlDomains(settings) {
+  const set = new Set(['app.gohighlevel.com']);
+  for (const d of (settings?.ghlDomains || [])) {
+    const h = String(d || '').trim().toLowerCase();
+    if (h) set.add(h);
+  }
+  return [...set];
+}
+
+async function ghlBuilderUrls() {
+  return getGhlDomains(await getSettings()).map((d) => `https://${d}/*`);
+}
+
+// Find an already-open GHL tab our content script can drive. Prefers a tab that has
+// already sniffed the session (credsLearned), else returns any ready tab, else null.
+async function findReadyGhlTab() {
+  const tabs = await chrome.tabs.query({ url: await ghlBuilderUrls() });
+  let best = null;
+  for (const t of tabs) {
+    const ping = await chrome.tabs.sendMessage(t.id, { action: 'C2GHL_BUILDER_PING' }).catch(() => null);
+    if (ping?.ready) {
+      const cand = { tabId: t.id, funnelId: ping.funnelId || '', locationId: ping.locationId || '', credsLearned: !!ping.credsLearned };
+      if (cand.credsLearned) return cand;   // best possible — session already learned
+      best = best || cand;
+    }
+  }
+  return best;
+}
+
+// Ensure there's a GHL tab we can drive. If none is ready and a locationId is given,
+// open the funnels-list page — it fires authenticated XHRs, so the injector sniffs
+// the session there WITHOUT needing an open builder — and wait for it to become ready.
+async function ensureGhlCredsTab({ openLocationId, onProgress } = {}) {
+  const existing = await findReadyGhlTab();
+  if (existing) return existing;
+  if (!openLocationId) return null;
+  if (onProgress) onProgress('Opening your GoHighLevel account…');
+  const url = `https://app.gohighlevel.com/v2/location/${openLocationId}/funnels-websites/funnels`;
+  const tab = await chrome.tabs.create({ url, active: true });
+  const deadline = Date.now() + 16000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 900));
+    const ping = await chrome.tabs.sendMessage(tab.id, { action: 'C2GHL_BUILDER_PING' }).catch(() => null);
+    if (ping?.ready && ping.credsLearned) {
+      return { tabId: tab.id, funnelId: ping.funnelId || '', locationId: ping.locationId || openLocationId, credsLearned: true };
+    }
+  }
+  // Ready-but-not-yet-creds is fine: the content script polls the session further.
+  return { tabId: tab.id, funnelId: '', locationId: openLocationId, credsLearned: false };
+}
+
+// Shared paste orchestration used by both the multi-page banner (PASTE_SET) and the
+// per-funnel button (PUSH_FUNNEL_NATIVE). Acquires a creds-ready GHL tab (auto-opening
+// the funnels list when creating a funnel — no open builder needed), then hands the
+// clone-set + target contract to the content script which creates the funnel/pages and
+// writes native content.
+async function orchestratePaste(stored, data) {
+  const settings = await getSettings();
+  data = data || {};
+  const createFunnel = !!data.createFunnel;
+  const existingFunnelId = data.funnelId || '';
+  const mode = createFunnel ? 'newFunnel' : (existingFunnelId ? 'existingFunnel' : 'openPage');
+  const locationId = data.locationId || settings.ghlLocationId || '';
+  const emit = (m) => { try { chrome.runtime.sendMessage({ action: 'PASTE_PROGRESS', step: 0, total: (stored.pages || []).length, message: m }).catch(() => {}); } catch (_) { /* ignore */ } };
+
+  let tab = await findReadyGhlTab();
+  if (!tab && (mode === 'newFunnel' || mode === 'existingFunnel')) {
+    if (!locationId) throw new Error('Set your GHL Location ID in Settings first, then try again.');
+    tab = await ensureGhlCredsTab({ openLocationId: locationId, onProgress: emit });
+  }
+  if (!tab) throw new Error('Open the GoHighLevel builder in a tab, then try again.');
+  chrome.tabs.update(tab.tabId, { active: true }).catch(() => {});
+
+  const target = {
+    mode,
+    funnelName: data.funnelName || stored.name || 'Cloned Funnel',
+    funnelId: existingFunnelId || tab.funnelId || '',
+    locationId: locationId || tab.locationId || '',
+  };
+  const resp = await chrome.tabs.sendMessage(tab.tabId, { action: 'C2GHL_PASTE_SET', cloneSet: stored, target });
+  if (!resp?.success) throw new Error(resp?.error || 'Paste failed in the builder tab.');
+  return { summary: resp.summary };
+}
+
+// Register the MAIN-world injector + bridge for any EXTRA (white-label) domains.
+// app.gohighlevel.com is already covered by the static manifest entry.
+async function registerBuilderScripts(domains) {
+  if (!chrome.scripting || !chrome.scripting.registerContentScripts) return;
+  const extra = (domains || []).filter((d) => d && d !== 'app.gohighlevel.com');
+  const ids = ['c2ghl-builder-main', 'c2ghl-builder-bridge'];
+  try {
+    const existing = await chrome.scripting.getRegisteredContentScripts({ ids });
+    if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: existing.map((s) => s.id) });
+  } catch { /* none yet */ }
+  if (!extra.length) return;
+  const matches = extra.map((d) => `https://${d}/*`);
+  try {
+    await chrome.scripting.registerContentScripts([
+      { id: 'c2ghl-builder-main', matches, js: ['ghlInternal.js', 'builderInjector.js'], runAt: 'document_start', world: 'MAIN', allFrames: true },
+      { id: 'c2ghl-builder-bridge', matches, js: ['compat.js', 'ghlBuilderContent.js'], runAt: 'document_start', allFrames: true },
+    ]);
+    console.log('[c2ghl] builder scripts registered for', matches.join(', '));
+  } catch (e) { console.warn('[c2ghl] registerContentScripts failed:', e.message); }
+}
+
+// Client-side conversion fallback (offline / pipeline disabled): emits the v1
+// section-level custom_code model (a subset of the neutral element model).
+function clientConvertPage(url, data) {
+  const model = GHLConverter.convertToPageJson(data, { replaceForms: true, replacePhone: true, businessName: null });
+  return {
+    name: model.name || data.meta?.title || url,
+    pathSlug: model.pathSlug,
+    sourceUrl: data.meta?.url || url,
+    source: 'client',
+    pageJson: { name: model.name, pathSlug: model.pathSlug, seo: model.seo, sections: model.sections, fallbackHtml: model.fallbackHtml },
+  };
+}
+
+// Send captured pages to the backend import pipeline (normalize → element model,
+// GHL-aware, assets rehosted, internal links resolved) and poll until ready.
+// Returns clone-set page records; any page the server couldn't normalize falls
+// back to the client converter so the set is always complete.
+async function backendNormalizePages(settings, captured, name, prog, total) {
+  const payload = captured.map(({ data }) => ({
+    html: data.html, styles: data.styles, imageSrcs: data.imageSrcs, meta: data.meta, structure: data.structure,
+  }));
+  const start = await backendRequest(settings, '/api/import/jobs', {
+    method: 'POST', useAuth: true, body: { pages: payload, name: name || undefined, rehost: true },
+  });
+  if (!start?.jobId) throw new Error('Import did not start.');
+  const job = await pollImportJob(settings, start.jobId, (msg) => prog(total, msg));
+  const results = job.results || [];
+  return captured.map(({ url, data }, i) => {
+    const r = results[i];
+    if (r && r.model && !r.error) {
+      return { name: r.name || data.meta?.title || url, pathSlug: r.pathSlug, sourceUrl: r.sourceUrl || data.meta?.url || url, source: r.source || 'server', pageJson: r.model };
+    }
+    return clientConvertPage(url, data); // per-page fallback
+  });
+}
+
+// Re-derive a native element model (pageJson) from (possibly edited) HTML.
+// Prefers the server pipeline (element-wise, GHL-aware); always falls back to
+// the client converter so it never fails. Shared by NORMALIZE_HTML,
+// PUSH_FUNNEL_NATIVE and the PASTE_SET stale-page refresh.
+async function derivePageJson(settings, { html, styles = '', name = 'Cloned Page', sourceUrl = '' }) {
+  const meta = { title: name, url: sourceUrl };
+  const captured = { html, styles, imageSrcs: [], meta, structure: {} };
+  if (settings.usePipeline !== false && settings.backendToken) {
+    try {
+      const pages = await backendNormalizePages(settings, [{ url: meta.url, data: captured }], name, () => {}, 1);
+      if (pages[0]?.pageJson) return { pageJson: pages[0].pageJson, source: pages[0].source || 'server' };
+    } catch (_) { /* fall through to client convert */ }
+  }
+  const page = clientConvertPage(meta.url, captured);
+  return { pageJson: page.pageJson, source: 'client' };
+}
+
+async function pollImportJob(settings, jobId, onMsg) {
+  const startedAt = Date.now();
+  const TIMEOUT_MS = 120000;
+  while (Date.now() - startedAt < TIMEOUT_MS) {
+    const resp = await backendRequest(settings, `/api/import/jobs/${jobId}`, { method: 'GET', useAuth: true });
+    const job = resp?.job;
+    if (job?.status === 'ready') return job;
+    if (job?.status === 'error') throw new Error('Import job failed on the server.');
+    if (onMsg && job) onMsg(`Processing on server… (${job.ok ?? 0}/${job.total ?? '?'})`);
+    await new Promise((r) => setTimeout(r, 1200));
+  }
+  throw new Error('Import timed out.');
+}
+
 // ─── Message Router ───────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -378,6 +610,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function handleMessage(message, sender) {
+  // Progress/broadcast messages fan out to every extension context (including this
+  // service worker via content-script sends). They carry no request here — ack & ignore.
+  if (['DISCOVER_CLONE_PROGRESS', 'DISCOVER_CLONE_COMPLETE', 'CLONE_COMPLETE',
+       'PASTE_PROGRESS', 'CAPTURE_PROGRESS', 'CLONE_CLIPBOARD_UPDATED'].includes(message.action)) {
+    return {};
+  }
+
   switch (message.action) {
 
     // ── Settings ─────────────────────────────────────────────────────────────
@@ -703,7 +942,15 @@ async function handleMessage(message, sender) {
 
     case 'BACKEND_INVOICES_LIST': {
       const settings = await getSettings();
-      return await backendRequest(settings, '/api/billing/invoices', { method: 'GET', useAuth: true });
+      try {
+        return await backendRequest(settings, '/api/billing/invoices', { method: 'GET', useAuth: true });
+      } catch (err) {
+        // The billing/invoices route is only mounted when Stripe is enabled. Under
+        // the GHL-only payment model it returns 404 — treat that as "no invoices"
+        // so the billing view shows the empty state instead of a red error.
+        if (err?.status === 404) return { invoices: [] };
+        throw err;
+      }
     }
 
     case 'BACKEND_SITES_LIST': {
@@ -964,12 +1211,16 @@ async function handleMessage(message, sender) {
       for (const [orig, next] of Object.entries(map)) {
         rewritten = rewritten.split(orig).join(next);
       }
+      // The rewritten (rehosted) HTML is persisted below; the dashboard's clone
+      // preview exposes a "Copy for GHL" action that copies this HTML to the
+      // clipboard for a direct paste into a GHL Custom JS/HTML element (see
+      // copyHtmlAndGuidePaste in dashboard.js). GHL has no API to write pages.
       // Persist the rewritten HTML back onto the funnel (whichever field held it).
       const patch = funnel.optimizedHtml ? { optimizedHtml: rewritten } : { html: rewritten };
       await saveFunnel({ ...funnel, ...patch });
       return { rehosted: res.rehosted || 0, failed: (res.failed || []).length, total: urls.length };
     }
-
+// TODO: BACKEND_FUNNEL_EXPORT (zip of HTML + assets) for Pro/Agency
     case 'BACKEND_CHECKOUT': {
       const settings = await getSettings();
       const result = await backendRequest(settings, '/api/billing/checkout', {
@@ -1006,7 +1257,7 @@ async function handleMessage(message, sender) {
       return { funnels: await getFunnels() };
 
     case 'SAVE_FUNNEL':
-      return { funnel: await saveFunnel(message.data) };
+      return await saveFunnel(message.data); // { funnel, evicted }
 
     case 'DELETE_FUNNEL':
       return deleteFunnel(message.id);
@@ -1043,7 +1294,7 @@ async function handleMessage(message, sender) {
 
       // Atomic usage gate + increment, only after the clone built successfully.
       // A 402/403 here throws (carrying upgrade/ghl details) before any AI cost.
-      if (backendUsageEnabled && !settings.devMode) {
+      if (backendUsageEnabled) {
         await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true, body: { ref: settings.capturedRef || undefined } });
       }
 
@@ -1160,56 +1411,40 @@ async function handleMessage(message, sender) {
 
     // ── Push to GHL ───────────────────────────────────────────────────────────
     case 'PUSH_TO_GHL': {
+      // GoHighLevel's public API is READ-ONLY for funnels and pages — there is no
+      // endpoint to create a page or write page content (it remains an open
+      // feature request on GHL's side). So "Push to GHL" does NOT call the API to
+      // write content. Instead it prepares the page HTML for a guided copy → paste
+      // into a GHL "Custom JS/HTML" element and deep-links to the funnels area of
+      // the user's location. The dashboard does the clipboard copy (it's a focused
+      // page; the service worker can't reach the clipboard).
       const { funnelId, useOptimized } = message.data;
       const settings = await getSettings();
-
-      const apiKey = (settings.ghlApiKey || '').trim();
       const locationId = (settings.ghlLocationId || '').trim();
-
-      if (!apiKey) throw new Error(
-        'GHL API key not configured. Go to Settings → paste your Private Integration Token.'
-      );
-      if (!locationId) throw new Error(
-        'GHL Location ID not configured. Go to Settings → paste your Location ID.'
-      );
 
       const funnels = await getFunnels();
       const funnel = funnels.find(f => f.id === funnelId);
       if (!funnel) throw new Error('Funnel not found in local storage.');
 
-      // Re-run conversion fresh to ensure latest GHL-compatible HTML format
-      // (picks up any new GHLConverter improvements without re-cloning)
-      let htmlToUse = (useOptimized && funnel.optimizedHtml) ? funnel.optimizedHtml : funnel.html;
-
-      // If the stored HTML looks like it's still raw (pre-converter), re-convert it
-      if (!htmlToUse || htmlToUse.length < 200) {
+      const html = (useOptimized && funnel.optimizedHtml) ? funnel.optimizedHtml : funnel.html;
+      if (!html || html.length < 200) {
         throw new Error('Funnel HTML is empty or invalid. Please re-clone the site.');
       }
 
-      const result = await GHLApi.pushFunnelToGHL(
-        apiKey,
-        {
-          locationId,
-          pageName: funnel.name || 'Clone2GHL Page',
-          html: htmlToUse,
-        },
-        (step, total, msg) => {
-          chrome.runtime.sendMessage({ action: 'GHL_PUSH_PROGRESS', step, total, message: msg })
-            .catch(() => {});
-        }
-      );
+      const builderUrl = locationId
+        ? `https://app.gohighlevel.com/v2/location/${locationId}/funnels-websites/funnels`
+        : 'https://app.gohighlevel.com/';
 
-      // Update funnel record with GHL IDs and status
-      const newStatus = result.success === 'full' ? 'exported' : (funnel.status || 'draft');
-      await saveFunnel({
-        ...funnel,
-        ghlFunnelId: result.funnelId || funnel.ghlFunnelId,
-        ghlPageId: result.pageId || funnel.ghlPageId,
-        status: newStatus,
-        exportedAt: result.success === 'full' ? new Date().toISOString() : funnel.exportedAt,
-      });
+      // Saving locally is the real state change; mark the funnel ready to paste.
+      await saveFunnel({ ...funnel, status: 'exported', exportedAt: new Date().toISOString() });
 
-      return result;
+      return {
+        success: 'ready',
+        html,
+        builderUrl,
+        funnelName: funnel.name || 'Clone2GHL Page',
+        pageName: funnel.name || 'Clone2GHL Page',
+      };
     }
 
 
@@ -1425,7 +1660,7 @@ async function handleMessage(message, sender) {
 
       // Atomic usage gate + increment, only after a successful conversion. A
       // 402/403 here throws (with upgrade/ghl details) before any AI cost.
-      if (backendUsageEnabled && !settings.devMode) {
+      if (backendUsageEnabled) {
         await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true, body: { ref: settings.capturedRef || undefined } });
       }
 
@@ -1465,43 +1700,16 @@ async function handleMessage(message, sender) {
         await syncUsageFromBackend(settings).catch(() => {});
       }
 
-      // Auto-push to GHL if credentials are configured
-      const apiKey = (settings.ghlApiKey || '').trim();
-      const locationId = (settings.ghlLocationId || '').trim();
-      let pushResult = null;
-      let pushError = null;
-      let pushSkipped = false;
-
-      if (!apiKey || !locationId) {
-        pushSkipped = true;
-        broadcastProgress(7, 7, 'Saved locally. Add GHL credentials in Settings to auto-push.');
-      } else {
-        broadcastProgress(6, 7, 'Pushing to your GHL account…');
-        try {
-          const htmlForGhl = optimizedHtml || converted.ghlHtml;
-          pushResult = await GHLApi.pushFunnelToGHL(
-            apiKey,
-            {
-              locationId,
-              pageName: funnel.name || 'Clone2GHL Page',
-              html: htmlForGhl,
-            },
-            (step, total, msg) => broadcastProgress(6, 7, `GHL: ${msg}`)
-          );
-          // Persist GHL IDs on the funnel
-          await saveFunnel({
-            ...funnel,
-            ghlFunnelId: pushResult.funnelId || null,
-            ghlPageId: pushResult.pageId || null,
-            status: pushResult.success === 'full' ? 'exported' : funnel.status,
-            exportedAt: pushResult.success === 'full' ? new Date().toISOString() : undefined,
-          });
-          broadcastProgress(7, 7, 'Pushed to GHL.');
-        } catch (err) {
-          pushError = err.message || String(err);
-          broadcastProgress(7, 7, `GHL push failed: ${pushError}`);
-        }
-      }
+      // GoHighLevel has no public write API for funnel pages, so we can't auto-push
+      // content into a funnel. The clone is fully saved locally (the real work);
+      // the user finishes with a one-click copy → paste via "Push to GHL" in My
+      // Funnels. We surface whether GHL is connected so the dashboard can prompt
+      // the right next step.
+      const hasGhl = Boolean((settings.ghlApiKey || '').trim() && (settings.ghlLocationId || '').trim());
+      const pushSkipped = !hasGhl;
+      broadcastProgress(7, 7, hasGhl
+        ? 'Saved. Open “Push to GHL” to copy & paste into your funnel.'
+        : 'Saved locally. Add GHL credentials in Settings to enable one-click push.');
 
       // Notify dashboard
       chrome.runtime.sendMessage({ action: 'DISCOVER_CLONE_COMPLETE', funnelId: funnel.id, url }).catch(() => {});
@@ -1509,12 +1717,249 @@ async function handleMessage(message, sender) {
       return {
         funnel,
         sectionCount: analysis?.sectionCount || 0,
-        pushResult,
-        pushError,
+        pushResult: null,
+        pushError: null,
         pushSkipped,
-        ghlFunnelId: pushResult?.funnelId || null,
-        ghlPageId: pushResult?.pageId || null,
+        readyToPush: hasGhl,
+        ghlFunnelId: null,
+        ghlPageId: null,
       };
+    }
+
+    // ── Multi-page pipeline: Scan → Select → Copy Selected → Paste N Pages ─────
+    case 'SCAN_SITE': {
+      const { url, pageLinks } = message.data || {};
+      return await SiteScanner.scan({ url, pageLinks: pageLinks || [] });
+    }
+
+    case 'CAPTURE_SELECTED': {
+      const { urls, name } = message.data || {};
+      if (!Array.isArray(urls) || !urls.length) throw new Error('No pages selected.');
+
+      const settings = await getSettings();
+      const backendUsageEnabled = Boolean(settings.backendEnabled && settings.backendApiBase && settings.backendToken);
+      if (!backendUsageEnabled && !settings.devMode && settings.plan !== 'owner' && settings.plan === 'free' && settings.credits <= 0) {
+        throw new Error('No credits remaining. Upgrade your plan to continue cloning.');
+      }
+
+      const total = urls.length;
+      const prog = (i, msg) => chrome.runtime.sendMessage({ action: 'CAPTURE_PROGRESS', step: i, total, message: msg }).catch(() => {});
+
+      // 1) Capture every selected page in the browser (the backend can't reach the DOM).
+      const captured = [];
+      const errors = [];
+      for (let i = 0; i < total; i++) {
+        const pageUrl = urls[i];
+        prog(i, `Capturing page ${i + 1} of ${total}…`);
+        try {
+          const data = await extractUrlInBackgroundTab(pageUrl);
+          // Authoritative usage gate per page, after a successful capture.
+          if (backendUsageEnabled) {
+            await backendRequest(settings, '/api/usage/consume', { method: 'POST', useAuth: true, body: {} });
+          }
+          captured.push({ url: pageUrl, data });
+          if (!backendUsageEnabled) await deductCredit(); else await syncUsageFromBackend(settings).catch(() => {});
+        } catch (e) {
+          errors.push({ url: pageUrl, error: String(e?.message || e) });
+        }
+      }
+      if (!captured.length) throw new Error(`Could not capture any of the ${total} selected page(s).`);
+
+      // 2) Normalize → element model. Prefer the backend pipeline (real DOM parser,
+      //    element-wise, GHL-aware); fall back to the client converter (custom_code).
+      const usePipeline = backendUsageEnabled && settings.usePipeline !== false;
+      let pages = null;
+      if (usePipeline) {
+        prog(total, 'Processing pages on the server…');
+        try { pages = await backendNormalizePages(settings, captured, name, prog, total); }
+        catch (e) { console.warn('[import] backend pipeline failed, using client converter:', e?.message); pages = null; }
+      }
+      if (!pages) pages = captured.map(({ url, data }) => clientConvertPage(url, data));
+      prog(total, 'Done.');
+
+      // Attach editable HTML per page so the dashboard editor can customize the
+      // set before pasting. Client-converted pages already carry it as
+      // pageJson.fallbackHtml (referenced, not duplicated); server-normalized
+      // pages get a client-side conversion of the in-hand capture.
+      pages.forEach((p, i) => {
+        if (!p.pageJson?.fallbackHtml && !p.html) {
+          try { p.html = GHLConverter.convert(captured[i].data, { replaceForms: true, replacePhone: true }).ghlHtml; }
+          catch (_) { p.html = captured[i]?.data?.html || ''; }
+        }
+        p.pageJsonStale = false;
+        p.updatedAt = new Date().toISOString();
+      });
+
+      // A clone set holds full HTML per page and can be large — drop the tail (loudly)
+      // rather than silently exceed the storage budget.
+      let kept = pages;
+      const dropped = [];
+      const sizeOf = (arr) => new TextEncoder().encode(JSON.stringify(arr)).length;
+      while (kept.length > 1 && sizeOf(kept) > 6 * 1024 * 1024) {
+        dropped.push(kept[kept.length - 1].name);
+        kept = kept.slice(0, -1);
+      }
+
+      const host = (() => { try { return new URL(urls[0]).hostname.replace('www.', ''); } catch { return 'Cloned site'; } })();
+      const cloneSet = {
+        id: `cs_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        name: name || host,
+        createdAt: new Date().toISOString(),
+        status: 'ready',
+        pages: kept,
+        errors,
+        dropped,
+      };
+      await chrome.storage.local.set({ cloneClipboard: cloneSet });
+      chrome.runtime.sendMessage({ action: 'CLONE_CLIPBOARD_UPDATED', count: kept.length }).catch(() => {});
+
+      return { cloneSet: { id: cloneSet.id, name: cloneSet.name, count: kept.length, errors, dropped } };
+    }
+
+    case 'GET_CLONE_CLIPBOARD': {
+      const cs = (await chrome.storage.local.get('cloneClipboard')).cloneClipboard || null;
+      if (!cs) return { cloneSet: null };
+      // Light summary only (omit big HTML) for the dashboard list.
+      return {
+        cloneSet: {
+          id: cs.id, name: cs.name, createdAt: cs.createdAt, status: cs.status,
+          count: (cs.pages || []).length,
+          pages: (cs.pages || []).map(p => ({ name: p.name, path: p.pathSlug, sourceUrl: p.sourceUrl })),
+          errors: cs.errors || [], dropped: cs.dropped || [],
+        },
+      };
+    }
+
+    case 'CLEAR_CLONE_CLIPBOARD': {
+      await chrome.storage.local.remove('cloneClipboard');
+      chrome.runtime.sendMessage({ action: 'CLONE_CLIPBOARD_UPDATED', count: 0 }).catch(() => {});
+      return { cleared: true };
+    }
+
+    // Full HTML of one captured page — for the multi-page editor. (The list
+    // endpoint above intentionally stays summary-only.)
+    case 'GET_CLONE_PAGE': {
+      const cs = (await chrome.storage.local.get('cloneClipboard')).cloneClipboard;
+      const idx = message.data?.index;
+      const page = cs?.pages?.[idx];
+      if (!page) throw new Error('Page not found — recapture with “Copy Selected”.');
+      const html = page.html || page.pageJson?.fallbackHtml || '';
+      if (!html) throw new Error('This page has no editable HTML — recapture it.');
+      return { page: { index: idx, name: page.name, pathSlug: page.pathSlug, sourceUrl: page.sourceUrl, html } };
+    }
+
+    // Persist edited page HTML back into the clone set. The stored pageJson is
+    // now stale; PASTE_SET re-derives it before pasting so edits reach GHL.
+    case 'SAVE_CLONE_PAGES': {
+      const cs = (await chrome.storage.local.get('cloneClipboard')).cloneClipboard;
+      if (!cs || !(cs.pages || []).length) throw new Error('Nothing to save — the captured set is gone.');
+      const updates = message.data?.pages || [];
+      let saved = 0;
+      for (const { index, html } of updates) {
+        const page = cs.pages[index];
+        if (!page || !html) continue;
+        page.html = html;
+        page.pageJsonStale = true;
+        page.updatedAt = new Date().toISOString();
+        saved++;
+      }
+      if (saved) await chrome.storage.local.set({ cloneClipboard: cs });
+      return { saved };
+    }
+
+    case 'IMPORT_HISTORY': {
+      const settings = await getSettings();
+      if (!settings.backendToken) return { jobs: [] };
+      const res = await backendRequest(settings, '/api/import/jobs', { method: 'GET', useAuth: true }).catch(() => ({ jobs: [] }));
+      return { jobs: res?.jobs || [] };
+    }
+
+    // Auto-enable Clone2GHL on a white-label GHL builder domain (sent by the
+    // content script when it detects a GHL-built page on a new host).
+    case 'REGISTER_GHL_DOMAIN': {
+      const host = String(message.host || '').trim().toLowerCase();
+      if (!host || host === 'app.gohighlevel.com') return { registered: false };
+      const settings = await getSettings();
+      const list = new Set(settings.ghlDomains || []);
+      const isNew = !list.has(host);
+      if (isNew) { list.add(host); await saveSettings({ ghlDomains: [...list] }); }
+      await registerBuilderScripts(getGhlDomains(await getSettings()));
+      // Inject into the current tab immediately so the user needn't reload twice.
+      const tabId = sender?.tab?.id;
+      if (tabId) {
+        try { await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, world: 'MAIN', files: ['ghlInternal.js', 'builderInjector.js'] }); } catch (_) { /* ignore */ }
+        try { await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ['compat.js', 'ghlBuilderContent.js'] }); } catch (_) { /* ignore */ }
+      }
+      return { registered: true, host, isNew };
+    }
+
+    case 'GET_BUILDER_STATUS': {
+      const tabs = await chrome.tabs.query({ url: await ghlBuilderUrls() });
+      if (!tabs.length) return { open: false };
+      for (const t of tabs) {
+        const ping = await chrome.tabs.sendMessage(t.id, { action: 'C2GHL_BUILDER_PING' }).catch(() => null);
+        if (ping?.ready) return { open: true, tabId: t.id, credsLearned: !!ping.credsLearned, locationId: ping.locationId || '', funnelId: ping.funnelId || '' };
+      }
+      return { open: true, credsLearned: false };
+    }
+
+    // Re-derive a native element model (pageJson) from edited HTML so in-extension
+    // editor changes actually reach the native paste. Prefers the server pipeline
+    // (element-wise), always falls back to the client converter so it never fails.
+    case 'NORMALIZE_HTML': {
+      const html = message.data?.html || '';
+      if (!html || html.length < 50) throw new Error('Nothing to normalize.');
+      const settings = await getSettings();
+      return derivePageJson(settings, {
+        html,
+        styles: message.data?.styles || '',
+        name: message.data?.name || 'Cloned Page',
+        sourceUrl: message.data?.sourceUrl || '',
+      });
+    }
+
+    case 'PASTE_SET': {
+      const stored = (await chrome.storage.local.get('cloneClipboard')).cloneClipboard;
+      if (!stored || !(stored.pages || []).length) {
+        throw new Error('Nothing to paste. Capture pages first with “Copy Selected”.');
+      }
+      // Pages edited in the dashboard carry stale pageJson — re-derive from the
+      // edited HTML first so the native paste lands the edited content.
+      const staleCount = stored.pages.filter((p) => p.pageJsonStale && p.html).length;
+      if (staleCount) {
+        const settings = await getSettings();
+        chrome.runtime.sendMessage({ action: 'PASTE_PROGRESS', step: 0, total: staleCount, message: `Processing ${staleCount} edited page(s)…` }).catch(() => {});
+        for (const page of stored.pages) {
+          if (!page.pageJsonStale || !page.html) continue;
+          const { pageJson, source } = await derivePageJson(settings, {
+            html: page.html, name: page.name, sourceUrl: page.sourceUrl || '',
+          });
+          page.pageJson = pageJson;
+          page.source = source;
+          page.pageJsonStale = false;
+        }
+        await chrome.storage.local.set({ cloneClipboard: stored });
+      }
+      return orchestratePaste(stored, message.data);
+    }
+
+    // Per-funnel one-click native push. Re-derives the native element model from the
+    // funnel's CURRENT html (so in-extension editor edits round-trip), wraps it as a
+    // one-page clone set, and runs the same create-funnel → paste → verify flow.
+    case 'PUSH_FUNNEL_NATIVE': {
+      const funnels = await getFunnels();
+      const funnel = funnels.find((f) => f.id === message.funnelId);
+      if (!funnel) throw new Error('Funnel not found.');
+      const html = funnel.optimizedHtml || funnel.html || '';
+      if (!html || html.length < 100) throw new Error('This funnel has no content to push.');
+      const settings = await getSettings();
+      const { pageJson } = await derivePageJson(settings, {
+        html, name: funnel.name || 'Cloned Page', sourceUrl: funnel.sourceUrl || '',
+      });
+      const stored = { name: funnel.name, pages: [{ name: funnel.name, pageJson, html }] };
+      const res = await orchestratePaste(stored, message.data);
+      try { await saveFunnel({ ...funnel, status: 'exported', exportedAt: Date.now(), pageJson }); } catch (_) { /* non-fatal */ }
+      return res;
     }
 
     default:
@@ -1655,6 +2100,52 @@ async function extractPageInContext() {
     });
   } catch { /* ignore */ }
 
+  // ── Step 1b: Capture open shadow-DOM / web-component content ──────────────
+  // cloneNode(true) does NOT serialize shadow roots, so custom elements would come
+  // through empty. Tag each OPEN shadow host on the live DOM and stash its rendered
+  // innerHTML (markup + scoped <style>); we inline it into the clone after cloning.
+  // Bounded to avoid runaway work on component-heavy apps.
+  const shadowMap = new Map();
+  let shadowIdx = 0;
+  try {
+    const all = document.querySelectorAll('*');
+    for (let i = 0; i < all.length && shadowIdx < 400; i++) {
+      const sr = all[i].shadowRoot;
+      if (sr && sr.innerHTML && sr.innerHTML.length < 200000) {
+        const marker = `c2sh${shadowIdx++}`;
+        all[i].setAttribute('data-c2ghl-shadow', marker);
+        shadowMap.set(marker, sr.innerHTML);
+      }
+    }
+  } catch { /* ignore */ }
+
+  // ── Step 1c: Snapshot computed styles onto elements that become native leaves ─
+  // External CSS can be CORS-blocked (unreadable), which strips an element's look.
+  // For the element types that map to native GHL leaves, bake a curated set of
+  // computed properties into inline styles — so the look survives AND the native
+  // converter can read them (element.style → mapStyle → GHL style panel). Existing
+  // inline styles win. Bounded + curated to respect the storage budget.
+  const computedStyleMap = new Map();
+  try {
+    const CS_PROPS = ['color', 'background-color', 'font-size', 'font-weight', 'font-style', 'text-align', 'line-height', 'text-transform', 'border-radius'];
+    const els = document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,a,button,li,blockquote,figcaption');
+    let n = 0;
+    for (let i = 0; i < els.length && n < 1200; i++) {
+      const el = els[i];
+      if (el.closest('script,style,svg')) continue;
+      const cs = getComputedStyle(el);
+      const decls = [];
+      for (const p of CS_PROPS) {
+        const v = cs.getPropertyValue(p);
+        if (v && v !== 'normal' && v !== 'none' && v !== 'auto' && v !== 'rgba(0, 0, 0, 0)' && v !== '0px') decls.push(`${p}:${v}`);
+      }
+      if (!decls.length) continue;
+      const marker = `c2cs${n++}`;
+      el.setAttribute('data-c2ghl-cs', marker);
+      computedStyleMap.set(marker, decls.join(';'));
+    }
+  } catch { /* ignore */ }
+
   // ── Step 2: Fetch external CSS ────────────────────────────────────────────
   const { cssText: externalCss, fallbackLinks: fallbackStylesheetLinks } = await fetchExternalStyles();
 
@@ -1782,6 +2273,34 @@ async function extractPageInContext() {
     });
     // Clean markers from live DOM
     document.querySelectorAll('[data-c2ghl-bg]').forEach(el => el.removeAttribute('data-c2ghl-bg'));
+  }
+
+  // ── Step 8b: Inline captured shadow-DOM content into the clone ────────────
+  if (shadowMap.size > 0) {
+    try {
+      clone.querySelectorAll('[data-c2ghl-shadow]').forEach(el => {
+        const marker = el.getAttribute('data-c2ghl-shadow');
+        const inner = marker && shadowMap.get(marker);
+        el.removeAttribute('data-c2ghl-shadow');
+        if (inner && !el.innerHTML.trim()) el.innerHTML = inner;
+      });
+    } catch { /* ignore */ }
+    document.querySelectorAll('[data-c2ghl-shadow]').forEach(el => el.removeAttribute('data-c2ghl-shadow'));
+  }
+
+  // ── Step 8c: Bake captured computed styles into the clone (existing inline wins) ─
+  if (computedStyleMap.size > 0) {
+    try {
+      clone.querySelectorAll('[data-c2ghl-cs]').forEach(el => {
+        const marker = el.getAttribute('data-c2ghl-cs');
+        const computed = marker && computedStyleMap.get(marker);
+        el.removeAttribute('data-c2ghl-cs');
+        if (!computed) return;
+        const existing = (el.getAttribute('style') || '').replace(/;\s*$/, '');
+        el.setAttribute('style', existing ? `${computed};${existing}` : computed); // computed first → explicit inline overrides
+      });
+    } catch { /* ignore */ }
+    document.querySelectorAll('[data-c2ghl-cs]').forEach(el => el.removeAttribute('data-c2ghl-cs'));
   }
 
   // ── Step 9: Fix background-image in inline styles ─────────────────────────
@@ -1924,8 +2443,13 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 chrome.runtime.onStartup?.addListener(() => {
   ensureUsageSyncAlarm();
   backgroundSyncUsage();
+  getSettings().then((s) => registerBuilderScripts(getGhlDomains(s))).catch(() => {});
 });
 
 chrome.alarms?.onAlarm.addListener((alarm) => {
   if (alarm.name === USAGE_SYNC_ALARM) backgroundSyncUsage();
 });
+
+// Register builder scripts for saved white-label GHL domains on service-worker init.
+// registerContentScripts persists across restarts, so this is cheap + idempotent.
+getSettings().then((s) => registerBuilderScripts(getGhlDomains(s))).catch(() => {});

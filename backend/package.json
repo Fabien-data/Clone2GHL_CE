@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node test/smoke.test.mjs"
+    "test": "node test/smoke.test.mjs && node test/copyright.test.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",

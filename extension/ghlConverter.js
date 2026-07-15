@@ -48,10 +48,21 @@ const GHLConverter = (() => {
     return html;
   }
 
-  /** Strip copyright and trademark boilerplate */
+  /**
+   * Strip copyright and trademark boilerplate.
+   *
+   * SERVICE-WORKER FALLBACK ONLY (no DOM here). The DOM-aware engines are
+   * authoritative: extension/copyrightEngine.js (editor/auto-strip) and
+   * backend/src/services/copyrightEngine.js (server pipeline) — they handle
+   * split-tag notices and pure-notice block removal safely.
+   *
+   * Removal is BOUNDED: after the year we stop at the first sentence/segment
+   * boundary (. ! ? |) or tag, capped at 60 chars, so text following the
+   * notice (taglines, "Privacy Policy" links) is never swallowed.
+   */
   function removeCopyrightContent(html) {
-    html = html.replace(/©\s*\d{4}(?:\s*[-–—]\s*\d{4})?\s*[^<]{0,80}/g, '');
-    html = html.replace(/Copyright\s*©?\s*\d{4}(?:\s*[-–—]\s*\d{4})?\s*[^<]{0,80}/gi, '');
+    html = html.replace(/(?:Copyright\s*)?(?:©|\(c\))\s*\d{4}(?:\s*[-–—]\s*(?:\d{4}|present))?[^<.!?|]{0,60}(?=[<.!?|]|$)\.?/gi, '');
+    html = html.replace(/Copyright\s+\d{4}(?:\s*[-–—]\s*(?:\d{4}|present))?[^<.!?|]{0,60}(?=[<.!?|]|$)\.?/gi, '');
     html = html.replace(/All\s+Rights?\s+Reserved\.?/gi, '');
     html = html.replace(/[™®℠]/g, '');
     return html;
@@ -473,8 +484,117 @@ ${bodyHtml}
     };
   }
 
+  // ─── Section Decomposition (HTML → neutral section model) ─────────────────────
+  // Tier-1 of the native-page converter. The service worker has no DOMParser, so
+  // we split the processed body into top-level visual sections with a small
+  // depth-tracking tokenizer. ghlInternal.js (MAIN world) maps each section to a
+  // GHL section→row→column→custom_code node using the discovered schema, so all the
+  // brittle GHL-shape knowledge stays in that one file.
+
+  const VOID_TAGS = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+
+  /** Split an HTML string into its top-level nodes ([{type:'el'|'text', html}]). */
+  function topLevelElements(html) {
+    const parts = [];
+    const tagRe = /<(\/?)([a-zA-Z][\w:-]*)([^>]*?)(\/?)>/g;
+    let depth = 0, elStart = -1, lastIdx = 0, m;
+    while ((m = tagRe.exec(html))) {
+      const closing = m[1] === '/';
+      const name = m[2].toLowerCase();
+      const selfClose = m[4] === '/' || VOID_TAGS.has(name);
+      if (!closing) {
+        if (depth === 0) {
+          if (m.index > lastIdx) { const t = html.slice(lastIdx, m.index); if (t.trim()) parts.push({ type: 'text', html: t }); }
+          if (selfClose) { parts.push({ type: 'el', html: m[0] }); lastIdx = tagRe.lastIndex; }
+          else { elStart = m.index; depth = 1; }
+        } else if (!selfClose) { depth++; }
+      } else if (depth > 0) {
+        depth--;
+        if (depth === 0 && elStart >= 0) { parts.push({ type: 'el', html: html.slice(elStart, tagRe.lastIndex) }); elStart = -1; lastIdx = tagRe.lastIndex; }
+      }
+    }
+    if (lastIdx < html.length) { const t = html.slice(lastIdx); if (t.trim()) parts.push({ type: 'text', html: t }); }
+    return parts;
+  }
+
+  function innerHtmlOf(elHtml) {
+    const open = elHtml.match(/^<[^>]+>/);
+    const close = elHtml.match(/<\/[^>]+>\s*$/);
+    if (!open) return null;
+    return elHtml.slice(open[0].length, close ? elHtml.length - close[0].length : undefined);
+  }
+
+  /** Decompose a body HTML string into an array of section HTML chunks. */
+  function sectionize(bodyHtml, maxSections = 60) {
+    let html = String(bodyHtml || '').replace(/<!--[\s\S]*?-->/g, '');
+
+    // Descend through single generic wrappers (e.g. <div id="root">) until we reach
+    // a level with multiple siblings or loose content.
+    for (let i = 0; i < 5; i++) {
+      const parts = topLevelElements(html);
+      const els = parts.filter(p => p.type === 'el');
+      const texts = parts.filter(p => p.type === 'text');
+      if (els.length !== 1 || texts.length) break;
+      const inner = innerHtmlOf(els[0].html);
+      if (inner == null || !inner.trim()) break;
+      html = inner;
+    }
+
+    const parts = topLevelElements(html);
+    const sections = [];
+    for (const p of parts) {
+      if (p.type === 'el') sections.push(p.html);
+      else if (sections.length) sections[sections.length - 1] += p.html;
+      else sections.push(p.html);
+    }
+    const cleaned = sections.map(s => s.trim()).filter(Boolean);
+    if (!cleaned.length) return [html];
+    if (cleaned.length <= maxSections) return cleaned;
+    // Collapse the tail so we never emit an unbounded number of elements.
+    const head = cleaned.slice(0, maxSections - 1);
+    head.push(cleaned.slice(maxSections - 1).join('\n'));
+    return head;
+  }
+
+  /**
+   * Convert captured page data into a NEUTRAL native-page model the builder engine
+   * (ghlInternal.js) turns into real GHL section/row/column/custom_code nodes.
+   * Reuses convert() for all sanitization/asset/token work, then splits the result.
+   *
+   * @returns {{ name, pathSlug, seo, sections:[{id,kind?,html}], fallbackHtml, stats }}
+   */
+  function convertToPageJson(capturedData, options = {}) {
+    const base = convert(capturedData, options);
+    const fullHtml = base.ghlHtml;
+    const bodyHtml = extractBody(fullHtml);
+    const styleBlock = extractStyles(fullHtml);
+    const googleFonts = extractGoogleFonts(fullHtml);
+
+    const chunks = sectionize(bodyHtml);
+    const sections = [];
+    const fontLinks = googleFonts.map(h => `<link rel="stylesheet" href="${h}">`).join('\n');
+    if (styleBlock || fontLinks) {
+      // A leading custom-code element carries the page's global CSS + fonts so every
+      // following section renders with the original styling.
+      sections.push({ id: 'style', kind: 'style', html: `${fontLinks}\n<style>\n${styleBlock}\n</style>`.trim() });
+    }
+    chunks.forEach((html, i) => sections.push({ id: `sec_${i + 1}`, html }));
+
+    return {
+      name: base.payload.name,
+      pathSlug: base.payload.pathSlug,
+      seo: base.payload.seo,
+      sections,
+      fallbackHtml: fullHtml,   // used if the builder save falls back to one blob
+      stats: { ...base.stats, sectionCount: chunks.length },
+    };
+  }
+
   return {
     convert,
+    convertToPageJson,
+    sectionize,
+    topLevelElements,
     sanitizeHTML,
     removeCopyrightContent,
     fixAssetUrls,

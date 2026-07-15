@@ -77,12 +77,15 @@
         <button class="btn-upgrade" id="btn-upgrade-sidebar">Upgrade →</button>
       </div>
       <div id="devmode-badge" style="display:none; font-size:10px; font-weight:700; color:#F0BB2D; background:rgba(240,187,45,0.12); border:1px solid rgba(240,187,45,0.3); border-radius:4px; padding:2px 8px; margin-top:6px; text-align:center;">⚡ DEV MODE — Unlimited</div>
-      <label style="margin-top:6px; font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; color:var(--text-muted, #9CA3AF);">
+      <!-- Dev Mode + Owner Access: hidden by default; revealed by JS ONLY for a
+           verified owner (settings.isOwner, confirmed server-side). Regular users
+           never see them. -->
+      <label id="sidebar-devmode-label" style="margin-top:6px; font-size:11px; display:none; align-items:center; gap:6px; cursor:pointer; color:var(--text-muted, #9CA3AF);">
         <input type="checkbox" id="sidebar-devmode-toggle">
         <span>Dev Mode (unlimited clones)</span>
       </label>
-      <!-- Owner access entry — shown only when not in owner plan -->
-      <div id="owner-entry" style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+      <!-- Owner access entry — shown only to a verified owner who is not yet unlocked -->
+      <div id="owner-entry" style="display:none; margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
         <button id="btn-owner-login" style="background:none; border:none; padding:0; font-size:11px; color:#6B7280; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:5px;">
           🔑 <span>Owner Access</span>
         </button>
@@ -1786,10 +1789,12 @@
         <span class="editor-title" id="editor-funnel-name">Customizing Funnel</span>
       </div>
       <div class="editor-header-center">
+        <select id="editor-page-select" class="editor-page-select" style="display:none;" title="Switch page"></select>
         <div class="editor-unsaved" id="editor-unsaved" style="display:none;">● Unsaved changes</div>
       </div>
       <div class="editor-header-right">
-        <button class="btn-secondary editor-btn-sm" id="editor-btn-undo" title="Undo last change">↩ Undo</button>
+        <button class="btn-secondary editor-btn-sm" id="editor-btn-undo" title="Undo (Ctrl+Z)">↩ Undo</button>
+        <button class="btn-secondary editor-btn-sm" id="editor-btn-redo" title="Redo (Ctrl+Y)">↪ Redo</button>
         <button class="btn-secondary editor-btn-sm" id="editor-btn-reset">Reset All</button>
         <button class="btn-primary editor-btn-sm" id="editor-btn-save">Save Changes</button>
         <button class="btn-primary editor-btn-sm" id="editor-btn-push">→ Push to GHL</button>
@@ -1802,6 +1807,7 @@
       <!-- Left Panel Sidebar -->
       <aside class="editor-sidebar">
         <nav class="editor-panel-tabs">
+          <button class="editor-tab" data-panel="element">🎯 Element</button>
           <button class="editor-tab active" data-panel="brand">🏢 Brand</button>
           <button class="editor-tab" data-panel="copyright">⚠️ Copyright</button>
           <button class="editor-tab" data-panel="text">✏️ Text</button>
@@ -1809,6 +1815,7 @@
           <button class="editor-tab" data-panel="colors">🎨 Colors</button>
           <button class="editor-tab" data-panel="fonts">🔤 Fonts</button>
         </nav>
+        <div id="editor-breadcrumb" style="display:none;"></div>
         <div class="editor-panel-content" id="editor-panel-content">
           <div class="editor-loading">Loading...</div>
         </div>
@@ -1835,6 +1842,8 @@
 
   <script src="compat.js"></script>
   <script src="upgradeLogic.js"></script>
+  <script src="copyrightEngine.js"></script>
+  <script src="editorEngine.js"></script>
   <script src="dashboard.js"></script>
 </body>
 </html>

@@ -50,6 +50,20 @@ export const config = {
   // Public base URL of the app/backend, used to build links in emails.
   appUrl: process.env.APP_URL || process.env.CLIENT_URL || '',
 
+  // ── Import pipeline (v2) ────────────────────────────────────────────────────
+  // Optional Redis URL → BullMQ queue; absent → in-process queue (works on Fly today).
+  redisUrl: process.env.REDIS_URL || '',
+  importConcurrency: Number(process.env.IMPORT_CONCURRENCY || 2),
+  // Optional S3-compatible object storage for rehosted assets; absent → local disk.
+  s3: {
+    bucket: process.env.S3_BUCKET || '',
+    region: process.env.S3_REGION || 'us-east-1',
+    endpoint: process.env.S3_ENDPOINT || '',             // R2 / Backblaze custom endpoint
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+    publicBaseUrl: process.env.S3_PUBLIC_BASE_URL || '',  // CDN / public base for rehosted assets
+  },
+
   // ── CORS ──────────────────────────────────────────────────────────────────
   // Comma-separated exact origins allowed to call the API. The extension's own
   // origin (chrome-extension://<id>) is added from EXTENSION_IDS.
@@ -186,6 +200,12 @@ export const aiLimits = {
 // without needing a cron job to rewrite the stored plan.
 export function effectivePlan(user) {
   if (!user) return 'free';
+  // Accounts in OWNER_EMAILS are always unlimited owners. This is the single
+  // SERVER-SIDE source of truth for owner status, so the usage/consume gate
+  // enforces it regardless of any client-side flag (devMode, a locally-set
+  // plan, or the owner-login password). A client can never grant itself free
+  // clones — only an email on this list is unlimited.
+  if (user.email && config.ownerEmails.includes(String(user.email).toLowerCase())) return 'owner';
   if (user.status === 'suspended') return 'free';
   if (user.subscriptionSource === 'ghl' && user.currentPeriodEnd) {
     const end = Date.parse(user.currentPeriodEnd);

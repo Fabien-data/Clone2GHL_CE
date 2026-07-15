@@ -17,6 +17,8 @@ import sitesRoutes from './routes/sites.js';
 import ghlRoutes from './routes/ghl.js';
 import trialRoutes from './routes/trial.js';
 import assetsRoutes from './routes/assets.js';
+import importRoutes from './routes/import.js';
+import { resumeStuckJobs } from './services/importWorker.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { aiLimiter, webhookLimiter } from './middleware/rateLimit.js';
 import { readDb } from './store.js';
@@ -82,6 +84,7 @@ app.use('/api/funnels', bigJson);
 app.use('/api/ai', bigJson);
 app.use('/api/sites', bigJson);
 app.use('/api/videos', bigJson);
+app.use('/api/import', bigJson); // captured pages (full HTML) can be large
 
 app.use(express.json({ limit: '512kb' }));
 app.use(express.static(path.join(__dirname, '../../public')));
@@ -101,6 +104,7 @@ app.use('/api/sites', sitesRoutes);
 app.use('/api/ghl', ghlRoutes);
 app.use('/api/trial', trialRoutes);
 app.use('/api/assets', assetsRoutes);
+app.use('/api/import', importRoutes);
 
 app.use((err, req, res, _next) => {
   if (err.type === 'entity.too.large') {
@@ -129,4 +133,6 @@ if (errors.length) {
 
 app.listen(config.port, () => {
   console.log(`Clone2GHL backend running on http://localhost:${config.port}`);
+  // Re-queue any import job left mid-flight by a restart (in-process queue).
+  resumeStuckJobs(config.appUrl || `http://localhost:${config.port}`);
 });

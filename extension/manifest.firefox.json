@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Clone2GHL – Funnel Intelligence Platform",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "default_locale": "en",
   "description": "Clone any webpage, analyze funnel intelligence, optimize copy with AI, and launch directly into GoHighLevel in minutes.",
   "browser_specific_settings": {
     "gecko": {
       "id": "clone2ghl@clone2ghl.app",
-      "strict_min_version": "121.0"
+      "strict_min_version": "128.0"
     }
   },
   "permissions": [
@@ -19,7 +19,9 @@
   ],
   "host_permissions": [
     "https://services.leadconnectorhq.com/*",
-    "https://rest.gohighlevel.com/*",
+    "https://backend.leadconnectorhq.com/*",
+    "https://page-builder.leadconnectorhq.com/*",
+    "https://app.gohighlevel.com/*",
     "https://api.openai.com/*",
     "<all_urls>"
   ],
@@ -31,6 +33,7 @@
       "aiOptimizer.js",
       "funnelAnalyzer.js",
       "watchlistChecker.js",
+      "siteScanner.js",
       "background.js"
     ]
   },
@@ -40,6 +43,19 @@
       "js": ["compat.js", "contentScript.js"],
       "run_at": "document_idle",
       "all_frames": false
+    },
+    {
+      "matches": ["https://app.gohighlevel.com/*", "https://page-builder.leadconnectorhq.com/*"],
+      "js": ["ghlInternal.js", "builderInjector.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": ["https://app.gohighlevel.com/*", "https://page-builder.leadconnectorhq.com/*"],
+      "js": ["compat.js", "ghlBuilderContent.js"],
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "action": {
@@ -65,6 +81,13 @@
         "data/*"
       ],
       "matches": ["<all_urls>"]
+    },
+    {
+      "resources": [
+        "ghlInternal.js",
+        "builderInjector.js"
+      ],
+      "matches": ["https://*/*"]
     }
   ],
   "content_security_policy": {

@@ -247,6 +247,30 @@
         margin-top: 8px;
       }
       .c2ghl-credits span { color: #F59E0B; font-weight: 600; }
+      .c2ghl-ready-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 11px; font-weight: 600; color: #6EE7B7;
+        background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+        border-radius: 50px; padding: 3px 10px; margin-bottom: 12px;
+      }
+      .c2ghl-divider { height:1px; background: rgba(255,255,255,0.08); margin: 14px 0; }
+      .c2ghl-scan-list {
+        max-height: 220px; overflow-y: auto; margin: 8px 0 12px;
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+      }
+      .c2ghl-scan-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px; font-size: 12px; color: #D1D5DB;
+        border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+      }
+      .c2ghl-scan-item:last-child { border-bottom: none; }
+      .c2ghl-scan-item:hover { background: rgba(217,166,32,0.08); }
+      .c2ghl-scan-item input { accent-color: #D9A620; width: 15px; height: 15px; flex-shrink: 0; }
+      .c2ghl-scan-item .c2ghl-scan-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .c2ghl-scan-actions { display: flex; gap: 8px; }
+      .c2ghl-scan-actions .c2ghl-btn-secondary,
+      .c2ghl-scan-actions .c2ghl-btn-primary { margin-bottom: 0; }
     `;
     document.documentElement.appendChild(style);
   }
@@ -308,6 +332,7 @@
         <button class="c2ghl-panel-close" id="c2ghl-panel-close">×</button>
       </div>
       <div class="c2ghl-panel-body">
+        <div class="c2ghl-ready-badge" id="c2ghl-ready-badge">● GHL Page Ready</div>
         <div class="c2ghl-url-preview" id="c2ghl-url-preview">${window.location.href}</div>
 
         <div class="c2ghl-label">Niche / Industry</div>
@@ -331,6 +356,21 @@
         <button class="c2ghl-btn-primary" id="c2ghl-clone-action-btn">
           ⚡ Clone This Page
         </button>
+        <button class="c2ghl-btn-secondary" id="c2ghl-scan-btn">
+          🧭 Scan &amp; Select Pages
+        </button>
+
+        <div id="c2ghl-scan-wrap" style="display:none;">
+          <div class="c2ghl-divider"></div>
+          <div class="c2ghl-label" id="c2ghl-scan-count">Pages found</div>
+          <div class="c2ghl-scan-list" id="c2ghl-scan-list"></div>
+          <div class="c2ghl-scan-actions">
+            <button class="c2ghl-btn-secondary" id="c2ghl-scan-all" type="button">Select all</button>
+            <button class="c2ghl-btn-primary" id="c2ghl-copy-selected" type="button">Copy Selected</button>
+          </div>
+          <div class="c2ghl-divider"></div>
+        </div>
+
         <button class="c2ghl-btn-secondary" id="c2ghl-open-dashboard-btn">
           Open Dashboard
         </button>
@@ -344,10 +384,29 @@
     // Events
     document.getElementById('c2ghl-panel-close').addEventListener('click', closePanel);
     document.getElementById('c2ghl-clone-action-btn').addEventListener('click', startClone);
+    document.getElementById('c2ghl-scan-btn').addEventListener('click', scanSite);
+    document.getElementById('c2ghl-scan-all').addEventListener('click', toggleSelectAll);
+    document.getElementById('c2ghl-copy-selected').addEventListener('click', copySelected);
     document.getElementById('c2ghl-open-dashboard-btn').addEventListener('click', openDashboard);
+
+    // Detect a GHL-built source → element-wise clone yields the highest fidelity.
+    const badge = document.getElementById('c2ghl-ready-badge');
+    if (badge && isGhlBuilt()) {
+      badge.textContent = '● GHL site detected — element-wise clone';
+      badge.title = 'This page looks GHL-built; Clone2GHL will reconstruct it element-by-element.';
+    }
 
     loadCredits();
     return panel;
+  }
+
+  // Lightweight check for GHL/LeadConnector build markers (no full-DOM scan).
+  function isGhlBuilt() {
+    try {
+      if (document.querySelector('script[src*="leadconnectorhq"], script[src*="msgsndr"], [class*="hl-"], [class*="c-section"], [data-hl-page], [id*="hl_"]')) return true;
+      const gen = document.querySelector('meta[name="generator"]');
+      return gen ? /highlevel|gohighlevel|leadconnector/i.test(gen.content || '') : false;
+    } catch { return false; }
   }
 
   // ─── Panel State ───────────────────────────────────────────────────────────
@@ -462,10 +521,87 @@
     });
   }
 
+  // ─── Scan & Select Pages (multi-page Copy Selected) ─────────────────────────
+  function escapeHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  async function scanSite() {
+    const btn = document.getElementById('c2ghl-scan-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
+    showStatus('Scanning this site for pages…', 'info');
+    try {
+      const links = Array.from(document.querySelectorAll('a[href]')).map(a => a.href).filter(Boolean);
+      const resp = await chrome.runtime.sendMessage({ action: 'SCAN_SITE', data: { url: location.href, pageLinks: links } });
+      if (!resp?.success) throw new Error(resp?.error || 'Scan failed');
+      renderScanList(resp.pages || []);
+      showStatus(`Found ${(resp.pages || []).length} page(s). Pick the ones to clone.`, 'info');
+    } catch (err) {
+      showStatus(`Scan error: ${err.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '🧭 Scan &amp; Select Pages'; }
+    }
+  }
+
+  function renderScanList(pages) {
+    const wrap = document.getElementById('c2ghl-scan-wrap');
+    const list = document.getElementById('c2ghl-scan-list');
+    const count = document.getElementById('c2ghl-scan-count');
+    if (!wrap || !list) return;
+    const here = location.href.replace(/#.*$/, '').replace(/\/$/, '');
+    list.innerHTML = pages.map((p) => {
+      const checked = (p.url.replace(/\/$/, '') === here) ? 'checked' : '';
+      return `<label class="c2ghl-scan-item" title="${escapeHtml(p.url)}">
+        <input type="checkbox" class="c2ghl-scan-check" value="${escapeHtml(p.url)}" ${checked}>
+        <span class="c2ghl-scan-path">${escapeHtml(p.title || p.path || p.url)}</span>
+      </label>`;
+    }).join('') || '<div style="padding:12px;font-size:12px;color:#9CA3AF;">No pages found. Try cloning this single page instead.</div>';
+    if (count) count.textContent = `${pages.length} page(s) found`;
+    wrap.style.display = 'block';
+  }
+
+  function toggleSelectAll() {
+    const checks = Array.from(document.querySelectorAll('.c2ghl-scan-check'));
+    const allOn = checks.every(c => c.checked);
+    checks.forEach(c => { c.checked = !allOn; });
+  }
+
+  async function copySelected() {
+    const urls = Array.from(document.querySelectorAll('.c2ghl-scan-check:checked')).map(c => c.value);
+    if (!urls.length) { showStatus('Select at least one page first.', 'error'); return; }
+    const btn = document.getElementById('c2ghl-copy-selected');
+    if (btn) { btn.disabled = true; btn.textContent = 'Capturing…'; }
+    showStatus(`Capturing ${urls.length} page(s)…`, 'info');
+    try {
+      const resp = await chrome.runtime.sendMessage({ action: 'CAPTURE_SELECTED', data: { urls } });
+      if (!resp?.success) throw new Error(resp?.error || 'Capture failed');
+      const n = resp.cloneSet?.count ?? urls.length;
+      const dropped = resp.cloneSet?.dropped?.length || 0;
+      const failed = resp.cloneSet?.errors?.length || 0;
+      let msg = `✓ ${n} page(s) ready to paste. Open your GHL builder, then click “Paste N Pages” in the dashboard.`;
+      if (failed) msg += ` (${failed} failed)`;
+      if (dropped) msg += ` (${dropped} dropped — too large)`;
+      showStatus(msg, 'success');
+    } catch (err) {
+      showStatus(`Capture error: ${err.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Copy Selected'; }
+    }
+  }
+
   // ─── Init ──────────────────────────────────────────────────────────────────
   function init() {
     injectStyles();
     createFloatingButton();
+
+    // Auto-enable the builder automation on white-label GHL domains (e.g.
+    // app.youragency.com). When we detect the GHL app on a non-default host, ask
+    // the background to register the builder scripts there + inject this tab.
+    try {
+      if (/^app\./i.test(location.host) && location.host !== 'app.gohighlevel.com' && isGhlBuilt()) {
+        chrome.runtime.sendMessage({ action: 'REGISTER_GHL_DOMAIN', host: location.host }).catch(() => {});
+      }
+    } catch (_) { /* ignore */ }
 
     // Listen for messages from background/popup to trigger clone programmatically
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -478,6 +614,10 @@
           if (sel) sel.value = message.niche;
         }
         sendResponse({ success: true });
+      }
+      // Live capture progress while "Copy Selected" runs in the background.
+      if (message.action === 'CAPTURE_PROGRESS' && document.getElementById('c2ghl-status')) {
+        showStatus(message.message || `Capturing ${message.step}/${message.total}…`, 'info');
       }
     });
   }

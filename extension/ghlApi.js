@@ -434,7 +434,18 @@ const GHLApi = (() => {
   // ─── Full Push Flow ──────────────────────────────────────────────────────────
 
   /**
-   * pushFunnelToGHL — the main export pipeline.
+   * ⚠️ DEPRECATED / UNUSED — do not wire this back in.
+   *
+   * GoHighLevel's public API v2 is READ-ONLY for funnels and pages. There is no
+   * endpoint to create a funnel page or write page content (it remains an open
+   * feature request on GHL's side), so the createFunnel / createFunnelPage /
+   * updatePageContent calls below always 404 and nothing actually lands in GHL.
+   * The product now "pushes" via a guided copy → paste flow (see PUSH_TO_GHL in
+   * background.js + pushFunnelToGHL in dashboard.js). The read helpers above
+   * (validateCredentials, getExistingFunnels, listFunnels, …) DO work and are
+   * still used for credential validation.
+   *
+   * pushFunnelToGHL — the (legacy) export pipeline.
    *
    * Strategy:
    * 1. Try to create a NEW "Clone2GHL" funnel (clean slate every time)

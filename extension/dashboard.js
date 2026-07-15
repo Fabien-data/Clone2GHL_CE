@@ -139,7 +139,7 @@ function focusActivation() {
 // shared by the Getting Started checklist and the "Your Status" card.
 function getSetupState() {
   const s = settings || {};
-  const ownerOrDev = s.plan === 'owner' || s.devMode;
+  const ownerOrDev = s.plan === 'owner' || (s.devMode && s.isOwner);
   const accountDone = Boolean(s.backendToken);
   const ghlDone = Boolean(s.ghlValidated) || Boolean(s.ghlApiKey && s.ghlLocationId);
   const planDone = (s.plan && s.plan !== 'free') || s.isTrial === true
@@ -257,10 +257,19 @@ function renderGettingStarted() {
 
 // ─── Messaging ────────────────────────────────────────────────────────────────
 function sendMsg(message) {
-  return chrome.runtime.sendMessage(message).catch((err) => ({
-    success: false,
-    error: err?.message || 'Runtime connection error',
-  }));
+  try {
+    // chrome.runtime.sendMessage can THROW synchronously (not just reject) when the
+    // page is orphaned after an extension reload ("Extension context invalidated").
+    return Promise.resolve(chrome.runtime.sendMessage(message)).catch((err) => ({
+      success: false,
+      error: err?.message || 'Runtime connection error',
+    }));
+  } catch (err) {
+    return Promise.resolve({
+      success: false,
+      error: (err?.message || 'Extension context error') + ' — reload this page (Ctrl/Cmd+R).',
+    });
+  }
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
@@ -281,7 +290,7 @@ const LOCAL_FEATURE_DEFAULTS = {
 };
 
 function hasFeature(name) {
-  if (settings?.devMode) return true;
+  if (settings?.devMode && settings?.isOwner) return true;
   if (settings?.plan === 'owner') return true;
   const flags = settings?.featureFlags || LOCAL_FEATURE_DEFAULTS[settings?.plan] || LOCAL_FEATURE_DEFAULTS.free;
   return Boolean(flags[name]);
@@ -317,7 +326,7 @@ function applyFeatureGating() {
   if (logoBtn) {
     const limit = settings?.logosLimit ?? 0;
     const remaining = settings?.logosRemaining ?? 0;
-    if (settings?.plan === 'owner' || settings?.devMode || limit < 0) {
+    if (settings?.plan === 'owner' || (settings?.devMode && settings?.isOwner) || limit < 0) {
       logoBtn.disabled = false;
       if (logoNote) logoNote.textContent = 'Unlimited logo generations';
     } else if (limit === 0) {
@@ -1138,21 +1147,24 @@ function updateSidebarPlanInfo() {
   // silently downgraded without knowing why their tools changed.
   renderSubscriptionStatus();
 
-  // Owner entry / badge visibility
+  // Owner / Dev controls are visible ONLY to a verified owner (email in
+  // OWNER_EMAILS, confirmed server-side via whoami → settings.isOwner). Regular
+  // users never see them. Billing is enforced server-side regardless, so this is
+  // purely UI hygiene. Defaults to hidden until owner status resolves.
+  const isOwnerUser = settings.isOwner === true;
+
+  // Owner entry (unlock prompt) vs. owner badge (already unlocked) visibility
   const ownerEntry = document.getElementById('owner-entry');
   const ownerBadge = document.getElementById('owner-badge');
-  if (settings.plan === 'owner') {
-    if (ownerEntry) ownerEntry.style.display = 'none';
-    if (ownerBadge) ownerBadge.style.display = 'block';
-  } else {
-    if (ownerEntry) ownerEntry.style.display = 'block';
-    if (ownerBadge) ownerBadge.style.display = 'none';
-  }
+  if (ownerEntry) ownerEntry.style.display = (isOwnerUser && settings.plan !== 'owner') ? 'block' : 'none';
+  if (ownerBadge) ownerBadge.style.display = (isOwnerUser && settings.plan === 'owner') ? 'block' : 'none';
 
-  // Dev Mode badge + toggle sync
+  // Dev Mode label + badge (owner-only; a convenience for local/offline testing)
+  const devLabel = document.getElementById('sidebar-devmode-label');
   const devBadge = document.getElementById('devmode-badge');
   const devToggle = document.getElementById('sidebar-devmode-toggle');
-  if (devBadge) devBadge.style.display = settings.devMode ? 'block' : 'none';
+  if (devLabel) devLabel.style.display = isOwnerUser ? 'flex' : 'none';
+  if (devBadge) devBadge.style.display = (isOwnerUser && settings.devMode) ? 'block' : 'none';
   if (devToggle) devToggle.checked = Boolean(settings.devMode);
 
   document.getElementById('btn-upgrade-sidebar')?.addEventListener('click', () => switchTab('settings'));
@@ -1187,6 +1199,7 @@ function setupOwnerButtons() {
 // ─── My Funnels Tab ───────────────────────────────────────────────────────────
 function setupFunnelsTab() {
   renderFunnels();
+  refreshPasteBanner();
 
   document.getElementById('btn-clone-new')?.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -1241,6 +1254,218 @@ function ensureFunnelToolbar() {
   document.getElementById('funnels-niche').addEventListener('change', (e) => { funnelFilter.niche = e.target.value; renderFunnels(); });
   document.getElementById('funnels-status').addEventListener('change', (e) => { funnelFilter.status = e.target.value; renderFunnels(); });
   document.getElementById('btn-batch-clone').addEventListener('click', openBatchClone);
+}
+
+// ─── Paste-N-Pages banner (clone clipboard → GHL builder) ─────────────────────
+// Appears above the funnel grid whenever pages captured via "Copy Selected" are
+// waiting to be pasted into the GHL builder.
+function ensurePasteBanner() {
+  if (document.getElementById('paste-banner')) return;
+  const grid = document.getElementById('funnels-grid');
+  if (!grid) return;
+  const el = document.createElement('div');
+  el.id = 'paste-banner';
+  el.style.cssText = 'display:none;margin-bottom:14px;padding:14px 16px;border:1px solid var(--gold,#D9A620);border-radius:12px;background:rgba(217,166,32,0.08);';
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <div style="font-weight:700;font-size:14px;color:var(--gold-light,#F0BB2D);">📋 <span id="paste-banner-title">Pages ready to paste</span></div>
+        <div id="paste-banner-sub" style="font-size:12px;color:var(--text3);margin-top:3px;"></div>
+      </div>
+      <button id="btn-paste-edit" class="btn-secondary" style="padding:8px 14px;">✏️ Edit pages</button>
+      <button id="btn-paste-set" class="btn-primary" style="padding:8px 16px;">→ Create Funnel &amp; Paste</button>
+      <button id="btn-paste-clear" class="btn-secondary" style="padding:8px 12px;">Clear</button>
+    </div>
+    <div id="paste-progress" style="margin-top:10px;font-size:12px;color:var(--text3);display:none;"></div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text3);">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;" title="Normalize on the server into native, element-wise GHL pages (recommended). Off = client-side custom_code blocks.">
+        <input type="checkbox" id="paste-pipeline-toggle"> Element-wise (server pipeline)
+      </label>
+      <a href="#" id="paste-history-link" style="color:var(--gold-light,#F0BB2D);">Import history</a>
+    </div>`;
+  grid.parentNode.insertBefore(el, grid);
+  document.getElementById('btn-paste-set').addEventListener('click', runPasteSet);
+  document.getElementById('btn-paste-edit').addEventListener('click', openVisualEditorForCloneSet);
+  document.getElementById('btn-paste-clear').addEventListener('click', async () => {
+    await sendMsg({ action: 'CLEAR_CLONE_CLIPBOARD' });
+    refreshPasteBanner();
+  });
+  document.getElementById('paste-pipeline-toggle').addEventListener('change', async (e) => {
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { usePipeline: e.target.checked } });
+  });
+  document.getElementById('paste-history-link').addEventListener('click', (e) => { e.preventDefault(); showImportHistory(); });
+}
+
+async function showImportHistory() {
+  const resp = await sendMsg({ action: 'IMPORT_HISTORY' });
+  const jobs = resp?.jobs || [];
+  const body = jobs.length
+    ? jobs.map(j => `• ${escHtml(j.name || 'Import')} — ${j.ok ?? '?'}/${j.total} page(s) — ${j.status}`).join('\n')
+    : 'No server imports yet. Capture pages with “Copy Selected” to create one.';
+  await uiConfirm('Import history', body, { okText: 'Close', cancelText: null });
+}
+
+async function refreshPasteBanner() {
+  ensurePasteBanner();
+  const banner = document.getElementById('paste-banner');
+  if (!banner) return;
+  const resp = await sendMsg({ action: 'GET_CLONE_CLIPBOARD' });
+  const cs = resp?.cloneSet;
+  if (!cs || !cs.count) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  document.getElementById('paste-banner-title').textContent =
+    `${cs.count} page${cs.count !== 1 ? 's' : ''} ready to paste${cs.name ? ` — ${cs.name}` : ''}`;
+
+  // Reflect the pipeline toggle from settings (default ON).
+  const toggle = document.getElementById('paste-pipeline-toggle');
+  if (toggle) {
+    const s = await sendMsg({ action: 'GET_SETTINGS' });
+    toggle.checked = s?.settings?.usePipeline !== false;
+  }
+
+  const sub = document.getElementById('paste-banner-sub');
+  const status = await sendMsg({ action: 'GET_BUILDER_STATUS' });
+  if (!status?.success || !status.open) {
+    sub.innerHTML = 'Click “Create Funnel &amp; Paste” — we’ll open your GoHighLevel account and do the rest.';
+  } else if (!status.credsLearned) {
+    sub.innerHTML = '⏳ GHL open — reading your session… you can click “Create Funnel &amp; Paste” now.';
+  } else {
+    sub.innerHTML = '✓ GHL connected — ready. Click “Create Funnel &amp; Paste”.';
+  }
+}
+
+async function runPasteSet() {
+  const btn = document.getElementById('btn-paste-set');
+  const prog = document.getElementById('paste-progress');
+  try {
+    // Ask WHERE to push: a new named funnel (default) or an existing one.
+    const setResp = await sendMsg({ action: 'GET_CLONE_CLIPBOARD' });
+    const setName = setResp?.cloneSet?.name || 'Cloned Funnel';
+    const dest = await chooseFunnelDestination(setName);
+    if (!dest) return; // cancelled
+
+    if (btn) { btn.disabled = true; btn.textContent = dest.createFunnel ? 'Creating funnel…' : 'Pasting…'; }
+    if (prog) { prog.style.display = 'block'; prog.textContent = 'Connecting to the GHL builder…'; }
+    const resp = await sendMsg({ action: 'PASTE_SET', data: dest });
+    if (!resp?.success) throw new Error(resp?.error || 'Paste failed');
+    const s = resp.summary || {};
+    const results = s.results || [];
+    const ok = s.ok ?? results.filter(r => r.ok).length;
+    const total = s.total ?? results.length;
+    const verified = s.verified ?? results.filter(r => (r.sectionCount || 0) > 0).length;
+    const allDone = s.allDone ?? (total > 0 && ok === total);
+    if (prog) prog.textContent = `✓ ${ok}/${total} page(s) pushed${verified ? ` · ${verified} verified` : ''}.`;
+
+    // Deep-link to the funnel when we know both ids.
+    const s0 = await sendMsg({ action: 'GET_SETTINGS' });
+    const locId = s.locationId || s0?.settings?.ghlLocationId || '';
+    const openLink = (s.funnelId && locId)
+      ? `https://app.gohighlevel.com/v2/location/${locId}/funnels-websites/funnels/${s.funnelId}`
+      : '';
+
+    // End-to-end checklist.
+    const failed = results.filter(r => !r.ok);
+    const lines = [];
+    if (dest.createFunnel) lines.push(`✓ Funnel “${dest.funnelName}” created`);
+    lines.push(`✓ ${ok} of ${total} page(s) placed`);
+    if (verified) lines.push(`✓ ${verified}/${total} verified — content read back from GHL`);
+    else lines.push('• Couldn’t auto-verify — reload the builder to confirm');
+    if (failed.length) lines.push(`⚠ ${failed.length} couldn’t be placed: ${failed.map(f => `“${f.name}”`).join(', ')} — kept for retry`);
+    if (openLink) lines.push(`\nOpen it: ${openLink}`);
+
+    await uiConfirm(allDone ? 'Pushed to GoHighLevel ✅' : 'Pushed to GoHighLevel',
+      lines.join('\n'), { okText: 'Got it', cancelText: null });
+
+    if (openLink) { try { window.open(openLink, '_blank'); } catch (_) { /* popup blocked — URL shown above */ } }
+
+    // Only clear the captured set when EVERY page landed — never silently drop pages.
+    if (allDone) await sendMsg({ action: 'CLEAR_CLONE_CLIPBOARD' });
+    refreshPasteBanner();
+  } catch (err) {
+    if (prog) prog.textContent = `✗ ${err.message}`;
+    await uiAlert('Couldn’t push to GHL', `${err.message || 'Push failed.'}\n\nIf automation can’t reach GHL, you can still use a funnel’s “→ GHL” copy/paste as a fallback.`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '→ Create Funnel & Paste'; }
+  }
+}
+
+// Ask where to push the captured pages: a NEW named funnel (default) or an EXISTING
+// one (listed via GHL creds if configured). Resolves the PASTE_SET `data` payload, or
+// null if cancelled.
+async function chooseFunnelDestination(defaultName) {
+  // One-time acknowledgement — the native push drives GHL's builder inside your own
+  // logged-in session (an undocumented internal API). Shown once, then remembered.
+  const sr = await sendMsg({ action: 'GET_SETTINGS' });
+  if (!sr?.settings?.nativeAckAt) {
+    const okAck = await uiConfirm('One-click push — how it works',
+      'Clone2GHL creates the funnel and pastes your content by driving GoHighLevel’s builder inside your own logged-in session. It never sees your GHL password or tokens, and if anything can’t go native it falls back to a faithful copy/paste. As with any automation of GHL’s builder, try it on a test sub-account first.\n\nContinue?',
+      { okText: 'I understand — continue', cancelText: 'Cancel' });
+    if (!okAck) return null;
+    await sendMsg({ action: 'SAVE_SETTINGS', data: { nativeAckAt: Date.now() } });
+  }
+  let funnels = [];
+  try { const r = await sendMsg({ action: 'GET_GHL_FUNNELS' }); if (r?.success) funnels = r.funnels || []; } catch (_) { /* creds not set — new-funnel only */ }
+  return pasteDestinationModal(defaultName, funnels);
+}
+
+function pasteDestinationModal(defaultName, funnels) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.style.display = 'flex';
+    const opts = (funnels || []).map(f => {
+      const id = f._id || f.id || '';
+      const nm = f.name || 'Untitled funnel';
+      return id ? `<option value="${escHtml(id)}">${escHtml(nm)}</option>` : '';
+    }).join('');
+    overlay.innerHTML = `
+      <div class="modal" style="max-width:460px;">
+        <div class="modal-header">
+          <div class="modal-title">Push to GoHighLevel</div>
+          <button class="modal-close" data-act="cancel" aria-label="Close">✕</button>
+        </div>
+        <div class="modal-body" style="font-size:13.5px;color:var(--text3);line-height:1.6;">
+          <div style="margin-bottom:6px;font-weight:600;color:var(--text1,inherit);">New funnel name</div>
+          <input id="c2g-funnel-name" type="text" value="${escHtml(defaultName || '')}" placeholder="My cloned funnel"
+            style="width:100%;padding:9px 11px;border:1px solid var(--border,#333);border-radius:8px;font-size:14px;background:var(--bg2,#1b1b1b);color:var(--text1,#fff);box-sizing:border-box;">
+          ${opts ? `
+          <div style="margin:12px 0 6px;font-weight:600;color:var(--text1,inherit);">…or paste into an existing funnel</div>
+          <select id="c2g-funnel-existing" style="width:100%;padding:9px 11px;border:1px solid var(--border,#333);border-radius:8px;font-size:14px;background:var(--bg2,#1b1b1b);color:var(--text1,#fff);box-sizing:border-box;">
+            <option value="">➕ Create a new funnel (named above)</option>
+            ${opts}
+          </select>` : ''}
+          <div style="margin-top:10px;font-size:12px;color:var(--text3);">One click: we create the funnel, add each page, paste the content as editable elements, and verify it landed.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" data-act="cancel">Cancel</button>
+          <button class="btn-primary" data-act="ok">Push to GHL</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    a11yModal(overlay.querySelector('.modal'), 'Push to GoHighLevel');
+    const nameEl = overlay.querySelector('#c2g-funnel-name');
+    const exEl = overlay.querySelector('#c2g-funnel-existing');
+    try { nameEl.focus(); nameEl.select(); } catch (_) { /* ignore */ }
+    const done = (val) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(val); };
+    const submit = () => {
+      const existingId = exEl && exEl.value;
+      if (existingId) {
+        const label = (exEl.options[exEl.selectedIndex]?.textContent || '').trim();
+        return done({ createFunnel: false, funnelId: existingId, funnelName: label });
+      }
+      const nm = (nameEl.value || '').trim();
+      if (!nm) { try { nameEl.focus(); } catch (_) { /* ignore */ } return; }
+      done({ createFunnel: true, funnelName: nm });
+    };
+    const onKey = (e) => { if (e.key === 'Escape') done(null); else if (e.key === 'Enter' && e.target === nameEl) submit(); };
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) return done(null);
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if (act === 'ok') submit();
+      else if (act === 'cancel') done(null);
+    });
+    document.addEventListener('keydown', onKey);
+  });
 }
 
 // ─── M4: Batch cloning (multi-URL, 2 parallel workers, live progress) ─────────
@@ -1485,92 +1710,156 @@ async function cloneFromUrl() {
 }
 
 async function pushFunnelToGHL(funnelId, btnEl) {
-  // Always refresh from storage
+  // One-click native push: prompt for a funnel name, create the funnel, paste the
+  // content as editable GHL elements, and verify — all automatically. Falls back to
+  // the guided clipboard paste (into a "Custom JS/HTML" element) if automation can't
+  // reach GHL.
+  const originalText = btnEl?.textContent || '→ GHL';
+  try {
   const sr = await sendMsg({ action: 'GET_SETTINGS' });
   settings = sr?.settings || settings;
 
-  if (!settings.ghlApiKey || !settings.ghlLocationId) {
-    if (await uiConfirm('Connect GoHighLevel', "Your GoHighLevel API key or Location ID isn't set yet. Open Settings to connect your account?", { okText: 'Open Settings', cancelText: 'Not now' })) {
+  if (!settings.ghlLocationId) {
+    if (await uiConfirm('Connect GoHighLevel', "Add your GHL Location ID in Settings so we open the right account. Open Settings now?", { okText: 'Open Settings', cancelText: 'Not now' })) {
       switchTab('settings');
       document.getElementById('ghl-api-key')?.focus();
     }
     return;
   }
 
-  const originalText = btnEl?.textContent || '→ GHL';
-  if (btnEl) {
-    btnEl.innerHTML = '<span class="spinner"></span> Pushing…';
-    btnEl.disabled = true;
-  }
+  const funnel = myFunnels.find(f => f.id === funnelId);
 
-  const result = await sendMsg({ action: 'PUSH_TO_GHL', data: { funnelId, useOptimized: true } });
+  // Ask where to push (new named funnel by default; existing allowed).
+  const dest = await chooseFunnelDestination(funnel?.name || 'Cloned Funnel');
+  if (!dest) return;
 
+  if (btnEl) { btnEl.innerHTML = '<span class="spinner"></span> ' + (dest.createFunnel ? 'Creating…' : 'Pushing…'); btnEl.disabled = true; }
+
+  // Primary path: one-click native (create funnel → paste editable elements → verify).
+  const resp = await sendMsg({ action: 'PUSH_FUNNEL_NATIVE', funnelId, data: dest });
   if (btnEl) btnEl.disabled = false;
 
-  // ── Error ──────────────────────────────────────────────────────────────────
-  if (result?.error || (!result?.success && !result?.funnelId)) {
-    const errMsg = buildPushErrorMessage(result?.error || 'Unknown error occurred.');
-    if (btnEl) btnEl.textContent = originalText;
-    await uiAlert('Export failed', errMsg);
-
-    // Offer download fallback
-    const funnel = myFunnels.find(f => f.id === funnelId);
-    if (funnel && await uiConfirm('Download HTML?', 'Want to download the HTML instead so you can paste it manually into GHL?', { okText: 'Download', cancelText: 'No thanks' })) {
-      const html = funnel.optimizedHtml || funnel.html || '';
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${(funnel.name || 'funnel').replace(/\s+/g, '-')}.html`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+  if (resp?.success) {
+    const s = resp.summary || {};
+    const results = s.results || [];
+    const ok = s.ok ?? results.filter(r => r.ok).length;
+    const total = s.total ?? results.length;
+    const verified = s.verified ?? results.filter(r => (r.sectionCount || 0) > 0).length;
+    const locId = s.locationId || settings.ghlLocationId || '';
+    const openLink = (s.funnelId && locId) ? `https://app.gohighlevel.com/v2/location/${locId}/funnels-websites/funnels/${s.funnelId}` : '';
+    const lines = [];
+    if (dest.createFunnel) lines.push(`✓ Funnel “${dest.funnelName}” created`);
+    lines.push(`✓ ${ok}/${total} page placed${verified ? ' · verified' : ''}`);
+    if (!verified) lines.push('• Couldn’t auto-verify — reload the builder to confirm');
+    if (openLink) lines.push(`\nOpen it: ${openLink}`);
+    await uiConfirm('Pushed to GoHighLevel ✅', lines.join('\n'), { okText: 'Got it', cancelText: null });
+    if (openLink) { try { window.open(openLink, '_blank'); } catch (_) { /* popup blocked */ } }
+    const fr = await sendMsg({ action: 'GET_FUNNELS' });
+    myFunnels = fr?.funnels || myFunnels;
+    renderFunnels();
+    if (btnEl) btnEl.textContent = '✓ Pushed';
     return;
   }
 
-  // ── Refresh funnel list ────────────────────────────────────────────────────
-  const fr = await sendMsg({ action: 'GET_FUNNELS' });
-  myFunnels = fr?.funnels || [];
+  // Fallback: guided clipboard paste (native automation unavailable/failed).
+  if (btnEl) btnEl.textContent = originalText;
+  const useManual = await uiConfirm('Automation couldn’t reach GHL',
+    `${resp?.error || 'The one-click push didn’t complete.'}\n\nWould you like to copy the page HTML and paste it manually into a GHL “Custom JS/HTML” element instead?`,
+    { okText: 'Copy & guide me', cancelText: 'Cancel' });
+  if (!useManual) return;
+
+  const result = await sendMsg({ action: 'PUSH_TO_GHL', data: { funnelId, useOptimized: true } });
+  if (result?.error || result?.success !== 'ready' || !result?.html) {
+    await uiAlert('Couldn’t prepare export', buildPushErrorMessage(result?.error || 'Unknown error occurred.'));
+    return;
+  }
+  const fr2 = await sendMsg({ action: 'GET_FUNNELS' });
+  myFunnels = fr2?.funnels || myFunnels;
   renderFunnels();
+  const copied = await copyHtmlAndGuidePaste(result.html, {
+    builderUrl: result.builderUrl,
+    funnel: myFunnels.find(f => f.id === funnelId),
+  });
+  if (btnEl) btnEl.textContent = copied ? '✓ Copied' : originalText;
+  } catch (err) {
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalText; }
+    await uiAlert('Couldn’t push to GHL', (err?.message || 'Something went wrong.') + '\n\nIf you just reloaded the extension, refresh this page (Ctrl/Cmd+R) and try again.');
+  }
+}
 
-  // ── Partial success (page created, content upload failed) ─────────────────
-  if (result.success === 'partial' || result.success === 'html_only') {
-    if (btnEl) btnEl.textContent = '⚠ Partial';
-    const details = result.warning || 'Page was created but content could not be uploaded automatically.';
-    const action = await uiConfirm(
-      'Partial export',
-      `${details}\n\nFunnel: "${result.funnelName || 'Unknown'}"\n\nOpen GHL to paste the HTML manually, or download the HTML file instead.`,
-      { okText: 'Open GHL', cancelText: 'Download HTML' }
-    );
-    if (action) {
-      chrome.tabs.create({ url: result.ghlBuilderUrl });
-    } else {
-      const funnel = myFunnels.find(f => f.id === funnelId);
-      if (funnel) {
-        const html = funnel.optimizedHtml || funnel.html || '';
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${(funnel.name || 'funnel').replace(/\s+/g, '-')}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    }
-    return;
+// Build the correct GHL funnels/builder URL for the connected location. The old
+// `/funnels/{id}` path was not a real GHL route and opened a blank white page.
+function buildGhlBuilderUrl(locationId) {
+  const loc = (locationId || settings?.ghlLocationId || '').trim();
+  return loc
+    ? `https://app.gohighlevel.com/v2/location/${loc}/funnels-websites/funnels`
+    : 'https://app.gohighlevel.com/';
+}
+
+// Copy page HTML to the clipboard and walk the user through pasting it into a GHL
+// "Custom JS/HTML" element. Shared by "Push to GHL" (My Funnels) and the clone-
+// preview "Copy for GHL" action — the latter copies the rehosted HTML so external
+// images don't break once the page lives in GHL. Returns whether the copy worked.
+async function copyHtmlAndGuidePaste(html, { builderUrl, funnel = null } = {}) {
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(html);
+    copied = true;
+  } catch {
+    copied = copyTextFallback(html);
   }
 
-  // ── Full success ──────────────────────────────────────────────────────────
-  if (btnEl) btnEl.textContent = '✓ Exported!';
-  const funnelLabel = result.funnelName ? ` "${result.funnelName}"` : '';
-  showSaveToast('Pushed to GoHighLevel ✓');
-  if (await uiConfirm(
-    'Pushed to GoHighLevel ✅',
-    `Your page${funnelLabel} is now live in your GHL account and editable in the GHL Builder.\n\nOpen the GHL Builder now?`,
-    { okText: 'Open GHL Builder', cancelText: 'Stay here' }
-  )) {
-    chrome.tabs.create({ url: result.ghlBuilderUrl });
+  showSaveToast(copied ? 'Page HTML copied — paste into GHL ✓' : 'Ready — download & paste into GHL');
+
+  const steps =
+    (copied
+      ? '✅ Your page HTML is on the clipboard.'
+      : '⚠️ Couldn’t copy automatically — choose “Download HTML”, open the file, and copy everything (Ctrl/Cmd+A, then Ctrl/Cmd+C).') +
+    '\n\nFinish in GoHighLevel:\n' +
+    '1. Open or create a Funnel/Website, then edit a page in the Builder.\n' +
+    '2. Add an element → “Custom JS/HTML”.\n' +
+    '3. Paste (Ctrl/Cmd+V) into it and Save.\n\n' +
+    'GoHighLevel doesn’t let apps write funnel pages, so this one-time paste is required per page.';
+
+  const openGhl = await uiConfirm('Paste into GoHighLevel', steps, {
+    okText: 'Open GHL Builder',
+    cancelText: copied ? 'Done' : 'Download HTML',
+  });
+  if (openGhl) {
+    chrome.tabs.create({ url: builderUrl || buildGhlBuilderUrl() });
+  } else if (!copied && funnel) {
+    downloadFunnelHtml(funnel);
   }
+  return copied;
+}
+
+// Clipboard fallback for environments where navigator.clipboard is unavailable
+// or blocked. Works in a focused extension page via execCommand('copy').
+function copyTextFallback(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch { return false; }
+}
+
+function downloadFunnelHtml(funnel) {
+  const html = funnel.optimizedHtml || funnel.html || '';
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(funnel.name || 'funnel').replace(/\s+/g, '-')}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function buildPushErrorMessage(rawError) {
@@ -2462,7 +2751,7 @@ function updateCloneProgress(step, total, msg) {
 }
 
 function showCloneSuccess(funnelId, siteName, opts = {}) {
-  const { pushed = false, pushSkipped = false, pushError = null } = opts;
+  const { pushed = false, pushSkipped = false, pushError = null, readyToPush = false } = opts;
   cppCurrentFunnelId = funnelId;
   document.getElementById('cpp-steps').style.display = 'none';
   document.getElementById('cpp-progress-track').style.display = 'none';
@@ -2472,6 +2761,8 @@ function showCloneSuccess(funnelId, siteName, opts = {}) {
   let msg;
   if (pushed) {
     msg = `"${siteName}" cloned and pushed to your GHL account.`;
+  } else if (readyToPush) {
+    msg = `"${siteName}" cloned and saved. Click "Push to GHL" in My Funnels to copy it and paste into your funnel.`;
   } else if (pushSkipped) {
     msg = `"${siteName}" saved to My Funnels. Add your GHL API key + Location ID in Settings, then click "Push to GHL" from My Funnels.`;
   } else if (pushError) {
@@ -2574,6 +2865,7 @@ async function startSilentClone(site, btnEl) {
       pushed: Boolean(result?.ghlFunnelId),
       pushSkipped: Boolean(result?.pushSkipped),
       pushError: result?.pushError || null,
+      readyToPush: Boolean(result?.readyToPush),
     });
   } catch (err) {
     showCloneError(err.message || 'Clone failed. Please try again.');
@@ -2593,6 +2885,18 @@ function setupDiscoverBackgroundMessageListener() {
     }
     if (msg.action === 'DISCOVER_CLONE_COMPLETE') {
       // Handled by the sendMsg resolution above; this is a belt-and-suspenders fallback
+    }
+    // Multi-page pipeline: live progress + clipboard changes.
+    if (msg.action === 'PASTE_PROGRESS') {
+      const prog = document.getElementById('paste-progress');
+      if (prog) { prog.style.display = 'block'; prog.textContent = msg.message || `Pasting ${msg.step}/${msg.total}…`; }
+    }
+    if (msg.action === 'CAPTURE_PROGRESS') {
+      const prog = document.getElementById('paste-progress');
+      if (prog) { prog.style.display = 'block'; prog.textContent = msg.message || `Capturing ${msg.step}/${msg.total}…`; }
+    }
+    if (msg.action === 'CLONE_CLIPBOARD_UPDATED') {
+      refreshPasteBanner();
     }
   });
 }
@@ -4305,6 +4609,7 @@ function openClonePreview(funnel) {
         ${fid ? `<span style="font-size:12px;color:#9aa;">Fidelity ${escHtml(fid.grade)} · ${fid.score}/100</span>` : ''}
         <button id="clone-preview-source" class="btn-secondary" style="padding:5px 10px;font-size:12px;">Toggle source/converted</button>
         ${(fid && fid.stats?.hotlinkedImages > 0) ? `<button id="clone-preview-rehost" class="btn-secondary" style="padding:5px 10px;font-size:12px;" title="Pro/Agency">⬇ Rehost ${fid.stats.hotlinkedImages} image(s)</button>` : ''}
+        <button id="clone-preview-copy" class="btn-primary" style="padding:5px 10px;font-size:12px;" title="Copy this page's HTML to paste into a GHL Custom JS/HTML element">📋 Copy for GHL</button>
         <button id="clone-preview-close" class="btn-secondary" aria-label="Close" style="padding:5px 10px;">✕</button>
       </div>
       <div style="padding:8px 16px;border-bottom:1px solid #2a3350;background:#11172b;">${issuesHtml}</div>
@@ -4326,13 +4631,33 @@ function openClonePreview(funnel) {
     mountIsolatedHtml(document.getElementById('clone-preview-frame'), showingConverted ? converted : (funnel.html || converted));
   });
 
+  // Copy the page HTML (including any rehosted image URLs) for pasting directly
+  // into a GHL Custom JS/HTML element. Re-reads storage so it always grabs the
+  // latest HTML — e.g. right after rehosting images in this same modal.
+  document.getElementById('clone-preview-copy')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Copying…';
+    try {
+      const fr = await sendMsg({ action: 'GET_FUNNELS' });
+      myFunnels = fr?.funnels || myFunnels;
+      const latest = myFunnels.find(f => f.id === funnel.id) || funnel;
+      const html = latest.optimizedHtml || latest.html || '';
+      if (!html || html.length < 50) { alert('Nothing to copy yet — re-clone the site first.'); return; }
+      const copied = await copyHtmlAndGuidePaste(html, { builderUrl: buildGhlBuilderUrl(), funnel: latest });
+      btn.textContent = copied ? '✓ Copied' : original;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   document.getElementById('clone-preview-rehost')?.addEventListener('click', async (e) => {
     const btn = e.currentTarget;
     btn.disabled = true; btn.textContent = 'Rehosting…';
     try {
       const res = await sendMsg({ action: 'REHOST_FUNNEL_ASSETS', funnelId: funnel.id });
       if (!res?.success) throw new Error(res?.error || 'Rehost failed');
-      showSaveToast(`Rehosted ${res.rehosted}/${res.total} image(s).`);
+      showSaveToast(`Rehosted ${res.rehosted}/${res.total} image(s). Click “Copy for GHL” to paste it in.`);
       // Refresh local funnels + preview with the rewritten HTML.
       const fr = await sendMsg({ action: 'GET_FUNNELS' });
       myFunnels = fr?.funnels || myFunnels;
@@ -4628,12 +4953,27 @@ const editorState = {
   funnelSourceDomain: '',
   selectedColorHex: null,
   generatedLogoUrl: null,
+  // Advanced editor (editorEngine.js)
+  selectedId: null,
+  historyUndo: [],
+  historyRedo: [],
+  dirty: false,
+  // Multi-page (clone set) mode
+  mode: 'funnel',            // 'funnel' | 'cloneSet'
+  cloneSetId: null,
+  pages: [],                 // [{ index, name, html, dirty }]
+  activePageIndex: 0,
 };
 
+function editorHasUnsavedChanges() {
+  return editorState.dirty || editorState.patches.length > 0 || editorState.pages.some(p => p.dirty);
+}
+
 function setupVisualEditor() {
-  document.getElementById('editor-btn-close')?.addEventListener('click', () => {
-    if (editorState.patches.length > 0) {
+  document.getElementById('editor-btn-close')?.addEventListener('click', async () => {
+    if (editorHasUnsavedChanges()) {
       if (!confirm('You have unsaved changes. Close without saving?')) return;
+      await C2GHLEditor.clearDraft(); // explicit discard
     }
     closeVisualEditor();
   });
@@ -4641,28 +4981,49 @@ function setupVisualEditor() {
   document.getElementById('editor-btn-save')?.addEventListener('click', saveEditorChanges);
 
   document.getElementById('editor-btn-push')?.addEventListener('click', async () => {
-    await saveEditorChanges();
-    if (editorState.funnelId) {
+    const btn = document.getElementById('editor-btn-push');
+    const saved = await saveEditorChanges();
+    if (!saved) {
+      showSaveToast('Fix the save issue before pushing');
+      return; // never close the editor (and lose work) on a failed save
+    }
+    if (editorState.mode === 'cloneSet') {
       closeVisualEditor();
-      pushFunnelToGHL(editorState.funnelId, document.getElementById('editor-btn-push'));
+      runPasteSet();
+    } else if (editorState.funnelId) {
+      const funnelId = editorState.funnelId;
+      closeVisualEditor();
+      pushFunnelToGHL(funnelId, btn);
     }
   });
 
   document.getElementById('editor-btn-reset')?.addEventListener('click', () => {
     if (!confirm('Reset all changes and restore original cloned HTML?')) return;
+    C2GHLEditor.pushHistorySnapshot(); // reset itself is undoable
     editorState.patches = [];
     editorState.workingHtml = editorState.originalHtml;
+    C2GHLEditor.markDirty();
     renderEditorPreview();
     updateEditorUnsavedIndicator();
   });
 
-  document.getElementById('editor-btn-undo')?.addEventListener('click', () => {
-    if (editorState.patches.length === 0) return;
-    editorState.patches.pop();
-    // Re-apply remaining patches from original
-    editorState.workingHtml = editorState.originalHtml;
-    renderEditorPreview();
-    updateEditorUnsavedIndicator();
+  document.getElementById('editor-btn-undo')?.addEventListener('click', () => C2GHLEditor.undo());
+  document.getElementById('editor-btn-redo')?.addEventListener('click', () => C2GHLEditor.redo());
+
+  // Keyboard shortcuts while the editor overlay is open (iframe-side shortcuts
+  // are attached by C2GHLEditor when the preview loads).
+  document.addEventListener('keydown', (e) => {
+    if (!editorState.isOpen) return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); C2GHLEditor.undo(); }
+    else if ((mod && e.shiftKey && e.key.toLowerCase() === 'z') || (mod && e.key.toLowerCase() === 'y')) { e.preventDefault(); C2GHLEditor.redo(); }
+  });
+
+  // Multi-page switcher (visible only in cloneSet mode).
+  document.getElementById('editor-page-select')?.addEventListener('change', (e) => {
+    switchEditorPage(parseInt(e.target.value, 10));
   });
 
   document.querySelectorAll('.editor-tab').forEach(btn => {
@@ -4675,26 +5036,161 @@ function setupVisualEditor() {
       btn.classList.add('active');
       const iframe = document.getElementById('editor-iframe');
       iframe.className = `editor-iframe device-${btn.dataset.device}`;
+      C2GHLEditor.positionToolbar();
     });
   });
-
-  window.addEventListener('message', handleEditorMessage);
 }
 
-function openVisualEditor(funnel) {
+async function openVisualEditor(funnel) {
+  // One-time DOM-aware copyright auto-strip: conservative pass the first time
+  // this funnel is seen in a DOM-capable context (the SW converter only has a
+  // bounded regex fallback — CopyrightEngine is authoritative).
+  let baseHtml = funnel.optimizedHtml || funnel.html || '';
+  if (!funnel.copyrightStripped && baseHtml) {
+    const { html: strippedHtml, changed } = CopyrightEngine.stripHtmlString(baseHtml);
+    funnel.copyrightStripped = true;
+    if (changed) {
+      baseHtml = strippedHtml;
+      funnel.html = strippedHtml;
+      funnel.optimizedHtml = strippedHtml;
+    }
+    sendMsg({ action: 'SAVE_FUNNEL', data: { ...funnel } }).catch(() => {});
+  }
+
+  editorState.mode = 'funnel';
+  editorState.cloneSetId = null;
+  editorState.pages = [];
+  editorState.activePageIndex = 0;
   editorState.funnelId = funnel.id;
-  editorState.originalHtml = funnel.optimizedHtml || funnel.html || '';
+  editorState.originalHtml = baseHtml;
   editorState.workingHtml = editorState.originalHtml;
   editorState.patches = Array.isArray(funnel.editorPatches) ? [...funnel.editorPatches] : [];
   editorState.funnelSourceDomain = extractDomain(funnel.sourceUrl || '');
   editorState.isOpen = true;
   editorState.generatedLogoUrl = null;
   editorState.selectedColorHex = null;
+  editorState.selectedId = null;
+  editorState.dirty = false;
+  C2GHLEditor.resetHistory();
+
+  // Unsaved-draft recovery (autosave survives a closed tab).
+  const draft = await C2GHLEditor.loadDraft('funnel', funnel.id);
+  if (draft?.html && draft.savedAt > new Date(funnel.updatedAt || 0).getTime()) {
+    const when = new Date(draft.savedAt).toLocaleTimeString();
+    if (confirm(`Restore unsaved changes from ${when}?`)) {
+      editorState.workingHtml = draft.html;
+      if (Array.isArray(draft.patches)) editorState.patches = draft.patches;
+      editorState.dirty = true;
+    } else {
+      await C2GHLEditor.clearDraft();
+    }
+  }
 
   document.getElementById('editor-funnel-name').textContent = `Customizing: ${funnel.name || 'Funnel'}`;
+  updatePageSelectUI();
   document.getElementById('visual-editor').style.display = 'flex';
   updateEditorUnsavedIndicator();
   renderEditorPreview();
+}
+
+// Open the editor over the multi-page clone set (Scan → Copy Selected). Pages
+// load lazily via GET_CLONE_PAGE; edits save back with SAVE_CLONE_PAGES and
+// their pageJson is re-derived at paste time.
+async function openVisualEditorForCloneSet() {
+  const resp = await sendMsg({ action: 'GET_CLONE_CLIPBOARD' });
+  const cs = resp?.cloneSet;
+  if (!cs || !cs.count) { showSaveToast('No captured pages to edit'); return; }
+
+  editorState.mode = 'cloneSet';
+  editorState.cloneSetId = cs.id;
+  editorState.funnelId = null;
+  editorState.pages = (cs.pages || []).map((p, i) => ({ index: i, name: p.name || `Page ${i + 1}`, sourceUrl: p.sourceUrl || '', html: null, dirty: false }));
+  editorState.activePageIndex = 0;
+  editorState.patches = [];
+  editorState.isOpen = true;
+  editorState.generatedLogoUrl = null;
+  editorState.selectedColorHex = null;
+  editorState.selectedId = null;
+  editorState.dirty = false;
+  C2GHLEditor.resetHistory();
+
+  // Unsaved-draft recovery for clone-set edits.
+  const draft = await C2GHLEditor.loadDraft('cloneSet', cs.id);
+  if (draft?.dirtyPages?.length) {
+    const when = new Date(draft.savedAt).toLocaleTimeString();
+    if (confirm(`Restore unsaved page edits from ${when}? (${draft.dirtyPages.length} page(s))`)) {
+      draft.dirtyPages.forEach((dp) => {
+        const page = editorState.pages[dp.index];
+        if (page) { page.html = dp.html; page.dirty = true; }
+      });
+      editorState.dirty = true;
+      if (typeof draft.pageIndex === 'number' && editorState.pages[draft.pageIndex]) {
+        editorState.activePageIndex = draft.pageIndex;
+      }
+    } else {
+      await C2GHLEditor.clearDraft();
+    }
+  }
+
+  const loaded = await loadCloneSetPageHtml(editorState.activePageIndex);
+  if (!loaded) { editorState.isOpen = false; return; }
+
+  document.getElementById('editor-funnel-name').textContent = `Customizing: ${cs.name || 'Captured pages'}`;
+  updatePageSelectUI();
+  document.getElementById('visual-editor').style.display = 'flex';
+  updateEditorUnsavedIndicator();
+  renderEditorPreview();
+}
+
+// Fetch a clone-set page's HTML (once) and make it the editor's working page.
+async function loadCloneSetPageHtml(index) {
+  const page = editorState.pages[index];
+  if (!page) return false;
+  if (!page.html) {
+    const resp = await sendMsg({ action: 'GET_CLONE_PAGE', data: { index } });
+    if (!resp?.page?.html) {
+      showSaveToast(`Couldn't load "${page.name}" — recapture the pages`);
+      return false;
+    }
+    page.html = resp.page.html;
+    if (resp.page.sourceUrl) page.sourceUrl = resp.page.sourceUrl;
+  }
+  editorState.activePageIndex = index;
+  editorState.originalHtml = page.html;
+  editorState.workingHtml = page.html;
+  editorState.funnelSourceDomain = extractDomain(page.sourceUrl || '');
+  return true;
+}
+
+async function switchEditorPage(index) {
+  if (editorState.mode !== 'cloneSet' || index === editorState.activePageIndex) return;
+  // Serialize the current page (switching is non-destructive; history is per-page).
+  const current = editorState.pages[editorState.activePageIndex];
+  if (current) {
+    const html = serializeIframeToHtml();
+    if (html !== current.html) { current.html = html; current.dirty = true; }
+  }
+  C2GHLEditor.resetHistory();
+  editorState.selectedId = null;
+  editorState.patches = [];
+  const ok = await loadCloneSetPageHtml(index);
+  if (!ok) return;
+  updatePageSelectUI();
+  updateEditorUnsavedIndicator();
+  renderEditorPreview();
+}
+
+function updatePageSelectUI() {
+  const sel = document.getElementById('editor-page-select');
+  if (!sel) return;
+  if (editorState.mode !== 'cloneSet') {
+    sel.style.display = 'none';
+    return;
+  }
+  sel.style.display = 'inline-block';
+  sel.innerHTML = editorState.pages
+    .map((p) => `<option value="${p.index}" ${p.index === editorState.activePageIndex ? 'selected' : ''}>${p.dirty ? '● ' : ''}${escHtml(p.name)}</option>`)
+    .join('');
 }
 
 function closeVisualEditor() {
@@ -4702,7 +5198,16 @@ function closeVisualEditor() {
   editorState.isOpen = false;
   editorState.funnelId = null;
   editorState.patches = [];
+  editorState.mode = 'funnel';
+  editorState.cloneSetId = null;
+  editorState.pages = [];
+  editorState.activePageIndex = 0;
+  editorState.selectedId = null;
+  editorState.dirty = false;
+  C2GHLEditor.resetHistory();
+  C2GHLEditor.clearSelection();
   document.getElementById('editor-iframe').srcdoc = '';
+  updatePageSelectUI();
 }
 
 function renderEditorPreview() {
@@ -4718,53 +5223,10 @@ function onEditorIframeLoad() {
   const doc = iframe.contentDocument;
   if (!doc || !doc.body) return;
 
-  // Tag all editable elements with stable IDs
-  let counter = 0;
-  doc.querySelectorAll('h1,h2,h3,p,li,button,a,img,svg').forEach(el => {
-    el.setAttribute('data-c2ghl-id', `c2g${counter++}`);
-  });
-
-  injectEditorBridge(doc);
+  // Universal tagging, parent-attached listeners, toolbar, scroll/selection
+  // restore — all handled by the editor engine.
+  C2GHLEditor.onIframeLoad(doc);
   switchEditorPanel(editorState.activePanelId);
-}
-
-function injectEditorBridge(iframeDoc) {
-  iframeDoc.getElementById('c2ghl-bridge')?.remove();
-  iframeDoc.getElementById('c2ghl-editor-styles')?.remove();
-
-  const style = iframeDoc.createElement('style');
-  style.id = 'c2ghl-editor-styles';
-  style.textContent = `
-    [data-c2ghl-id] { cursor:pointer !important; }
-    .c2ghl-hover { outline:2px solid #D9A620 !important; outline-offset:2px !important; }
-    .c2ghl-selected { outline:2px solid #F0BB2D !important; }
-    .c2ghl-risk { outline:2px solid #EF4444 !important; background:rgba(239,68,68,0.12) !important; }
-  `;
-  iframeDoc.head.appendChild(style);
-
-  const script = iframeDoc.createElement('script');
-  script.id = 'c2ghl-bridge';
-  script.textContent = `
-    document.addEventListener('click', function(e) {
-      var el = e.target.closest('[data-c2ghl-id]');
-      if (!el) return;
-      e.preventDefault();
-      document.querySelectorAll('.c2ghl-selected').forEach(function(x){ x.classList.remove('c2ghl-selected'); });
-      el.classList.add('c2ghl-selected');
-      window.parent.postMessage({ type:'C2GHL_CLICK', id:el.getAttribute('data-c2ghl-id'), tag:el.tagName, text:el.innerText ? el.innerText.slice(0,200) : '' }, '*');
-    });
-    document.addEventListener('mouseover', function(e) {
-      var el = e.target.closest('[data-c2ghl-id]');
-      document.querySelectorAll('.c2ghl-hover').forEach(function(x){ x.classList.remove('c2ghl-hover'); });
-      if (el) el.classList.add('c2ghl-hover');
-    });
-  `;
-  iframeDoc.head.appendChild(script);
-}
-
-function handleEditorMessage(event) {
-  if (!event.data || event.data.type !== 'C2GHL_CLICK') return;
-  // Future: wire click to select the matching text item in the Text panel
 }
 
 function switchEditorPanel(panelId) {
@@ -4776,6 +5238,7 @@ function switchEditorPanel(panelId) {
   if (!content) return;
 
   switch (panelId) {
+    case 'element':   C2GHLEditor.renderInspector(content); break;
     case 'brand':     renderBrandPanel(content); break;
     case 'copyright': renderCopyrightPanel(content); break;
     case 'text':      renderTextPanel(content); break;
@@ -4787,7 +5250,8 @@ function switchEditorPanel(panelId) {
 
 function updateEditorUnsavedIndicator() {
   const el = document.getElementById('editor-unsaved');
-  if (el) el.style.display = editorState.patches.length > 0 ? 'block' : 'none';
+  if (el) el.style.display = editorHasUnsavedChanges() ? 'block' : 'none';
+  updatePageSelectUI();
 }
 
 function addPatch(patch) {
@@ -4796,6 +5260,8 @@ function addPatch(patch) {
     timestamp: new Date().toISOString(),
     ...patch,
   });
+  editorState.dirty = true;
+  C2GHLEditor.scheduleAutosave();
   updateEditorUnsavedIndicator();
 }
 
@@ -4804,27 +5270,51 @@ function serializeIframeToHtml() {
   const doc = iframe.contentDocument;
   if (!doc) return editorState.workingHtml;
 
-  // Remove editor artifacts
-  doc.getElementById('c2ghl-bridge')?.remove();
-  doc.getElementById('c2ghl-editor-styles')?.remove();
-  doc.querySelectorAll('[data-c2ghl-id]').forEach(el => el.removeAttribute('data-c2ghl-id'));
-  doc.querySelectorAll('.c2ghl-hover,.c2ghl-selected,.c2ghl-risk').forEach(el => {
-    el.classList.remove('c2ghl-hover', 'c2ghl-selected', 'c2ghl-risk');
-  });
+  // Work on a CLONE — serializing must never destroy live editor state
+  // (stripping ids from the live doc used to break editing after save).
+  const root = doc.documentElement.cloneNode(true);
 
-  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+  root.querySelector('#c2ghl-bridge')?.remove();
+  root.querySelector('#c2ghl-editor-styles')?.remove();
+  root.querySelectorAll('[data-c2ghl-id]').forEach(el => el.removeAttribute('data-c2ghl-id'));
+  root.querySelectorAll('[data-c2ghl-hidden]').forEach(el => el.removeAttribute('data-c2ghl-hidden'));
+  root.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+  root.querySelectorAll('[spellcheck]').forEach(el => el.removeAttribute('spellcheck'));
+  root.querySelectorAll('.c2ghl-hover,.c2ghl-selected,.c2ghl-risk,.c2ghl-editing').forEach(el => {
+    el.classList.remove('c2ghl-hover', 'c2ghl-selected', 'c2ghl-risk', 'c2ghl-editing');
+  });
+  // Drop empty attribute husks left by class/style removal.
+  root.querySelectorAll('[class=""]').forEach(el => el.removeAttribute('class'));
+  root.querySelectorAll('[style=""]').forEach(el => el.removeAttribute('style'));
+  // Kept intentionally: #c2ghl-user-css, #c2ghl-color-overrides,
+  // #c2ghl-font-overrides, c2ghl-gfont-* links, c2ghl-el-* classes.
+
+  return '<!DOCTYPE html>' + root.outerHTML;
+}
+
+// Dev-only round-trip purity check: saved HTML must carry zero editor artifacts.
+function assertSerializedClean(html) {
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const leftovers = doc.querySelectorAll('[data-c2ghl-id], [contenteditable], .c2ghl-hover, .c2ghl-selected, .c2ghl-editing, #c2ghl-editor-styles');
+    if (leftovers.length) console.warn('[editor] serialize left artifacts:', leftovers.length, leftovers[0]);
+  } catch { /* diagnostics only */ }
 }
 
 async function saveEditorChanges() {
+  if (editorState.mode === 'cloneSet') return saveCloneSetChanges();
+
   const funnel = myFunnels.find(f => f.id === editorState.funnelId);
-  if (!funnel) return;
+  if (!funnel) return false;
 
   const finalHtml = serializeIframeToHtml();
+  assertSerializedClean(finalHtml);
   const updated = {
     ...funnel,
     html: finalHtml,
     optimizedHtml: finalHtml,
     editorPatches: editorState.patches,
+    copyrightStripped: true,
     status: funnel.status === 'exported' ? 'optimized' : (funnel.status || 'draft'),
     updatedAt: new Date().toISOString(),
   };
@@ -4834,15 +5324,53 @@ async function saveEditorChanges() {
     const idx = myFunnels.findIndex(f => f.id === editorState.funnelId);
     if (idx >= 0) myFunnels[idx] = updated;
     renderFunnels();
-    showSaveToast('Changes saved!');
+    const evicted = result?.evicted || [];
+    showSaveToast(evicted.length
+      ? `Saved — ${evicted.length} older funnel${evicted.length !== 1 ? 's' : ''} removed to make room`
+      : 'Changes saved!');
     editorState.patches = [];
+    editorState.dirty = false;
+    await C2GHLEditor.clearDraft();
     updateEditorUnsavedIndicator();
     // Re-open with saved HTML as new baseline
     editorState.originalHtml = finalHtml;
     editorState.workingHtml = finalHtml;
-  } else {
-    showSaveToast('Save failed — check storage');
+    return true;
   }
+  showSaveToast(result?.error
+    ? `Save failed — ${result.error}`
+    : 'Save failed — this page may be too large to store. Remove large uploaded images and retry.');
+  return false;
+}
+
+// Persist all edited clone-set pages back into the clipboard; their pageJson
+// is marked stale and re-derived at paste time so edits reach GHL natively.
+async function saveCloneSetChanges() {
+  const current = editorState.pages[editorState.activePageIndex];
+  if (current) {
+    const html = serializeIframeToHtml();
+    assertSerializedClean(html);
+    if (html !== current.html) { current.html = html; current.dirty = true; }
+  }
+  const dirtyPages = editorState.pages.filter(p => p.dirty && p.html);
+  if (!dirtyPages.length) { showSaveToast('No changes to save'); return true; }
+
+  const result = await sendMsg({
+    action: 'SAVE_CLONE_PAGES',
+    data: { pages: dirtyPages.map(p => ({ index: p.index, html: p.html })) },
+  });
+  if (result?.success) {
+    dirtyPages.forEach(p => { p.dirty = false; });
+    editorState.patches = [];
+    editorState.dirty = false;
+    await C2GHLEditor.clearDraft();
+    updateEditorUnsavedIndicator();
+    if (current) { editorState.originalHtml = current.html; editorState.workingHtml = current.html; }
+    showSaveToast(`Saved ${result.saved ?? dirtyPages.length} page${dirtyPages.length !== 1 ? 's' : ''}!`);
+    return true;
+  }
+  showSaveToast(result?.error ? `Save failed — ${result.error}` : 'Save failed — check storage');
+  return false;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -4987,20 +5515,22 @@ function replaceLogoInPage(logoEntry, newSrc) {
   const el = doc.querySelector(logoEntry.selector);
   if (!el) return;
 
-  if (el.tagName === 'IMG') {
-    const oldSrc = el.src;
-    el.src = newSrc;
-    addPatch({ type: 'img-replace', selector: logoEntry.selector, attribute: 'src', oldValue: oldSrc, newValue: newSrc });
-  } else {
-    const img = doc.createElement('img');
-    img.src = newSrc;
-    img.alt = 'Logo';
-    img.style.cssText = (el.getAttribute('style') || '');
-    img.style.maxHeight = img.style.maxHeight || '60px';
-    img.setAttribute('data-c2ghl-id', el.getAttribute('data-c2ghl-id') || '');
-    el.replaceWith(img);
-    addPatch({ type: 'img-replace', selector: logoEntry.selector, attribute: 'src', oldValue: 'svg', newValue: newSrc });
-  }
+  C2GHLEditor.commit('logo-replace', () => {
+    if (el.tagName === 'IMG') {
+      const oldSrc = el.src;
+      el.src = newSrc;
+      addPatch({ type: 'img-replace', selector: logoEntry.selector, attribute: 'src', oldValue: oldSrc, newValue: newSrc });
+    } else {
+      const img = doc.createElement('img');
+      img.src = newSrc;
+      img.alt = 'Logo';
+      img.style.cssText = (el.getAttribute('style') || '');
+      img.style.maxHeight = img.style.maxHeight || '60px';
+      img.setAttribute('data-c2ghl-id', el.getAttribute('data-c2ghl-id') || '');
+      el.replaceWith(img);
+      addPatch({ type: 'img-replace', selector: logoEntry.selector, attribute: 'src', oldValue: 'svg', newValue: newSrc });
+    }
+  });
 }
 
 // ─── Color Extraction & Replacement ───────────────────────────────────────────
@@ -5047,23 +5577,25 @@ function replaceColorInPage(oldHex, newHex) {
   if (!doc) return;
   const entry = editorState.allColors.find(c => c.hex === oldHex);
 
-  if (entry?.cssVarName) {
-    let ov = doc.getElementById('c2ghl-color-overrides');
-    if (!ov) { ov = doc.createElement('style'); ov.id = 'c2ghl-color-overrides'; doc.head.appendChild(ov); }
-    const varRx = new RegExp(`${escapeRegex(entry.cssVarName)}\\s*:[^;]+;`);
-    if (varRx.test(ov.textContent)) {
-      ov.textContent = ov.textContent.replace(varRx, `${entry.cssVarName}: ${newHex};`);
+  C2GHLEditor.commit('color-replace', () => {
+    if (entry?.cssVarName) {
+      let ov = doc.getElementById('c2ghl-color-overrides');
+      if (!ov) { ov = doc.createElement('style'); ov.id = 'c2ghl-color-overrides'; doc.head.appendChild(ov); }
+      const varRx = new RegExp(`${escapeRegex(entry.cssVarName)}\\s*:[^;]+;`);
+      if (varRx.test(ov.textContent)) {
+        ov.textContent = ov.textContent.replace(varRx, `${entry.cssVarName}: ${newHex};`);
+      } else {
+        ov.textContent += `\n:root { ${entry.cssVarName}: ${newHex}; }`;
+      }
     } else {
-      ov.textContent += `\n:root { ${entry.cssVarName}: ${newHex}; }`;
+      doc.querySelectorAll('style').forEach(s => {
+        if (s.id && s.id.startsWith('c2ghl-')) return;
+        s.textContent = s.textContent.replace(new RegExp(escapeRegex(oldHex), 'gi'), newHex);
+      });
     }
-  } else {
-    doc.querySelectorAll('style').forEach(s => {
-      if (s.id && s.id.startsWith('c2ghl-')) return;
-      s.textContent = s.textContent.replace(new RegExp(escapeRegex(oldHex), 'gi'), newHex);
-    });
-  }
 
-  addPatch({ type: 'color-replace', selector: '_style', attribute: entry?.cssVarName || null, oldValue: oldHex, newValue: newHex });
+    addPatch({ type: 'color-replace', selector: '_style', attribute: entry?.cssVarName || null, oldValue: oldHex, newValue: newHex });
+  });
   if (entry) entry.hex = newHex;
   editorState.selectedColorHex = newHex;
 }
@@ -5090,6 +5622,10 @@ function extractFonts(doc) {
 function applyFontChange(target, fontFamily, smartSizes) {
   const doc = getEditorDoc();
   if (!doc) return;
+  C2GHLEditor.commit('font-change', () => applyFontChangeInner(doc, target, fontFamily, smartSizes));
+}
+
+function applyFontChangeInner(doc, target, fontFamily, smartSizes) {
   const slug = fontFamily.replace(/\s+/g, '+');
   const linkId = `c2ghl-gfont-${slug}`;
   if (!doc.getElementById(linkId)) {
@@ -5133,76 +5669,12 @@ function applyFontChange(target, fontFamily, smartSizes) {
 function runCopyrightAudit() {
   const doc = getEditorDoc();
   if (!doc || !doc.body) return [];
-  const risks = [];
-
-  // Helper: check if element already captured
-  const sels = new Set();
-  const addRisk = (el, type, label, severity, description) => {
-    const sel = buildUniqueSelector(el);
-    if (sels.has(sel + type)) return;
-    sels.add(sel + type);
-    risks.push({ el, selector: sel, type, label, severity, description });
-  };
-
-  // HIGH: logo images in nav/header with external src
-  doc.querySelectorAll('header img, nav img, [class*="logo"] img, [id*="logo"] img').forEach(img => {
-    if (img.src && !img.src.startsWith('data:') && !img.src.startsWith('blob:')) {
-      addRisk(img, 'brand-logo-img', 'Brand logo image', 'high', `alt="${img.alt || ''}" — ${img.src.slice(0, 60)}`);
-    }
+  // Shared engine: split-tag notices, deepest-match dedupe, multi-word brand
+  // tokens, improved logo detection (see copyrightEngine.js).
+  const risks = CopyrightEngine.audit(doc, {
+    sourceDomain: editorState.funnelSourceDomain,
+    buildSelector: buildUniqueSelector,
   });
-
-  // HIGH: SVG in nav/header
-  doc.querySelectorAll('header svg, nav svg, [class*="logo"] svg').forEach(svg => {
-    addRisk(svg, 'brand-logo-svg', 'SVG logo mark', 'high', `SVG in ${svg.closest('header') ? 'header' : 'nav/logo area'}`);
-  });
-
-  // HIGH: copyright notices
-  const cpRx = /©\s*\d{4}|copyright\s*©?\s*\d{4}|all\s+rights?\s+reserved/i;
-  const walker1 = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
-  let node;
-  while ((node = walker1.nextNode())) {
-    if (cpRx.test(node.textContent) && node.parentElement && !['SCRIPT','STYLE'].includes(node.parentElement.tagName)) {
-      addRisk(node.parentElement, 'copyright-notice', 'Copyright notice', 'high', `"${node.textContent.trim().slice(0, 80)}"`);
-    }
-  }
-
-  // MEDIUM: trademark symbols
-  const tmRx = /[™®℠]/;
-  const walker2 = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
-  while ((node = walker2.nextNode())) {
-    if (tmRx.test(node.textContent) && node.parentElement && !['SCRIPT','STYLE'].includes(node.parentElement.tagName)) {
-      addRisk(node.parentElement, 'trademark-symbol', 'Trademark symbol', 'medium', `"${node.textContent.trim().slice(0, 80)}"`);
-    }
-  }
-
-  // MEDIUM: original brand name in text
-  if (editorState.funnelSourceDomain) {
-    const rawBrand = editorState.funnelSourceDomain.replace(/\.[a-z]{2,}(\.[a-z]{2})?$/, '').replace(/-/g, ' ');
-    if (rawBrand.length >= 3) {
-      const brandRx = new RegExp(`\\b${escapeRegex(rawBrand)}\\b`, 'i');
-      const walker3 = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
-      let count = 0;
-      while ((node = walker3.nextNode()) && count < 20) {
-        if (brandRx.test(node.textContent) && node.parentElement && !['SCRIPT','STYLE'].includes(node.parentElement.tagName)) {
-          addRisk(node.parentElement, 'brand-name-text', 'Original brand name', 'medium', `"${node.textContent.trim().slice(0, 80)}"`);
-          count++;
-        }
-      }
-    }
-  }
-
-  // LOW: external links
-  doc.querySelectorAll('a[href]').forEach(a => {
-    const href = a.getAttribute('href') || '';
-    if (href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-    try {
-      const url = new URL(href, 'https://x.com');
-      if (url.hostname && url.hostname !== editorState.funnelSourceDomain) {
-        addRisk(a, 'external-link', 'External brand link', 'low', href.slice(0, 60));
-      }
-    } catch {}
-  });
-
   editorState.copyrightRisks = risks;
   return risks;
 }
@@ -5300,6 +5772,7 @@ function renderBrandPanel(content) {
     const tagline = content.querySelector('#ep-tagline').value.trim();
     const phone = content.querySelector('#ep-phone').value.trim();
 
+    C2GHLEditor.commit('brand-apply', () => {
     if (bizName && editorState.funnelSourceDomain) {
       const rawBrand = editorState.funnelSourceDomain.replace(/\.[a-z]{2,}(\.[a-z]{2})?$/, '').replace(/-/g, ' ');
       if (rawBrand.length >= 3) {
@@ -5322,6 +5795,7 @@ function renderBrandPanel(content) {
         addPatch({ type: 'text', selector: 'body', attribute: null, oldValue: 'tagline', newValue: tagline });
       }
     }
+    }); // commit
     showSaveToast('Text replacements applied!');
   });
 
@@ -5357,7 +5831,10 @@ function renderBrandPanel(content) {
       showSaveToast('No logo elements found on page');
       return;
     }
-    logos.forEach(logo => replaceLogoInPage(logo, editorState.generatedLogoUrl));
+    // One undo step for the whole batch (commit() is nesting-safe).
+    C2GHLEditor.commit('logo-apply-all', () => {
+      logos.forEach(logo => replaceLogoInPage(logo, editorState.generatedLogoUrl));
+    });
     showSaveToast(`Logo applied to ${logos.length} element${logos.length !== 1 ? 's' : ''}!`);
   });
 
@@ -5442,11 +5919,13 @@ function renderCopyrightPanel(content, forceReaudit = true) {
       const risk = editorState.copyrightRisks[idx];
       if (!risk) return;
       const doc = getEditorDoc();
-      const el = doc?.querySelector(risk.selector);
-      if (el) {
-        addPatch({ type: 'element-remove', selector: risk.selector, attribute: null, oldValue: el.outerHTML.slice(0, 200), newValue: '' });
-        el.remove();
-      }
+      if (!doc) return;
+      C2GHLEditor.commit('copyright-fix', () => {
+        const result = CopyrightEngine.fixRisk(doc, risk);
+        if (result.changed) {
+          addPatch({ type: result.action === 'removed-block' ? 'element-remove' : 'text', selector: risk.selector, attribute: null, oldValue: risk.description.slice(0, 200), newValue: '' });
+        }
+      });
       editorState.copyrightRisks.splice(idx, 1);
       renderCopyrightPanel(content, false);
     });
@@ -5466,31 +5945,23 @@ function renderCopyrightPanel(content, forceReaudit = true) {
   content.querySelector('#ep-fix-all')?.addEventListener('click', () => {
     const doc = getEditorDoc();
     if (!doc) return;
-    const toRemove = [];
-    [...editorState.copyrightRisks].forEach(risk => {
-      const el = doc.querySelector(risk.selector);
-      if (!el) return;
-      if (risk.type === 'copyright-notice' || risk.type === 'trademark-symbol') {
-        const newText = el.textContent.replace(/[™®℠]/g, '').replace(/©\s*\d{4}[^.]*\.?/gi, '').replace(/all\s+rights?\s+reserved\.?/gi, '').trim();
-        if (newText !== el.textContent) {
-          addPatch({ type: 'text', selector: risk.selector, attribute: null, oldValue: el.textContent, newValue: newText });
-          el.textContent = newText;
+    // Whole batch = ONE undo step. The engine does bounded removal, so
+    // adjacent legitimate text (e.g. "Privacy Policy") always survives.
+    let fixedRisks = [];
+    C2GHLEditor.commit('copyright-fix-all', () => {
+      const { results } = CopyrightEngine.fixAll(doc, [...editorState.copyrightRisks]);
+      results.forEach(({ risk, changed, action }) => {
+        if (changed) {
+          addPatch({
+            type: action === 'removed-block' ? 'element-remove' : (action === 'neutralized-link' ? 'attr' : 'text'),
+            selector: risk.selector, attribute: action === 'neutralized-link' ? 'href' : null,
+            oldValue: risk.description.slice(0, 200), newValue: action === 'neutralized-link' ? '#' : '',
+          });
         }
-        toRemove.push(risk);
-      } else if (risk.type === 'external-link') {
-        const oldHref = el.getAttribute('href');
-        el.setAttribute('href', '#');
-        addPatch({ type: 'attr', selector: risk.selector, attribute: 'href', oldValue: oldHref, newValue: '#' });
-        toRemove.push(risk);
-      } else if (risk.type === 'brand-logo-img' || risk.type === 'brand-logo-svg') {
-        // Remove brand logo elements from the DOM directly
-        addPatch({ type: 'element-remove', selector: risk.selector, attribute: null, oldValue: el.outerHTML.slice(0, 200), newValue: '' });
-        el.remove();
-        toRemove.push(risk);
-      }
+      });
+      fixedRisks = results.filter(r => r.changed || r.action === 'missing').map(r => r.risk);
     });
-    // Remove fixed risks from the array
-    toRemove.forEach(r => {
+    fixedRisks.forEach(r => {
       const idx = editorState.copyrightRisks.indexOf(r);
       if (idx >= 0) editorState.copyrightRisks.splice(idx, 1);
     });
@@ -5554,8 +6025,10 @@ function renderTextPanel(content) {
       const doc = getEditorDoc();
       const el = doc?.querySelector(item.selector);
       if (el) {
-        addPatch({ type: 'text', selector: item.selector, attribute: null, oldValue: item.text, newValue: newText });
-        el.textContent = newText;
+        C2GHLEditor.commit('text-apply', () => {
+          addPatch({ type: 'text', selector: item.selector, attribute: null, oldValue: item.text, newValue: newText });
+          el.textContent = newText;
+        });
         item.text = newText;
         wrap.querySelector('.editor-text-preview').textContent = newText.slice(0, 120);
       }
@@ -5692,8 +6165,10 @@ function applyImageReplacement(imgEntry, newSrc, content) {
   const doc = getEditorDoc();
   const el = doc?.querySelector(imgEntry.selector);
   if (el) {
-    addPatch({ type: 'img-replace', selector: imgEntry.selector, attribute: 'src', oldValue: imgEntry.src, newValue: newSrc });
-    el.src = newSrc;
+    C2GHLEditor.commit('img-replace', () => {
+      addPatch({ type: 'img-replace', selector: imgEntry.selector, attribute: 'src', oldValue: imgEntry.src, newValue: newSrc });
+      el.src = newSrc;
+    });
     imgEntry.src = newSrc;
     const thumb = content.querySelector(`.editor-image-card[data-img-id="${imgEntry.id}"] .editor-image-thumb`);
     if (thumb) { thumb.src = newSrc; thumb.style.display = 'block'; }
